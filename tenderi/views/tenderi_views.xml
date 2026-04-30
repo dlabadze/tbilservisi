@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_tenderi_list" model="ir.ui.view">
+        <field name="name">tenderi.list</field>
+        <field name="model">tenderi</field>
+        <field name="arch" type="xml">
+            <list string="Tenderi">
+                <header>
+                    <button name="%(tenderi.action_tenderi_excel_import_wizard)d"
+                            string="ატვირთვა"
+                            type="action"
+                            class="oe_highlight"
+                            display="always"/>
+                </header>
+                <field name="amount_in_plan_line" column_invisible="1"/>
+                <field name="department_id"/>
+                <field name="purchase_object"/>
+                <field name="cpv_code"/>
+                <field name="purchase_plan_line_id"/>
+                <field name="estimated_cost"/>
+                <field name="tender_notice_number"/>
+                <field name="publicaiton_date"/>
+                <field name="open_date"/>
+                <field name="tender_status"/>
+                <field name="tenderer"/>
+                <field name="final_price"/>
+                <field name="funding_year"/>
+                <field name="shesyidvis_safudzveli"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_tenderi_form" model="ir.ui.view">
+        <field name="name">tenderi.form</field>
+        <field name="model">tenderi</field>
+        <field name="arch" type="xml">
+            <form string="Tenderi">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="amount_in_plan_line" invisible="1"/>
+                            <field name="department_id"/>
+                            <field name="purchase_object"/>
+                            <field name="cpv_code"/>
+                            <field name="purchase_plan_line_id"/>
+                            <field name="estimated_cost"/>
+                            <field name="tender_notice_number"/>
+                            <field name="publicaiton_date"/>
+                            <field name="open_date"/>
+                        </group>
+                        <group>
+                            <field name="tender_status"/>
+                            <field name="tenderer"/>
+                            <field name="final_price"/>
+                            <field name="funding_year"/>
+                            <field name="shesyidvis_safudzveli"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_tenderi" model="ir.actions.act_window">
+        <field name="name">ტენდერი</field>
+        <field name="res_model">tenderi</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Tenderi record or import from Excel.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_tenderi"
+              name="ტენდერი"
+              action="action_tenderi"
+              parent="purchase.menu_procurement_management"
+              sequence="50"/>
+</odoo>

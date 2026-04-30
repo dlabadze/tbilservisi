@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_employee_phone_import_wizard_user,access.employee.phone.import.wizard.user,model_employee_phone_import_wizard,base.group_user,1,1,1,1
+access_insurance_import_wizard,insurance.import.wizard,model_insurance_import_wizard,base.group_user,1,1,1,1
+access_fitpass_import_wizard,fitpass.import.wizard,model_fitpass_import_wizard,base.group_user,1,1,1,1
+access_account_update_import_wizard,account.update.import.wizard,model_account_update_import_wizard,base.group_user,1,1,1,1
+access_salary_components_import_wizard,salary.components.import.wizard,model_salary_components_import_wizard,base.group_user,1,1,1,1
+access_income_benefit_import_wizard,income.benefit.import.wizard,model_income_benefit_import_wizard,base.group_user,1,1,1,1

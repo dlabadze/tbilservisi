@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_form_private_information_first" model="ir.ui.view">
+        <field name="name">hr.employee.form.private.information.first</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="priority">32</field>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='public']" position="before">
+                <xpath expr="//page[@name='personal_information']" position="move"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

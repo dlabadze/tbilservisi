@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_form_inherit_requisition_po_link" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.requisition.po.link</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase_requisition.purchase_order_form_inherit"/>
+        <field name="arch" type="xml">
+            <field name="requisition_id" position="after">
+                <field name="requisition_link_id" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+</odoo>

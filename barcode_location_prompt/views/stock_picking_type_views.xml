@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add car_sawvav_product_id field to stock.picking.type form view -->
+    <record id="view_picking_type_form_inherit_car_sawvav" model="ir.ui.view">
+        <field name="name">stock.picking.type.form.inherit.car.sawvav</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <!-- Add field at the end of the form -->
+            <xpath expr="//form/sheet" position="inside">
+                <group string="ავტომატური პროდუქტი (Auto Product)">
+                    <field name="car_sawvav_product_id"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

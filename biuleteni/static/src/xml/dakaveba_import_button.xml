@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <!-- Custom Buttons Template for Dakaveba List -->
+    <t t-name="dakaveba_import.ListView.Buttons"
+       t-inherit="web.ListView.Buttons">
+
+        <xpath expr="//div[hasclass('o_list_buttons')]" position="inside">
+            <button type="button"
+                    class="btn btn-primary"
+                    t-on-click="onOpenDakavebaImportWizard"
+                    style="margin-left: 8px;">
+                იმპორტი
+            </button>
+        </xpath>
+
+    </t>
+
+</templates>

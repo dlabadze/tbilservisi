@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_bazris_kvleva"
+              name="ბაზრის კვლევა"
+              action="action_bazris_kvleva"
+              parent="purchase.menu_procurement_management"
+              sequence="200"/>
+    <menuitem id="menu_bazris_kvlevis_tanamshromlebi"
+              name="ბაზრის კვლევის თანამშრომლები"
+              action="action_bazris_kvlevis_tanamshromlebi"
+              parent="purchase.menu_procurement_management"
+              sequence="205"/>
+</odoo>
+

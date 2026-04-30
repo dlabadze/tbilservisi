@@ -1,0 +1,16 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_biuleteni_user,access.biuleteni.user,model_biuleteni,base.group_user,1,1,1,1
+access_biuleteni_det_user,access.biuleteni.det.user,model_biuleteni_det,base.group_user,1,1,1,1
+access_biuleteni_attendance_user,access.biuleteni.attendance.user,model_biuleteni_attendance,base.group_user,1,1,1,1
+access_shvebuleba,access_shvebuleba,model_shvebuleba,base.group_user,1,1,1,1
+access_shvebuleba_det,access_shvebuleba_det,model_shvebuleba_det,base.group_user,1,1,1,1
+access_shvebuleba_attendance_user,access.shvebuleba.attendance.user,model_shvebuleba_attendance,base.group_user,1,1,1,1
+access_zeganakveturi_saati_user,access.zeganakveturi.saati.user,model_zeganakveturi_saati,base.group_user,1,1,1,1
+access_zeganakveturi_saati_det_user,access.zeganakveturi.saati.det.user,model_zeganakveturi_saati_det,base.group_user,1,1,1,1
+access_zeganakveturi_import_wizard_user,access.zeganakveturi.import.wizard.user,model_zeganakveturi_import_wizard,base.group_user,1,1,1,1
+
+access_dakaveba_user,access.dakaveba.user,model_dakaveba,base.group_user,1,1,1,1
+access_dakaveba_det_user,access.dakaveba.det.user,model_dakaveba_det,base.group_user,1,1,1,1
+access_dakaveba_import_wizard_user,access.dakaveba.import.wizard.user,model_dakaveba_import_wizard,base.group_user,1,1,1,1
+access_shvebuleba_generate_wizard_user,access.shvebuleba.generate.wizard.user,model_shvebuleba_generate_wizard,base.group_user,1,1,1,1
+access_tserili_user,access.tserili.user,model_tserili,base.group_user,1,1,1,1

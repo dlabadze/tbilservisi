@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- List -->
+    <record id="view_employee_operation_list" model="ir.ui.view">
+        <field name="name">employee.operation.list</field>
+        <field name="model">employee.operation</field>
+        <field name="arch" type="xml">
+            <list string="ოპერაციები">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <!--Fomr-->
+    <record id="view_employee_operation_form" model="ir.ui.view">
+        <field name="name">employee.operation.form</field>
+        <field name="model">employee.operation</field>
+        <field name="arch" type="xml">
+            <form string="ოპერაცია">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

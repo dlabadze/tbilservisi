@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Partner Car List View -->
+  <record id="view_partner_car_list" model="ir.ui.view">
+    <field name="name">partner.car.list</field>
+    <field name="model">partner.car</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="partner_id"/>
+        <field name="partner_vat"/>
+        <field name="car_nom"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Partner Car Form View -->
+  <record id="view_partner_car_form" model="ir.ui.view">
+    <field name="name">partner.car.form</field>
+    <field name="model">partner.car</field>
+    <field name="arch" type="xml">
+      <form string="Partner Car Registration">
+        <sheet>
+          <group>
+            <field name="partner_id" options="{'no_create': True, 'no_open': True}"/>
+            <field name="partner_name"/>
+            <field name="partner_vat"/>
+            <field name="car_nom" placeholder="Enter car number..."/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Partner Car Action -->
+  <record id="action_partner_car" model="ir.actions.act_window">
+    <field name="name">Partner Cars</field>
+    <field name="res_model">partner.car</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <!-- Menu -->
+  <menuitem id="menu_partner_car_root" name="Partner Cars"
+            parent="contacts.menu_contacts" sequence="50"/>
+  <menuitem id="menu_partner_car" name="Car Registration"
+            parent="menu_partner_car_root" action="action_partner_car"/>
+
+</odoo>

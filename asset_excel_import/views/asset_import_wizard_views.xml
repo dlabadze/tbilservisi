@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Wizard Form View -->
+    <record id="view_asset_import_wizard_form" model="ir.ui.view">
+        <field name="name">asset.import.wizard.form</field>
+        <field name="model">asset.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Assets from Excel">
+                <group invisible="state != 'upload'">
+                    <group>
+                        <field name="state" invisible="1"/>
+                        <field name="file_data" filename="file_name"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                    <separator string="Upload an Excel file to begin. The first row must contain column headers."/>
+                </group>
+
+                <group invisible="state != 'mapping'">
+                    <field name="state" invisible="1"/>
+                    <separator string="Map each Excel column to an asset field. Leave empty to skip a column."/>
+                    <field name="mapping_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="column_index" optional="hide"/>
+                            <field name="column_name" readonly="1" string="Excel Column"/>
+                            <field name="field_id" string="Asset Field" options="{'no_create': True}"/>
+                            <field name="match_type" string="Match Type"/>
+                        </list>
+                    </field>
+                    <separator string="Use 'Match Employee by Name' for columns containing employee names. Use 'Match Department by Name' for department names. All other Many2one fields will also try to match by name automatically."/>
+                </group>
+
+                <footer>
+                    <button string="Load Columns" name="action_load_columns" type="object"
+                            class="btn-primary" invisible="state != 'upload'"/>
+                    <button string="Back" name="action_back" type="object"
+                            class="btn-secondary" invisible="state != 'mapping'"/>
+                    <button string="Import Assets" name="action_import" type="object"
+                            class="btn-primary" invisible="state != 'mapping'"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Action -->
+    <record id="action_asset_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import Assets from Excel</field>
+        <field name="res_model">asset.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Add "Import from Excel" button to the asset tree view -->
+    <record id="view_account_asset_tree_inherit_import" model="ir.ui.view">
+        <field name="name">account.asset.list.inherit.import.button</field>
+        <field name="model">account.asset</field>
+        <field name="inherit_id" ref="account_asset.view_account_asset_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="%(action_asset_import_wizard)d" type="action"
+                            string="Import from Excel"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,29 @@
+<odoo>
+    <record id="view_stock_limit_report_tree" model="ir.ui.view">
+        <field name="name">stock.limit.report.tree</field>
+        <field name="model">stock.limit.report</field>
+        <field name="arch" type="xml">
+            <list string="საწყობი - ნაშთის ლიმიტები" default_group_by="location_id" create="false" edit="false" delete="false">
+                <field name="location_id" optional="show"/>
+                <field name="product_id" string="პროდუქტი"/>
+                <field name="default_code" string="კოდი"/>
+                <field name="min_amount" string="მინიმალური რაოდენობა"/>
+                <field name="available_quantity" string="ხელმისაწვდომი რაოდენობა"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_stock_limit_report" model="ir.actions.act_window">
+        <field name="name">საწყობი - ნაშთის ლიმიტები</field>
+        <field name="res_model">stock.limit.report</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'group_by': ['location_id']}</field>
+    </record>
+
+    <menuitem
+        id="menu_stock_limit_report"
+        name="საწყობი - ნაშთის ლიმიტები"
+        parent="stock.menu_warehouse_report"
+        action="action_stock_limit_report"
+        sequence="100"/>
+</odoo>

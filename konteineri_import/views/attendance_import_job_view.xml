@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- list VIEW -->
+    <record id="view_attendance_import_job_list" model="ir.ui.view">
+        <field name="name">attendance.import.job.list</field>
+        <field name="model">attendance.import.job</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="identification_id"/>
+                <field name="state"/>
+                <field name="create_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_attendance_import_job_form" model="ir.ui.view">
+        <field name="name">attendance.import.job.form</field>
+        <field name="model">attendance.import.job</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Import Job">
+                <sheet>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="identification_id" invisible="1"/>
+                        <field name="employee_ids" widget="many2many_tags"/>
+                        <field name="state" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="error" readonly="1" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_attendance_import_job" model="ir.actions.act_window">
+        <field name="name">Attendance Import Jobs</field>
+        <field name="res_model">attendance.import.job</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_attendance_import_root"
+              name="Attendance Imports"
+              parent="hr_attendance.menu_hr_attendance_root"
+              sequence="90"/>
+
+    <menuitem id="menu_attendance_import_job"
+              name="Import Jobs"
+              parent="menu_attendance_import_root"
+              action="action_attendance_import_job"
+              sequence="10"/>
+
+</odoo>

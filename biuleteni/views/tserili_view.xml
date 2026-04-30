@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ===================================================== -->
+    <!--                       FORM VIEW                        -->
+    <!-- ===================================================== -->
+    <record id="view_tserili_form" model="ir.ui.view">
+        <field name="name">tserili.form</field>
+        <field name="model">tserili</field>
+        <field name="arch" type="xml">
+            <form string="წერილი">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+
+                    <button name="action_validate"
+                            string="დადასტურება"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'validated'"/>
+
+                    <button name="action_reset_draft"
+                            string="დრაფტად დაბრუნება"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="employee_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="identification_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="parent_department_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="department_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="job_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="amount_plus"/>
+                            <field name="amount_minus"/>
+                        </group>
+                        <group>
+                            <field name="comment"/>
+                        </group>
+                    </group>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                       LIST VIEW                        -->
+    <!-- ===================================================== -->
+    <record id="view_tserili_list" model="ir.ui.view">
+        <field name="name">tserili.list</field>
+        <field name="model">tserili</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'"
+                  decoration-success="state == 'validated'">
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="identification_id" optional="show"/>
+                <field name="parent_department_id" optional="show"/>
+                <field name="department_id" optional="show"/>
+                <field name="job_id" optional="show"/>
+                <field name="amount_plus"/>
+                <field name="amount_minus"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                     SEARCH VIEW                        -->
+    <!-- ===================================================== -->
+    <record id="view_tserili_search" model="ir.ui.view">
+        <field name="name">tserili.search</field>
+        <field name="model">tserili</field>
+        <field name="arch" type="xml">
+            <search string="ძებნა">
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="identification_id"/>
+                <field name="department_id"/>
+                <field name="parent_department_id"/>
+                <field name="job_id"/>
+
+                <separator/>
+
+                <filter name="filter_draft" string="დრაფტი" domain="[('state','=','draft')]"/>
+                <filter name="filter_validated" string="დადასტურებული" domain="[('state','=','validated')]"/>
+
+                <group expand="0" string="დაჯგუფება">
+                    <filter string="თანამშრომელი" name="group_by_employee"
+                            context="{'group_by':'employee_id'}"/>
+                    <filter string="დეპარტამენტი" name="group_by_parent_dep"
+                            context="{'group_by':'parent_department_id'}"/>
+                    <filter string="სამსახური" name="group_by_dep"
+                            context="{'group_by':'department_id'}"/>
+                    <filter string="თარიღით" name="group_by_date"
+                            context="{'group_by':'date:month'}"/>
+                    <filter string="სტატუსით" name="group_by_state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                       ACTION                           -->
+    <!-- ===================================================== -->
+    <record id="action_tserili" model="ir.actions.act_window">
+        <field name="name">წერილი</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">tserili</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_tserili_search"/>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                        MENU                            -->
+    <!-- ===================================================== -->
+    <menuitem id="menu_tserili_master"
+              name="წერილი"
+              parent="menu_biuleteni_root"
+              sequence="50"/>
+
+    <menuitem id="menu_tserili_list"
+              name="ჩანაწერები"
+              parent="menu_tserili_master"
+              action="action_tserili"
+              sequence="10"/>
+
+</odoo>

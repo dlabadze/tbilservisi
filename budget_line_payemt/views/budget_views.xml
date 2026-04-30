@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_budget_analytic_form_inherit_payemt" model="ir.ui.view">
+        <field name="name">budget.analytic.form.inherit.payemt</field>
+        <field name="model">budget.analytic</field>
+        <field name="inherit_id" ref="account_budget.view_budget_analytic_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='budget_line_ids']/list" position="inside">
+                <button name="action_open_budget_line_form"
+                        type="object"
+                        string="View"
+                        class="btn-link"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_budget_line_form_inherit_payemt_button" model="ir.ui.view">
+        <field name="name">budget.line.form.inherit.payemt.button</field>
+        <field name="model">budget.line</field>
+        <field name="inherit_id" ref="account_budget.view_budget_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet" position="before">
+                <header>
+                    <button name="action_view_payments"
+                            type="object"
+                            string="გადახდები"
+                            class="oe_highlight"
+                            icon="fa-money"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>

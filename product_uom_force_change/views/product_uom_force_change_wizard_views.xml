@@ -1,0 +1,31 @@
+<odoo>
+    <record id="view_product_uom_force_change_wizard_form" model="ir.ui.view">
+        <field name="name">product.uom.force.change.wizard.form</field>
+        <field name="model">product.uom.force.change.wizard</field>
+        <field name="arch" type="xml">
+            <form string="განზომილების ერთეულის შეცვლა">
+                <sheet>
+                    <group>
+                        <field name="product_tmpl_id"/>
+                        <field name="current_uom_id"/>
+                        <field name="new_uom_id"/>
+                    </group>
+                    <p class="text-danger">
+                        ეს მოქმედება ცვლის მხოლოდ განზომილების ერთეულის ველებს.
+                        რაოდენობები უცვლელი დარჩება და არ დაკონვერტირდება.
+                    </p>
+                </sheet>
+                <footer>
+                    <button
+                        name="action_apply"
+                        string="დადასტურება"
+                        type="object"
+                        class="btn-primary"
+                        confirm="დაადასტურეთ განზომილების ერთეულის ცვლილება"
+                    />
+                    <button string="გაუქმება" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

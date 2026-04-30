@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="fleet_vehicle_view_form_inherit_fuel_mgmt_button" model="ir.ui.view">
+            <field name="name">fleet.vehicle.form.fuel.management.button</field>
+            <field name="model">fleet.vehicle</field>
+            <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                    <button type="object" name="action_open_fuel_management" class="oe_stat_button" icon="fa-tint">
+                        <div class="o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="fuel_management_count" nolabel="1"/>
+                            </span>
+                            <span class="o_stat_text">საწვავის ისტორია</span>
+                        </div>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+

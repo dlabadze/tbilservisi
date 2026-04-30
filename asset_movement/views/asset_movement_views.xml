@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Operation Type Views -->
+  <record id="view_asset_operation_type_list" model="ir.ui.view">
+    <field name="name">asset.operation.type.list</field>
+    <field name="model">asset.operation.type</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="name"/>
+      </list>
+    </field>
+  </record>
+
+  <record id="view_asset_operation_type_form" model="ir.ui.view">
+    <field name="name">asset.operation.type.form</field>
+    <field name="model">asset.operation.type</field>
+    <field name="arch" type="xml">
+      <form>
+        <sheet>
+          <group>
+            <field name="name"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_asset_operation_type" model="ir.actions.act_window">
+    <field name="name">Operation Types</field>
+    <field name="res_model">asset.operation.type</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <!-- Asset Movement Views -->
+  <record id="view_asset_movement_list" model="ir.ui.view">
+    <field name="name">asset.movement.list</field>
+    <field name="model">asset.movement</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="date"/>
+        <field name="operation_type_id"/>
+        <field name="employee_id"/>
+        <field name="location"/>
+        <field name="department_id"/>
+        <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"/>
+      </list>
+    </field>
+  </record>
+
+  <record id="view_asset_movement_form" model="ir.ui.view">
+    <field name="name">asset.movement.form</field>
+    <field name="model">asset.movement</field>
+    <field name="arch" type="xml">
+      <form string="Asset Movement">
+        <header>
+          <button name="action_confirm" string="Confirm" type="object" 
+                  class="oe_highlight" invisible="state != 'draft'"/>
+          <button name="action_draft" string="Set to Draft" type="object" 
+                  invisible="state != 'confirmed'"/>
+          <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+        </header>
+        <sheet>
+          <group>
+            <field name="date"/>
+            <field name="operation_type_id"/>
+            <field name="employee_id"/>
+            <field name="location"/>
+            <field name="department_id"/>
+
+          </group>
+          <notebook>
+            <page string="Assets">
+              <field name="line_ids">
+                <list editable="bottom">
+                  <field name="asset_id"/>
+                  <field name="note"/>
+                </list>
+              </field>
+            </page>
+          </notebook>
+        </sheet>
+        <chatter/>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_asset_movement" model="ir.actions.act_window">
+    <field name="name">Asset Movements</field>
+    <field name="res_model">asset.movement</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <!-- Menus under Accounting -->
+  <menuitem id="menu_asset_movement_root" name="Asset Movements"
+            parent="account.menu_finance" sequence="90"/>
+  <menuitem id="menu_asset_operation_types" name="Operation Types"
+            parent="menu_asset_movement_root" action="action_asset_operation_type"/>
+  <menuitem id="menu_asset_movements" name="Movements"
+            parent="menu_asset_movement_root" action="action_asset_movement"/>
+
+  <!-- Inherit Account Asset Form -->
+  <record id="view_account_asset_form_inherit_movements" model="ir.ui.view">
+    <field name="name">account.asset.form.inherit.movements</field>
+    <field name="model">account.asset</field>
+    <field name="inherit_id" ref="account_asset.view_account_asset_form"/>
+    <field name="arch" type="xml">
+      <notebook position="inside">
+        <page string="Movements">
+          <field name="movement_line_ids">
+            <list>
+              <field name="movement_id"/>
+              <field name="date"/>
+              <field name="operation_type_id"/>
+              <field name="employee_id"/>
+              <field name="location"/>
+              <field name="department_id"/>
+              <field name="note"/>
+            </list>
+          </field>
+        </page>
+      </notebook>
+    </field>
+  </record>
+
+</odoo>

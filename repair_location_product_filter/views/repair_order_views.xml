@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit Repair Order form to inject context into the line product field
+             so filtering works for both dropdown and Search More, mirroring
+             stock_location_product_filter approach -->
+        <record id="view_repair_order_form_product_domain" model="ir.ui.view">
+            <field name="name">repair.order.form.product.domain.allowed</field>
+            <field name="model">repair.order</field>
+            <field name="inherit_id" ref="repair.view_repair_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='move_ids']//field[@name='product_id']" position="attributes">
+                    <attribute name="domain">[]</attribute>
+                    <attribute name="context">{'default_is_storable': True, 'default_repair_line_type': repair_line_type, 'default_repair_id': parent.id, 'rlpf_repair_context': True, 'filter_location_id': parent.location_id, 'default_location_id': parent.location_id, 'location': parent.location_id, 'compute_child': True, 'tree_view_ref': 'repair_location_product_filter.view_product_product_tree_on_hand_repair'}</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Dedicated product tree for Repair context only, referenced via tree_view_ref -->
+        <record id="view_product_product_tree_on_hand_repair" model="ir.ui.view">
+            <field name="name">product.product.tree.on.hand.repair</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" eval="False"/>
+            <field name="arch" type="xml">
+                <list string="Products">
+                    <field name="default_code"/>
+                    <field name="name"/>
+                    <field name="on_hand_at_repair" string="On Hand" optional="show"/>
+                    <field name="uom_id"/>
+                    <field name="categ_id"/>
+                </list>
+            </field>
+        </record>
+    </data>
+</odoo>
+
+

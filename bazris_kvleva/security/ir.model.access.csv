@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bazris_kvleva_user,bazris.kvleva.user,model_bazris_kvleva,base.group_user,1,1,1,1
+access_bazris_kvleva_excel_import_wizard_user,bazris.kvleva.excel.import.wizard.user,model_bazris_kvleva_excel_import_wizard,base.group_user,1,1,1,1
+access_bazris_kvlevis_tanamshromlebi_user,bazris.kvlevis.tanamshromlebi.user,model_bazris_kvlevis_tanamshromlebi,base.group_user,1,1,1,1
+access_safudzvlis_werilis_tarigebi_user,safudzvlis.werilis.tarigebi.user,model_safudzvlis_werilis_tarigebi,base.group_user,1,1,1,1
+

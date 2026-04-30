@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_reconcile_wizard_form_analytic" model="ir.ui.view">
+        <field name="name">account.reconcile.wizard.form.analytic</field>
+        <field name="model">account.reconcile.wizard</field>
+        <field name="inherit_id" ref="account_accountant.view_account_reconcile_wizard"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='to_check']" position="after">
+                <field name="analytic_distribution"
+                       widget="analytic_distribution"
+                       groups="analytic.group_analytic_accounting"/>
+                <field name="analytic_precision" invisible="1"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

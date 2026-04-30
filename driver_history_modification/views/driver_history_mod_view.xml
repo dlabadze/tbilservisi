@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="fleet_vehicle_assignation_log_list_inherit_departments"
+            model="ir.ui.view">
+        <field name="name">fleet.vehicle.assignation.log.list.departments</field>
+        <field name="model">fleet.vehicle.assignation.log</field>
+        <field name="inherit_id"
+               ref="fleet.fleet_vehicle_assignation_log_view_list"/>
+        <field name="arch" type="xml">
+
+            <!-- insert after driver -->
+            <xpath expr="//field[@name='driver_id']" position="after">
+                <field name="department_id" domain="[('id', '=', 215)]"/>
+                <field name="sub_department_id"
+                       domain="[('parent_id', '=', department_id)]"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

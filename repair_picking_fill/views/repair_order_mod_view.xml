@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_repair_order_form_inherit_picking" model="ir.ui.view">
+        <field name="name">repair.order.form.picking.inherit</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Insert Source Picking after product_id -->
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="picking_id_2"
+                       domain="[('id', 'in', allowed_picking_ids)]"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+
+
+
+    <record id="stock_picking_search_inherit_add_fields" model="ir.ui.view">
+        <field name="name">stock.picking.search.inherit.add.fields</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+
+            <!-- Add fields to global search -->
+            <xpath expr="//search" position="inside">
+                <field name="x_studio_text_field_75h_1j6i8foen" string="საფუძველი"/>
+            </xpath>
+
+        </field>
+    </record>    
+</odoo>

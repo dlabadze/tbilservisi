@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_order_form_extension" model="ir.ui.view">
+        <field name="name">sale.order.form.extension</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="extension_views.view_order_form_custom"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='driver_name']" position="after">
+                <field name="partner_car_id" string="მძღოლი" invisible="not show_all_fields"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

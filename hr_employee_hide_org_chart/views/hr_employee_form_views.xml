@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_view_form_hide_org_chart_panel" model="ir.ui.view">
+        <field name="name">hr.employee.form.hide.org.chart.panel</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_org_chart.hr_employee_view_form_inherit_org_chart"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='o_employee_right']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

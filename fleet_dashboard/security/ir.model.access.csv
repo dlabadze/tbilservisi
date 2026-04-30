@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fleet_service_dashboard_all,fleet.service.dashboard all users,model_fleet_service_dashboard,base.group_user,1,1,1,1
+access_fleet_dashboard_wizard_all,fleet.dashboard.wizard all users,model_fleet_dashboard_wizard,base.group_user,1,1,1,1
+access_fleet_cost_per_km_result_all,fleet.cost.per.km.result all users,model_fleet_cost_per_km_result,base.group_user,1,1,1,1
+access_fleet_no_service_result_all,fleet.no.service.result all users,model_fleet_no_service_result,base.group_user,1,1,1,1

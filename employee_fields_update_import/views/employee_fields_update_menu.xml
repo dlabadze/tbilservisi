@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_employee_fields_update"
+              name="სახელფასო კომპონენტების ატვირთვა"
+              parent="import_employee_phone_number.menu_importing_employee_phone"
+              action="action_employee_fields_update_wizard"
+              sequence="130"/>
+</odoo>

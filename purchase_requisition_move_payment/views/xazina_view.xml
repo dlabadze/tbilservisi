@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit xazina form view to add Purchase Req. button -->
+    <record id="view_xazina_form_purchase_req_inherit" model="ir.ui.view">
+        <field name="name">xazina.form.purchase.req.inherit</field>
+        <field name="model">xazina</field>
+        <field name="inherit_id" ref="xazina_application.view_xazina_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet" position="before">
+                <header>
+                    <button name="action_open_purchase_requisition_wizard"
+                            string="Purchase Req."
+                            type="object"
+                            class="btn-warning"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Wizard form view -->
+    <record id="view_xazina_purchase_requisition_wizard_form" model="ir.ui.view">
+        <field name="name">xazina.purchase.requisition.wizard.form</field>
+        <field name="model">xazina.purchase.requisition.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Select Purchase Requisition">
+                <group>
+                    <group>
+                        <field name="xazina_id" readonly="1"/>
+                        <field name="transaction_amount" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="purchase_requisition_id"
+                               options="{'no_create': True, 'no_open': True}"/>
+                        <field name="current_paid_amount" readonly="1"/>
+                        <field name="new_paid_amount" readonly="1"/>
+                    </group>
+                </group>
+                <footer>
+                    <button string="Confirm and Validate"
+                            name="action_confirm"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            name="action_cancel"
+                            type="object"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

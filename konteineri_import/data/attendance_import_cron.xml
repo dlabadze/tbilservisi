@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="attendance_import_cron" model="ir.cron">
+        <field name="name">Attendance Import Processor</field>
+        <field name="model_id" ref="model_attendance_import_job"/>
+        <field name="state">code</field>
+        <field name="code">model.run_pending_jobs()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+
+        <field name="active">True</field>
+    </record>
+
+</odoo>

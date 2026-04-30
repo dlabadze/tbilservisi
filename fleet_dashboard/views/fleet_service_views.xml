@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="fleet_vehicle_log_services_form_inherit" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.services.form.reference</field>
+        <field name="model">fleet.vehicle.log.services</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <div class="oe_title" invisible="not reference">
+                    <h2 class="d-flex align-items-center gap-2 m-0 p-3">
+                        <span class="text-muted">Ref</span>
+                        <field name="reference" readonly="0" nolabel="1" class="fw-bold"/>
+                    </h2>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="fleet_vehicle_log_services_list_inherit" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.services.list.reference</field>
+        <field name="model">fleet.vehicle.log.services</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="reference" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="fleet_vehicle_log_services_search_inherit" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.services.search.reference</field>
+        <field name="model">fleet.vehicle.log.services</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="reference"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

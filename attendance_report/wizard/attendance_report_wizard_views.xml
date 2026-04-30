@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_attendance_report_wizard_form" model="ir.ui.view">
+        <field name="name">attendance.report.wizard.form</field>
+        <field name="model">attendance.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Attendance Report">
+                <group>
+                    <group>
+                        <field name="department_id" options="{'no_create': True}"/>
+                        <field name="job_id" options="{'no_create': True}" domain="[('department_id', '=?', department_id)]"/>
+                        <field name="employee_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('job_id', '=?', job_id), ('department_id', '=?', department_id)]" string="თანამშრომლები"/>
+                    </group>
+                    <group>
+                        <field name="date" widget="date"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_report" string="Print PDF" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_plan_form_inherit_tenderi" model="ir.ui.view">
+        <field name="name">purchase.plan.form.inherit.tenderi</field>
+        <field name="model">purchase.plan</field>
+        <field name="inherit_id" ref="tbili_budget.view_purchase_plan_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/list/field[@name='pcon_am']" position="after">
+                <field name="with_preiskuranti"/>
+                <field name="tender_amount"/>
+                <field name="remaining_resources_amount"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

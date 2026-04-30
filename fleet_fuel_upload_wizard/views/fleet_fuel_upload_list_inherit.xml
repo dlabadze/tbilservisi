@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="fleet_fuel_upload_list_inherit" model="ir.ui.view">
+		<field name="name">fleet.vehicle.log.fuel.list.inherit.import_button</field>
+		<field name="model">fleet.vehicle.log.fuel</field>
+		<field name="inherit_id" ref="fleet_vehicle_log_fuel.fleet_vehicle_log_fuel_view_tree"/>
+		<field name="arch" type="xml">
+			<xpath expr="//list" position="attributes">
+				<attribute name="js_class">fleet_fuel_upload_list</attribute>
+			</xpath>
+		</field>
+	</record>
+</odoo>

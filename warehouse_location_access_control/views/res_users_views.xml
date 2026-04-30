@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Add tabs to user form for managing allowed locations -->
+        <record id="view_users_form_location_access" model="ir.ui.view">
+            <field name="name">res.users.form.location.access</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                <!-- Add page after Preferences tab -->
+                <xpath expr="//page[@name='preferences']" position="after">
+                    <page string="Allowed Locations" name="location_access">
+                        <group>
+                            <group string="Allowed Locations" col="2">
+                                <field name="allowed_location_ids" 
+                                       widget="many2many_tags" 
+                                       options="{'no_create': True, 'no_create_edit': True}"
+                                       domain="[('usage', '!=', 'view')]"
+                                       placeholder="Select locations this user can access..."/>
+                                <div class="alert alert-info" role="alert">
+                                    <p><strong>მნიშვნელოვანი:</strong></p>
+                                    <ul>
+                                        <li>თუ ლოკაციები არ არის მითითებული, მომხმარებელს ექნება წვდომა ყველა ლოკაციაზე</li>
+                                        <li>View ლოკაციები ავტომატურად ხილულია ნავიგაციისთვის</li>
+                                        <li>Internal Transfer-ებში მხოლოდ მითითებული ლოკაციები იქნება ხელმისაწვდომი</li>
+                                    </ul>
+                                </div>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_bazris_kvleva_list" model="ir.ui.view">
+        <field name="name">bazris.kvleva.list</field>
+        <field name="model">bazris.kvleva</field>
+        <field name="arch" type="xml">
+            <list string="Bazris Kvleva">
+                <header>
+                    <button name="%(bazris_kvleva.action_bazris_kvleva_excel_import_wizard)d"
+                            string="Import Excel"
+                            type="action"
+                            class="oe_highlight"
+                            display="always"/>
+                </header>
+                <field name="job_id"/>
+                <!-- <field name="line_number" string="ნომერი" invisible="1"/> -->
+                <field name="saf_number"/>
+                <field name="saf_date"/>
+                <field name="purchase_object"/>
+                <field name="last_date"/>
+                <field name="status"/>
+                <field name="bazris_kvlevis_nomeri"/>
+                <field name="sap_number"/>
+                <field name="sap_date"/>
+                <field name="shenishvna"/>
+                <field name="shemsrulebeli_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bazris_kvleva_form" model="ir.ui.view">
+        <field name="name">bazris.kvleva.form</field>
+        <field name="model">bazris.kvleva</field>
+        <field name="arch" type="xml">
+            <form string="Bazris Kvleva">
+                <!-- <header>
+                    <button name="%(bazris_kvleva.action_bazris_kvleva_excel_import_wizard)d"
+                            string="Import Excel"
+                            type="action"
+                            class="oe_highlight"/>
+                </header> -->
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="job_id" required="1"/>
+                            <field name="line_number" string="ნომერი"/>
+                            <field name="saf_number" required="1"/>
+                            <field name="saf_date" required="1" invisible="1"/>
+                            <field name="purchase_object"/>
+                        </group>
+                        <group>
+                            <field name="last_date" required="1"/>
+                            <field name="status"/>
+                            <field name="bazris_kvlevis_nomeri"/>
+                            <field name="sap_number"/>
+                            <field name="sap_date"/>
+                            <field name="shenishvna"/>
+                            <field name="shemsrulebeli_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="საფუძვლის წერილის თარიღები">
+                            <field name="safudzvlis_werilis_tarigebi_ids" nolabel="1">
+                                <list editable="bottom" create="1">
+                                    <field name="werilis_nomeri"/>
+                                    <field name="tarigi"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_bazris_kvleva_search" model="ir.ui.view">
+        <field name="name">bazris.kvleva.search</field>
+        <field name="model">bazris.kvleva</field>
+        <field name="arch" type="xml">
+            <search string="Bazris Kvleva">
+                <field name="line_number"/>
+                <field name="job_id"/>
+                <field name="saf_number"/>
+                <field name="purchase_object"/>
+                <field name="status"/>
+                <group expand="0" string="Group By">
+                    <filter string="სამსახური" name="group_by_job_id" context="{'group_by': 'job_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_bazris_kvleva" model="ir.actions.act_window">
+        <field name="name">ბაზრის კვლევა</field>
+        <field name="res_model">bazris.kvleva</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Bazris Kvleva record
+            </p>
+        </field>
+    </record>
+</odoo>
+

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Parent menu: ატვირთვები -->
+    <menuitem id="menu_importing_employee_phone" 
+              name="ატვირთვები" 
+              parent="hr.menu_hr_root" 
+              sequence="120"/>
+    
+    <!-- Child menu: კორპორატიული ნომრების ატვირთვა -->
+    <menuitem id="menu_employee_phone_import" 
+              name="კორპორატიული ნომრების ატვირთვა" 
+              parent="menu_importing_employee_phone" 
+              action="action_employee_phone_import_wizard" 
+              sequence="10"/>
+    
+    <menuitem id="insurance_import"
+              name="დაზღვევის ატვირთვა" 
+              parent="menu_importing_employee_phone"
+              action="action_insurance_import_wizard"
+              sequence="5"/>
+    
+    <menuitem id="fitpass_import"
+              name="ფიტპასის ატვირთვა"
+              parent="menu_importing_employee_phone"
+              action="action_fitpass_import_wizard"
+              sequence="3"/>
+
+    <menuitem id="account_update_import"
+              name="ანგარიშების განახლება თანამშრომლებზე"
+              parent="menu_importing_employee_phone"
+              action="action_account_update_import_wizard"
+              sequence="4"/>
+
+    <menuitem id="menu_salary_components_import_excel"
+              name="დარიცხვა/დაკავებები ატვირთვა"
+              parent="menu_importing_employee_phone"
+              action="action_salary_components_import_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_income_benefit_import"
+              name="საშემოსავლო შეღავათის ატვირთვა"
+              parent="menu_importing_employee_phone"
+              action="action_income_benefit_import_wizard"
+              sequence="121"/>
+</odoo>
+

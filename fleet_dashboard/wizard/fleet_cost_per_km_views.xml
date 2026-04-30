@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- Cost per km: result list + graph                              -->
+    <!-- ============================================================ -->
+
+    <record id="view_fleet_cost_per_km_result_list" model="ir.ui.view">
+        <field name="name">fleet.cost.per.km.result.list</field>
+        <field name="model">fleet.cost.per.km.result</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false"
+                  string="ღირებულება კმ-ზე" default_order="cost_per_km desc"
+                  decoration-success="cost_per_km > 0 and cost_per_km &lt; 0.5"
+                  decoration-warning="cost_per_km >= 0.5 and cost_per_km &lt; 1.5"
+                  decoration-danger="cost_per_km >= 1.5"
+                  decoration-muted="km_driven == 0">
+                <field name="vehicle_id"/>
+                <field name="km_driven" sum="ჯამური კმ" widget="float" digits="[16,2]"/>
+                <field name="total_spend" sum="ჯამური ხარჯი" widget="monetary"/>
+                <field name="cost_per_km" widget="monetary"/>
+                <field name="service_count" sum="სერვისების რაოდ."/>
+                <field name="odometer_start" optional="hide"/>
+                <field name="odometer_end" optional="hide"/>
+                <field name="date_from" optional="hide"/>
+                <field name="date_to" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <button name="action_open_services" type="object"
+                        icon="fa-external-link" title="გახსენი სერვისები პერიოდში"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fleet_cost_per_km_result_graph" model="ir.ui.view">
+        <field name="name">fleet.cost.per.km.result.graph</field>
+        <field name="model">fleet.cost.per.km.result</field>
+        <field name="arch" type="xml">
+            <graph string="ღირებულება კმ-ზე" type="bar" sample="1" stacked="0">
+                <field name="vehicle_id"/>
+                <field name="cost_per_km" type="measure"/>
+                <field name="total_spend" type="measure"/>
+                <field name="km_driven" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_fleet_cost_per_km_result_pivot" model="ir.ui.view">
+        <field name="name">fleet.cost.per.km.result.pivot</field>
+        <field name="model">fleet.cost.per.km.result</field>
+        <field name="arch" type="xml">
+            <pivot string="ღირებულება კმ-ზე" sample="1">
+                <field name="vehicle_id" type="row"/>
+                <field name="cost_per_km" type="measure"/>
+                <field name="total_spend" type="measure"/>
+                <field name="km_driven" type="measure"/>
+                <field name="service_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_fleet_cost_per_km_result_search" model="ir.ui.view">
+        <field name="name">fleet.cost.per.km.result.search</field>
+        <field name="model">fleet.cost.per.km.result</field>
+        <field name="arch" type="xml">
+            <search string="ღირებულება კმ-ზე">
+                <field name="vehicle_id"/>
+                <filter string="გავლილი კმ-ით" name="filter_with_km"
+                        domain="[('km_driven', '>', 0)]"/>
+                <filter string="კმ ჩაწერილი არ არის" name="filter_no_km"
+                        domain="[('km_driven', '=', 0)]"/>
+                <separator/>
+                <filter string="იაფი (&lt; 0.5/კმ)" name="filter_cheap"
+                        domain="[('cost_per_km', '>', 0), ('cost_per_km', '&lt;', 0.5)]"/>
+                <filter string="ძვირი (&gt; 1.5/კმ)" name="filter_expensive"
+                        domain="[('cost_per_km', '>=', 1.5)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- No service in period: result list                             -->
+    <!-- ============================================================ -->
+
+    <record id="view_fleet_no_service_result_list" model="ir.ui.view">
+        <field name="name">fleet.no.service.result.list</field>
+        <field name="model">fleet.no.service.result</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false"
+                  string="უმომსახურებო ავტომობილები"
+                  default_order="days_since_last_service desc"
+                  decoration-warning="days_since_last_service >= 90 and days_since_last_service &lt; 180"
+                  decoration-danger="days_since_last_service >= 180 or not has_ever_been_serviced">
+                <field name="vehicle_id"/>
+                <field name="last_service_date"/>
+                <field name="days_since_last_service"/>
+                <field name="last_service_id"/>
+                <field name="has_ever_been_serviced" widget="boolean_toggle" readonly="1"/>
+                <button name="action_open_last_service" type="object"
+                        icon="fa-external-link" title="გახსენი ბოლო სერვისი"
+                        invisible="not last_service_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fleet_no_service_result_graph" model="ir.ui.view">
+        <field name="name">fleet.no.service.result.graph</field>
+        <field name="model">fleet.no.service.result</field>
+        <field name="arch" type="xml">
+            <graph string="დღე ბოლო სერვისიდან" type="bar" sample="1">
+                <field name="vehicle_id"/>
+                <field name="days_since_last_service" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_fleet_no_service_result_search" model="ir.ui.view">
+        <field name="name">fleet.no.service.result.search</field>
+        <field name="model">fleet.no.service.result</field>
+        <field name="arch" type="xml">
+            <search string="უმომსახურებო ავტომობილები">
+                <field name="vehicle_id"/>
+                <filter string="არასდროს მომსახურებული" name="filter_never"
+                        domain="[('has_ever_been_serviced', '=', False)]"/>
+                <filter string="90+ დღე ვადაგადაცილებული" name="filter_90"
+                        domain="[('days_since_last_service', '>=', 90)]"/>
+                <filter string="180+ დღე ვადაგადაცილებული" name="filter_180"
+                        domain="[('days_since_last_service', '>=', 180)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- Wizard launcher actions (preset report_type)                  -->
+    <!-- ============================================================ -->
+
+    <record id="action_wizard_cost_per_km" model="ir.actions.act_window">
+        <field name="name">ღირებულება კმ-ზე</field>
+        <field name="res_model">fleet.dashboard.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_report_type': 'cost_per_km'}</field>
+    </record>
+
+    <record id="action_wizard_no_service" model="ir.actions.act_window">
+        <field name="name">უმომსახურებო ავტომობილები</field>
+        <field name="res_model">fleet.dashboard.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_report_type': 'no_service'}</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,49 @@
+/* Barcode Quantity Input Styles */
+
+.o_barcode_qty_input_group {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+}
+
+.o_barcode_quantity_input {
+    font-weight: bold;
+    text-align: center;
+    border-color: #0d6efd;
+    transition: all 0.2s ease;
+}
+
+.o_barcode_quantity_input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    transform: scale(1.02);
+}
+
+.o_save_qty {
+    transition: all 0.2s ease;
+}
+
+.o_save_qty:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Make input stand out */
+.o_barcode_qty_input_group input[type="number"] {
+    background: #f8f9fa;
+}
+
+.o_barcode_qty_input_group input[type="number"]:focus {
+    background: white;
+}
+
+/* Animation for successful save */
+@keyframes pulse-success {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.o_save_qty.success {
+    animation: pulse-success 0.3s ease;
+}

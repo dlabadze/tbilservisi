@@ -1,0 +1,4 @@
+/* Hide placeholder/empty rows in fuel.management list view so totals appear right after data */
+.o_list_view.o_res_model_fuel_management tbody tr:not(.o_data_row):not(.o_group_header):not(.o_group_footer) { display: none; }
+
+

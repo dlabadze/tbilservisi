@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_generate_kveba_wizard,access.generate.kveba.wizard,model_generate_kveba_wizard,base.group_user,1,1,1,1
+access_generate_sawvavi_wizard,access.generate.sawvavi.wizard,model_generate_sawvavi_wizard,base.group_user,1,1,1,1
+

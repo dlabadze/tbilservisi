@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_requisition_form_po_link" model="ir.ui.view">
+        <field name="name">purchase.requisition.form.inherit.po.link</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_purchase_orders_linked" type="object" class="oe_stat_button" icon="fa-link">
+                    <field name="po_link_count" widget="statinfo" string="შესყიდვის ორდერები"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

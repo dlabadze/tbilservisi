@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ======================== -->
+    <!-- FORM VIEW -->
+    <!-- ======================== -->
+    <record id="view_shvebuleba_form" model="ir.ui.view">
+        <field name="name">shvebuleba.form</field>
+        <field name="model">shvebuleba</field>
+        <field name="arch" type="xml">
+            <form string="შვებულების ბრძანება">
+               <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+
+                    <button name="action_calculate_shvebuleba"
+                            string="გამოთვლა"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'validated'"/>
+
+                    <button name="action_validate"
+                            string="დადასტურება"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'validated'"/>
+
+                    <button name="action_reset_draft"
+                            string="დრაფტად დაბრუნება"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                </header>     
+
+
+
+
+                <sheet>
+                    <!-- Two-column layout -->
+                    <group col="2">
+                        <!-- LEFT COLUMN -->
+                        <group>
+                            <field name="emp_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="tabnum"/>
+                            <field name="pirnum"/>
+                            <field name="positn"/>
+                            <field name="calamountday"/>
+                            <field name="orderdate"/>
+                            <field name="ordernumb"/>
+                            <field name="ordertype"/>
+                        </group>
+
+                        <!-- RIGHT COLUMN -->
+                        <group>
+                            <field name="startdate"/>
+                            <field name="end_datee"/>
+                            <field name="daricxelf"/>
+                            <field name="daricshve"/>
+                            <field name="amountday"/>
+                            <field name="ganyofile"/>
+                            <field name="dateofopp"/>
+                            <field name="validatio"/>
+                        </group>
+                    </group>
+
+                    <!-- ======================== -->
+                    <!-- Detail Lines Tab -->
+                    <!-- ======================== -->
+                    <notebook>
+                        <page string="დეტალები">
+                            <field name="shvebuleba_line_ids">
+                                <list editable="bottom">
+                                    <field name="contract_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="month"/>
+                                    <field name="samushdge"/>
+                                    <button name="action_open_attendance"
+                                     string="დასწრება"
+                                     type="object"
+                                     icon="fa-calendar"
+                                     attrs="{'invisible': [('attendance_det_id','=',False)]}"/>
+                                    <field name="wage"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="shvebu_date"/>
+                                    <field name="daily_wage"/>
+                                    <field name="line_total"/> 
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ======================== -->
+    <!-- LIST VIEW -->
+    <!-- ======================== -->
+    <record id="view_shvebuleba_list" model="ir.ui.view">
+        <field name="name">shvebuleba.list</field>
+        <field name="model">shvebuleba</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" 
+                  decoration-success="state == 'validated'">
+                <field name="emp_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="orderdate"/>
+                <field name="ordernumb"/>
+                <field name="startdate"/>
+                <field name="end_datee"/>
+                <field name="daricshve"/>
+                <field name="validatio"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ======================== -->
+    <!-- SEARCH VIEW -->
+    <!-- ======================== -->
+    <record id="view_shvebuleba_search" model="ir.ui.view">
+        <field name="name">shvebuleba.search</field>
+        <field name="model">shvebuleba</field>
+        <field name="arch" type="xml">
+            <search string="ძებნა">
+                <field name="emp_id"/>
+                <field name="ordernumb"/>
+                <field name="ordertype"/>
+                <field name="startdate"/>
+                <field name="end_datee"/>
+                <field name="validatio"/>
+
+                <separator/>
+                <filter name="filter_draft" string="დრაფტი" domain="[('state','=','draft')]"/>
+                <filter name="filter_validated" string="დადასტურებული" domain="[('state','=','validated')]"/>
+
+                <group expand="0" string="დაჯგუფება">
+                    <filter string="თანამშრომლით" name="group_by_employee" context="{'group_by':'emp_id'}"/>
+                    <filter string="თარიღით" name="group_by_date" context="{'group_by':'dateofopp:month'}"/>
+                    <filter string="სტატუსით" name="group_by_state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ======================== -->
+    <!-- ACTION -->
+    <!-- ======================== -->
+    <record id="action_shvebuleba" model="ir.actions.act_window">
+        <field name="name">შვებულებები</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">shvebuleba</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_shvebuleba_search"/>
+    </record>
+
+    <!-- ======================== -->
+    <!-- MENU ITEMS -->
+    <!-- ======================== -->
+    <!-- Submenu for Shvebuleba -->
+    <menuitem id="menu_shvebuleba_master"
+          name="შვებულებები"
+          parent="menu_biuleteni_root"
+          sequence="20"/>
+
+    <menuitem id="menu_shvebuleba_list"
+          name="ჩანაწერები"
+          parent="menu_shvebuleba_master"
+          action="action_shvebuleba"
+          sequence="10"/>
+
+
+
+    <record id="view_shvebuleba_attendance_form" model="ir.ui.view">
+        <field name="name">shvebuleba.attendance.form</field>
+        <field name="model">shvebuleba.attendance</field>
+        <field name="arch" type="xml">
+            <form string="დასწრების დეტალები">
+                <sheet>
+                    <!-- Header info -->
+                    <group col="2">
+                        <field name="shvebuleba_det_id" invisible="1"/>
+                        <field name="month" string="თვე" readonly="1"/>
+                        <field name="employee_id" string="თანამშრომელი" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
+
+                    <separator string="დასწრება დღეების მიხედვით" colspan="6"/>
+
+                    <!-- Horizontal calendar grid -->
+                    <div style="padding-top:10px;">
+                        <table style="width:100%; text-align:center; border-collapse:collapse;">
+
+                            <!-- 🔹 Header row: day numbers 1–15 -->
+                            <tr style="font-weight:bold;">
+                                <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td>
+                                <td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td>
+                            </tr>
+                            <tr>
+                                <td><field name="day1"/></td>
+                                <td><field name="day2"/></td>
+                                <td><field name="day3"/></td>
+                                <td><field name="day4"/></td>
+                                <td><field name="day5"/></td>
+                                <td><field name="day6"/></td>
+                                <td><field name="day7"/></td>
+                                <td><field name="day8"/></td>
+                                <td><field name="day9"/></td>
+                                <td><field name="day10"/></td>
+                                <td><field name="day11"/></td>
+                                <td><field name="day12"/></td>
+                                <td><field name="day13"/></td>
+                                <td><field name="day14"/></td>
+                                <td><field name="day15"/></td>
+                            </tr>
+
+                            <!-- 🔹 Spacer row -->
+                            <tr><td colspan="15" style="height:25px;"></td></tr>
+                            
+                            <!-- 🔹 Header row: day numbers 16–31 -->
+                            <tr style="font-weight:bold;">
+                                <td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td>
+                                <td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td>
+                                <td>30</td><td>31</td>
+                            </tr>
+                            <tr>
+                                <td><field name="day16"/></td>
+                                <td><field name="day17"/></td>
+                                <td><field name="day18"/></td>
+                                <td><field name="day19"/></td>
+                                <td><field name="day20"/></td>
+                                <td><field name="day21"/></td>
+                                <td><field name="day22"/></td>
+                                <td><field name="day23"/></td>
+                                <td><field name="day24"/></td>
+                                <td><field name="day25"/></td>
+                                <td><field name="day26"/></td>
+                                <td><field name="day27"/></td>
+                                <td><field name="day28"/></td>
+                                <td><field name="day29"/></td>
+                                <td><field name="day30"/></td>
+                                <td><field name="day31"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- <record id="view_purchase_order_list" model="ir.ui.view">
+        <field name="name">purchase.order.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="studio_customization.odoo_studio_purchase_df83ab82-9fa6-4a67-b841-ea39f179594a"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='receipt_status']" position="attributes">
+                <attribute name="decoration-success">receipt_status == 'full'</attribute>
+                <attribute name="decoration-danger">receipt_status == 'pending'</attribute>
+                <attribute name="decoration-warning">receipt_status == 'partial'</attribute>
+            </xpath>
+        </field>
+    </record> -->
+
+    <record id="view_purchase_order_list_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.list.inherit12345</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_status']" position="attributes">
+                <attribute name="decoration-success">state == 'invoiced'</attribute>
+                <attribute name="decoration-danger">state == 'no'</attribute>
+                <attribute name="decoration-warning">state == 'to invoice'</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

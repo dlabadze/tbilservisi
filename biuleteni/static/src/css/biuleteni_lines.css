@@ -1,0 +1,13 @@
+.o_list_view .o_biuleteni_lines th,
+.o_list_view .o_biuleteni_lines td {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    vertical-align: middle;
+}
+
+.o_list_view .o_biuleteni_lines th {
+    line-height: 1.2;
+    font-size: 10px;
+    font-weight: 600;
+}

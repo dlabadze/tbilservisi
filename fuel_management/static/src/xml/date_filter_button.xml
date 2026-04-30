@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+	<t t-name="fuel_management.ListView.Buttons" t-inherit="web.ListView.Buttons">
+		<xpath expr="//div[hasclass('o_list_buttons')]" position="after">
+			<button type="button" class="btn btn-secondary" style="margin-left: 8px;" t-on-click="openFuelDateWizard">
+				თარიღით ფილტრი
+			</button>
+			<button type="button" class="btn btn-secondary" style="margin-left: 8px;" t-on-click="openFuelRecalcWizard">
+				ნაშთების გადათვლა
+			</button>
+		</xpath>
+	</t>
+</templates>
+
+

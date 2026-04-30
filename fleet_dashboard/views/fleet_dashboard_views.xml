@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_fleet_service_dashboard_graph" model="ir.ui.view">
+        <field name="name">fleet.service.dashboard.graph</field>
+        <field name="model">fleet.service.dashboard</field>
+        <field name="arch" type="xml">
+            <graph string="ავტოპარკის სერვისის ანალიტიკა" type="bar" sample="1" stacked="0">
+                <field name="vehicle_id"/>
+                <field name="subtotal" type="measure"/>
+                <field name="service_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_fleet_service_dashboard_pivot" model="ir.ui.view">
+        <field name="name">fleet.service.dashboard.pivot</field>
+        <field name="model">fleet.service.dashboard</field>
+        <field name="arch" type="xml">
+            <pivot string="ავტოპარკის სერვისის ანალიტიკა" sample="1">
+                <field name="vehicle_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="subtotal" type="measure"/>
+                <field name="service_count" type="measure"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_fleet_service_dashboard_list" model="ir.ui.view">
+        <field name="name">fleet.service.dashboard.list</field>
+        <field name="model">fleet.service.dashboard</field>
+        <field name="arch" type="xml">
+            <list string="ავტოპარკის სერვისის ანალიტიკა" create="false" edit="false" delete="false"
+                  default_order="subtotal desc">
+                <field name="date"/>
+                <field name="vehicle_id"/>
+                <field name="service_id"/>
+                <field name="service_type_id"/>
+                <field name="product_id"/>
+                <field name="workshop_id" optional="show"/>
+                <field name="vendor_id" optional="hide"/>
+                <field name="quantity" sum="ჯამური რაოდენობა"/>
+                <field name="price_unit" optional="hide"/>
+                <field name="subtotal" sum="სულ"/>
+                <field name="currency_id" optional="hide"/>
+                <button name="action_open_service" type="object"
+                        icon="fa-external-link" title="გახსენი სერვისი"
+                        invisible="not service_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fleet_service_dashboard_kanban" model="ir.ui.view">
+        <field name="name">fleet.service.dashboard.kanban</field>
+        <field name="model">fleet.service.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban create="false" edit="false" delete="false" default_group_by="vehicle_id"
+                    class="o_kanban_small_column" sample="1">
+                <field name="vehicle_id"/>
+                <field name="subtotal"/>
+                <field name="service_count"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex flex-column gap-1 p-2">
+                            <strong class="text-truncate"><field name="vehicle_id"/></strong>
+                            <span class="text-muted small">
+                                <field name="date"/> — <field name="service_type_id"/>
+                            </span>
+                            <div class="d-flex justify-content-between mt-1">
+                                <span><field name="product_id"/></span>
+                                <span class="fw-bold">
+                                    <field name="subtotal"/>
+                                    <field name="currency_id"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_fleet_service_dashboard_search" model="ir.ui.view">
+        <field name="name">fleet.service.dashboard.search</field>
+        <field name="model">fleet.service.dashboard</field>
+        <field name="arch" type="xml">
+            <search string="სერვისის ანალიტიკა">
+                <field name="vehicle_id"/>
+                <field name="product_id"/>
+                <field name="service_type_id"/>
+                <field name="vendor_id"/>
+                <field name="workshop_id"/>
+                <field name="date"/>
+                <!-- Relative period filters -->
+                <filter string="დღეს" name="today"
+                        domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="ბოლო 7 დღე" name="last_7"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="ბოლო 30 დღე" name="last_30"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter string="ბოლო 90 დღე" name="last_90"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(days=90)).strftime('%Y-%m-%d'))]"/>
+                <filter string="ბოლო 6 თვე" name="last_6m"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(months=6)).strftime('%Y-%m-%d'))]"/>
+                <filter string="ბოლო 12 თვე" name="last_12m"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(months=12)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="ამ თვეში" name="this_month"
+                        domain="[('date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="გასულ თვეში" name="last_month"
+                        domain="[
+                            ('date', '&gt;=', ((context_today().replace(day=1)) - relativedelta(months=1)).strftime('%Y-%m-%d')),
+                            ('date', '&lt;',  (context_today().replace(day=1)).strftime('%Y-%m-%d'))
+                        ]"/>
+                <filter string="ამ კვარტალში" name="this_quarter"
+                        domain="[('date', '&gt;=', (context_today().replace(month=((context_today().month - 1) // 3) * 3 + 1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="ამ წელს" name="this_year"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-01-01'))]"/>
+                <filter string="გასულ წელს" name="last_year"
+                        domain="[
+                            ('date', '&gt;=', ((context_today().replace(month=1, day=1)) - relativedelta(years=1)).strftime('%Y-%m-%d')),
+                            ('date', '&lt;',   (context_today().replace(month=1, day=1)).strftime('%Y-%m-%d'))
+                        ]"/>
+                <separator/>
+                <filter string="თარიღი" name="filter_date" date="date"/>
+                <separator/>
+                <group expand="1" string="დაჯგუფება">
+                    <filter string="ავტომობილი" name="g_vehicle" context="{'group_by': 'vehicle_id'}"/>
+                    <filter string="პროდუქტი / ნაწილი" name="g_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="საამქრო" name="g_workshop" context="{'group_by': 'workshop_id'}"/>
+                    <filter string="სერვისის ტიპი" name="g_type" context="{'group_by': 'service_type_id'}"/>
+                    <filter string="მომწოდებელი" name="g_vendor" context="{'group_by': 'vendor_id'}"/>
+                    <filter string="დღე" name="g_day" context="{'group_by': 'date:day'}"/>
+                    <filter string="კვირა" name="g_week" context="{'group_by': 'date:week'}"/>
+                    <filter string="თვე" name="g_month" context="{'group_by': 'date:month'}"/>
+                    <filter string="კვარტალი" name="g_quarter" context="{'group_by': 'date:quarter'}"/>
+                    <filter string="წელი" name="g_year" context="{'group_by': 'date:year'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fleet_service_dashboard" model="ir.actions.act_window">
+        <field name="name">სერვისის ანალიტიკა</field>
+        <field name="res_model">fleet.service.dashboard</field>
+        <field name="view_mode">graph,pivot,list,kanban</field>
+        <field name="search_view_id" ref="view_fleet_service_dashboard_search"/>
+        <field name="context">{'search_default_this_year': 1, 'search_default_g_vehicle': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">სერვისის მონაცემები ჯერ არ არის</p>
+            <p>როცა ავტომობილის სერვისებს ექნება ნაწილების სტრიქონები, ანალიტიკა აქ გამოჩნდება.</p>
+        </field>
+    </record>
+
+    <record id="action_fleet_most_serviced_vehicles" model="ir.actions.act_window">
+        <field name="name">ყველაზე ხშირად მომსახურებული ავტომობილები</field>
+        <field name="res_model">fleet.service.dashboard</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_fleet_service_dashboard_search"/>
+        <field name="context">{'search_default_this_year': 1, 'search_default_g_vehicle': 1}</field>
+    </record>
+
+    <record id="action_fleet_most_expensive_vehicles" model="ir.actions.act_window">
+        <field name="name">ყველაზე ძვირადღირებული ავტომობილები</field>
+        <field name="res_model">fleet.service.dashboard</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_fleet_service_dashboard_search"/>
+        <field name="context">{'search_default_this_year': 1, 'search_default_g_vehicle': 1}</field>
+    </record>
+
+    <record id="action_fleet_top_parts" model="ir.actions.act_window">
+        <field name="name">ყველაზე ხშირად გამოყენებული ნაწილები</field>
+        <field name="res_model">fleet.service.dashboard</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_fleet_service_dashboard_search"/>
+        <field name="context">{'search_default_this_year': 1, 'search_default_g_product': 1}</field>
+    </record>
+
+    <record id="action_fleet_by_workshop" model="ir.actions.act_window">
+        <field name="name">საამქროების მიხედვით</field>
+        <field name="res_model">fleet.service.dashboard</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_fleet_service_dashboard_search"/>
+        <field name="context">{'search_default_this_year': 1, 'search_default_g_workshop': 1}</field>
+    </record>
+
+    <record id="action_fleet_by_vendor" model="ir.actions.act_window">
+        <field name="name">მომწოდებლების მიხედვით</field>
+        <field name="res_model">fleet.service.dashboard</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_fleet_service_dashboard_search"/>
+        <field name="context">{'search_default_this_year': 1, 'search_default_g_vendor': 1}</field>
+    </record>
+
+</odoo>

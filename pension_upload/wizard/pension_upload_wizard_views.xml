@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pension_upload_wizard_view_form" model="ir.ui.view">
+        <field name="name">pension.upload.wizard.form</field>
+        <field name="model">pension.upload.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Pension Upload">
+                <sheet>
+                    <group>
+                        <field name="file" filename="filename"/>
+                        <field name="filename" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button name="action_upload" string="Upload" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pension_upload_wizard" model="ir.actions.act_window">
+        <field name="name">Pension Upload</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pension.upload.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="pension_upload_wizard_view_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menu Item under 'Uploads' (from import_employee_phone_number module) -->
+    <menuitem id="menu_pension_upload"
+              name="საპენსიოში ჩართულობის ატვირთვა"
+              parent="import_employee_phone_number.menu_importing_employee_phone"
+              action="action_pension_upload_wizard"
+              sequence="20"/>
+</odoo>

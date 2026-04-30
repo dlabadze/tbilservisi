@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_requisition_form_inherit_changes" model="ir.ui.view">
+        <field name="name">purchase.requisition.form.inherit.changes</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='requisition_type']" position="attributes">
+                <attribute name="readonly">state != 'draft'</attribute>
+                <attribute name="options">{'no_create': True}</attribute>
+                <attribute name="invisible">True</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_requisition_form_inherit_changes1" model="ir.ui.view">
+        <field name="name">purchase.requisition.form.inherit.changes1</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="tbili_budget.view_purchase_requisition_form_inherit_extended"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='currency_type']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='currency_rate']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='exchange_rate']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='registration_year']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_due_date']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='effective_date']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='percentage']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='percentage']" position="after">
+                <field name="pirgasamtexlo" />
+            </xpath>
+            <xpath expr="//field[@name='cpv_code']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='cpv_code']" position="after">
+                <field name="purchase_plan_id" />
+                <field name="purchase_plan_line_id" domain="[('plan_id', '=', purchase_plan_id)]"/>
+            </xpath>
+            <xpath expr="//field[@name='delivery_type']" position="after">
+                <label for="date_1" string="Date 1 - Percentage 1" invisible="delivery_type != 'გრძელვადიანი'"/>
+                <div class="o_row" invisible="delivery_type != 'გრძელვადიანი'">
+                    <field name="date_1" class="oe_inline"/>
+                    <span class="mx-2">-</span>
+                    <field name="percentage_1" widget="percentage" class="oe_inline"/>
+                </div>
+
+                <label for="date_2" string="Date 2 - Percentage 2" invisible="delivery_type != 'გრძელვადიანი'"/>
+                <div class="o_row" invisible="delivery_type != 'გრძელვადიანი'">
+                    <field name="date_2" class="oe_inline"/>
+                    <span class="mx-2">-</span>
+                    <field name="percentage_2" widget="percentage" class="oe_inline"/>
+                </div>
+
+                <label for="date_3" string="Date 3 - Percentage 3" invisible="delivery_type != 'გრძელვადიანი'"/>
+                <div class="o_row" invisible="delivery_type != 'გრძელვადიანი'">
+                    <field name="date_3" class="oe_inline"/>
+                    <span class="mx-2">-</span>
+                    <field name="percentage_3" widget="percentage" class="oe_inline"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_requisition_form_inherit_changes2" model="ir.ui.view">
+        <field name="name">purchase.requisition.form.inherit.changes2</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="tbili_budget.view_purchase_requisition_form_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/list/field[@name='currency']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/list/field[@name='value_in_currency']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
+
+</odoo>

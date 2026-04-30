@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+	<t t-name="fleet_fuel_upload_wizard.ListView.Buttons" t-inherit="web.ListView.Buttons">
+		<xpath expr="//div[hasclass('o_list_buttons')]" position="inside">
+			<button type="button" class="btn btn-primary" t-on-click="onOpenImportWizard" style="margin-left: 8px;">
+				Import Excel
+			</button>
+		</xpath>
+	</t>
+</templates>

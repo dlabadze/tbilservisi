@@ -1,0 +1,31 @@
+<odoo>
+    <data>
+        <!-- Inherit stock picking form to add Vehicle field -->
+        <record id="view_picking_form_inherit_vehicle" model="ir.ui.view">
+            <field name="name">stock.picking.form.inherit.vehicle</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/notebook" position="before">
+                    <group string="Fleet">
+                        <field name="vehicle_id"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit fleet service form to add Stock Picking field -->
+        <record id="fleet_vehicle_log_services_form_inherit_picking" model="ir.ui.view">
+            <field name="name">fleet.vehicle.log.services.form.inherit.stock.picking</field>
+            <field name="model">fleet.vehicle.log.services</field>
+            <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group" position="inside">
+                    <field name="stock_picking_id"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+ </odoo>
+
+

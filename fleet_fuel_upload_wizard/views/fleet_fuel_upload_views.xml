@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_fleet_fuel_upload_wizard_form" model="ir.ui.view">
+		<field name="name">fleet.fuel.upload.wizard.form</field>
+		<field name="model">fleet.fuel.upload.wizard</field>
+		<field name="arch" type="xml">
+			<form string="საწვავების ატვირთვა">
+				<group>
+					<field name="date"/>
+					<field name="fuel_type"/>
+					<field name="vendor_id"/>
+					<field name="file_data" filename="file_name"/>
+				</group>
+				<footer>
+					<button name="action_confirm" type="object" string="დადასტურება" class="btn-primary"/>
+					<button string="გაუქმება" class="btn-secondary" special="cancel"/>
+				</footer>
+			</form>
+		</field>
+	</record>
+
+	<record id="action_fleet_fuel_upload_wizard" model="ir.actions.act_window">
+		<field name="name">საწვავების ატვირთვა</field>
+		<field name="res_model">fleet.fuel.upload.wizard</field>
+		<field name="view_mode">form</field>
+		<field name="target">new</field>
+		<field name="binding_model_id" ref="fleet_vehicle_log_fuel.model_fleet_vehicle_log_fuel"/>
+		<field name="binding_type">action</field>
+	</record>
+</odoo>

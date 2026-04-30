@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_purchase_requisition_payment_wizard,purchase.requisition.payment.wizard,model_purchase_requisition_payment_wizard,base.group_user,1,1,1,1
+access_xazina_purchase_requisition_wizard,xazina.purchase.requisition.wizard,model_xazina_purchase_requisition_wizard,base.group_user,1,1,1,1

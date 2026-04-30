@@ -1,0 +1,16 @@
+<odoo>
+  <data>
+    <record id="view_employee_operation_form_filtered_jobs" model="ir.ui.view">
+      <field name="name">employee.operation.form.filtered.jobs</field>
+      <field name="model">employee.operation</field>
+      <field name="inherit_id" ref="studio_customization.odoo_studio_employee_ceee8668-5592-43bc-aaae-f81c03444009"/>
+      <field name="arch" type="xml">
+
+        <xpath expr="//field[@name='x_studio_position']" position="attributes">
+            <attribute name="domain">[('id', 'in', available_job_ids)]</attribute>
+        </xpath>
+
+      </field>
+    </record>
+  </data>
+</odoo>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Override stock.picking form view to add domain to location_id for Internal Transfers -->
+        <record id="view_picking_form_location_domain" model="ir.ui.view">
+            <field name="name">stock.picking.form.location.domain</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <!-- Add invisible computed field for domain -->
+                <xpath expr="//field[@name='picking_type_id']" position="after">
+                    <field name="allowed_location_ids" invisible="1"/>
+                </xpath>
+                
+                <!-- Domain will be set via computed field and onchange method -->
+                <!-- The computed field allowed_location_ids is used for domain in view -->
+                <!-- The onchange method _onchange_picking_type_location_domain also handles domain -->
+                <!-- Only restrict location_id, not location_dest_id -->
+                <!-- IMPORTANT: target the multi-locations fields (the visible ones) -->
+                <xpath expr="//field[@name='location_id'][@groups='stock.group_stock_multi_locations']" position="attributes">
+                    <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                    <attribute name="domain">[('id', 'in', allowed_location_ids)]</attribute>
+                    <attribute name="context">{'restrict_location_field': 'location_id'}</attribute>
+                </xpath>
+                
+                <!-- location_dest_id has no restrictions - user can select any location -->
+                <!-- Also target the multi-locations version -->
+                <xpath expr="//field[@name='location_dest_id'][@groups='stock.group_stock_multi_locations']" position="attributes">
+                    <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+                    <attribute name="context">{'restrict_location_field': 'location_dest_id'}</attribute>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+

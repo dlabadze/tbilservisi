@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_payslip_by_employees_department_m2m" model="ir.ui.view">
+        <field name="name">hr.payslip.employees.form.department.m2m</field>
+        <field name="model">hr.payslip.employees</field>
+        <field name="inherit_id" ref="hr_payroll.view_hr_payslip_by_employees"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='department_id']" position="after">
+                <field name="department_ids"
+                       widget="many2many_tags"
+                       class="w-75"
+                       options="{'color_field': 'color'}"/>
+            </xpath>
+            <xpath expr="//field[@name='employee_ids']" position="attributes">
+                <attribute name="context">{'list_view_ref': 'hr_payroll.hr_payroll_employee_tree_inherit', 'active_test': False}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ===================================================== -->
+    <!--                       FORM VIEW                        -->
+    <!-- ===================================================== -->
+    <record id="view_dakaveba_form" model="ir.ui.view">
+        <field name="name">dakaveba.form</field>
+        <field name="model">dakaveba</field>
+        <field name="arch" type="xml">
+            <form string="დაკავება">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+
+                    <button name="action_validate"
+                            string="დადასტურება"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'validated'"/>
+
+                    <button name="action_reset_draft"
+                            string="დრაფტად დაბრუნება"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="dakaveba_type"/>
+                        <field name="department_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="comment"/>
+                        <field name="total_amount" readonly="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="დეტალები" name="dakaveba_lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="identification_id" optional="show"/>
+                                    <field name="employee_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="parent_department_id" optional="show" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="department_id" optional="show" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="job_id" optional="show" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="amount"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                       LIST VIEW                        -->
+    <!-- ===================================================== -->
+    <record id="view_dakaveba_list" model="ir.ui.view">
+        <field name="name">dakaveba.list</field>
+        <field name="model">dakaveba</field>
+        <field name="arch" type="xml">
+
+            <list decoration-info="state == 'draft'"
+                  decoration-success="state == 'validated'">
+
+                <field name="name"/>
+                <field name="date"/>
+                <field name="dakaveba_type"/>
+                <field name="department_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="total_amount"/>
+                <field name="state"/>
+            </list>
+
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                     SEARCH VIEW                        -->
+    <!-- ===================================================== -->
+    <record id="view_dakaveba_search" model="ir.ui.view">
+        <field name="name">dakaveba.search</field>
+        <field name="model">dakaveba</field>
+        <field name="arch" type="xml">
+            <search string="ძებნა">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="dakaveba_type"/>
+                <field name="department_id"/>
+                <field name="total_amount"/>
+
+                <separator/>
+
+                <filter name="filter_draft" string="დრაფტი" domain="[('state','=','draft')]"/>
+                <filter name="filter_validated" string="დადასტურებული" domain="[('state','=','validated')]"/>
+
+                <group expand="0" string="დაჯგუფება">
+                    <filter string="დეპარტამენტით" name="group_by_dep"
+                            context="{'group_by':'department_id'}"/>
+                    <filter string="თარიღით" name="group_by_date"
+                            context="{'group_by':'date:month'}"/>
+                    <filter string="სტატუსით" name="group_by_state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                       ACTION                           -->
+    <!-- ===================================================== -->
+    <record id="action_dakaveba" model="ir.actions.act_window">
+        <field name="name">დაკავება</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">dakaveba</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_dakaveba_search"/>
+    </record>
+
+    <!-- ===================================================== -->
+    <!--                        MENU                            -->
+    <!-- ===================================================== -->
+    <menuitem id="menu_dakaveba_master"
+              name="დაკავება"
+              parent="menu_biuleteni_root"
+              sequence="40"/>
+
+    <menuitem id="menu_dakaveba_list"
+              name="ჩანაწერები"
+              parent="menu_dakaveba_master"
+              action="action_dakaveba"
+              sequence="10"/>
+
+    <menuitem id="menu_dakaveba_import"
+              name="Excel იმპორტი"
+              parent="menu_dakaveba_master"
+              action="action_dakaveba_import_wizard"
+              sequence="20"/>
+
+</odoo>

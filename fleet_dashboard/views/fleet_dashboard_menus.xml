@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_fleet_dashboard_root"
+              name="ანალიტიკა"
+              parent="fleet.menu_root"
+              sequence="25"/>
+
+    <menuitem id="menu_fleet_dashboard_overview"
+              name="მორგებული რეპორტი"
+              parent="menu_fleet_dashboard_root"
+              action="action_fleet_dashboard_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_fleet_dashboard_vehicles_most"
+              name="ყველაზე ხშირად მომსახურებული ავტომობილები"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_most_serviced"
+              sequence="20"/>
+
+    <menuitem id="menu_fleet_dashboard_vehicles_expensive"
+              name="ყველაზე ძვირადღირებული ავტომობილები"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_most_expensive"
+              sequence="30"/>
+
+    <menuitem id="menu_fleet_dashboard_parts"
+              name="ყველაზე ხშირად გამოყენებული ნაწილები"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_top_parts"
+              sequence="40"/>
+
+    <menuitem id="menu_fleet_dashboard_parts_expensive"
+              name="ყველაზე ძვირადღირებული ნაწილები"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_expensive_parts"
+              sequence="45"/>
+
+    <menuitem id="menu_fleet_dashboard_workshop"
+              name="საამქროების მიხედვით"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_by_workshop"
+              sequence="50"/>
+
+    <menuitem id="menu_fleet_dashboard_vendor"
+              name="მომწოდებლების მიხედვით"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_by_vendor"
+              sequence="60"/>
+
+    <menuitem id="menu_fleet_dashboard_cost_per_km"
+              name="ღირებულება კმ-ზე"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_cost_per_km"
+              sequence="70"/>
+
+    <menuitem id="menu_fleet_dashboard_no_service"
+              name="უმომსახურებო ავტომობილები"
+              parent="menu_fleet_dashboard_root"
+              action="action_wizard_no_service"
+              sequence="80"/>
+
+</odoo>

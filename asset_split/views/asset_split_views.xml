@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Asset Split List View -->
+  <record id="view_asset_split_list" model="ir.ui.view">
+    <field name="name">asset.split.list</field>
+    <field name="model">asset.split</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="name"/>
+        <field name="asset_id"/>
+        <field name="raod"/>
+        <field name="raod_new"/>
+        <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Asset Split Form View -->
+  <record id="view_asset_split_form" model="ir.ui.view">
+    <field name="name">asset.split.form</field>
+    <field name="model">asset.split</field>
+    <field name="arch" type="xml">
+      <form string="Asset Split">
+        <header>
+          <button name="action_confirm" string="Confirm &amp; Split" type="object" 
+                  class="oe_highlight" invisible="state != 'draft'"/>
+          <button name="action_draft" string="Set to Draft" type="object" 
+                  invisible="state != 'confirmed'"/>
+          <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+        </header>
+        <sheet>
+          <div class="oe_title">
+            <h1>
+              <field name="name" readonly="1"/>
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="asset_id" options="{'no_create': True}" readonly="state == 'confirmed'"/>
+              <field name="raod"/>
+              <field name="raod_new" readonly="state == 'confirmed'"/>
+            </group>
+            <group>
+              <field name="original_value_current"/>
+              <field name="already_depreciated_current"/>
+              <field name="new_asset_id" invisible="state != 'confirmed'"/>
+            </group>
+          </group>
+          
+          <group string="Calculated Split Values" invisible="state == 'confirmed'">
+            <group string="New Asset (Copy)">
+              <field name="new_asset_original_value"/>
+              <field name="new_asset_depreciated"/>
+            </group>
+            <group string="Original Asset (Updated)">
+              <field name="old_asset_original_value"/>
+              <field name="old_asset_depreciated"/>
+            </group>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Asset Split Action -->
+  <record id="action_asset_split" model="ir.actions.act_window">
+    <field name="name">Asset Split</field>
+    <field name="res_model">asset.split</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <!-- Menu -->
+  <menuitem id="menu_asset_split_root" name="Asset Split"
+            parent="account.menu_finance" sequence="91"/>
+  <menuitem id="menu_asset_split" name="Asset Split"
+            parent="menu_asset_split_root" action="action_asset_split"/>
+
+  <!-- Sequence for asset.split -->
+  <record id="seq_asset_split" model="ir.sequence">
+    <field name="name">Asset Split Sequence</field>
+    <field name="code">asset.split</field>
+    <field name="prefix">AS</field>
+    <field name="padding">5</field>
+    <field name="number_next">1</field>
+    <field name="number_increment">1</field>
+  </record>
+
+</odoo>
+

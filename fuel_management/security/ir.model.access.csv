@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fuel_management_user,Fuel Management User,model_fuel_management,base.group_user,1,1,1,1
+access_fuel_management_date_wizard_user,Fuel Management Date Wizard User,model_fuel_management_date_wizard,base.group_user,1,0,1,0
+access_fuel_management_recalc_wizard_user,Fuel Management Recalc Wizard User,model_fuel_management_recalc_wizard,base.group_user,1,0,1,0
+
+

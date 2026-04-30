@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_initial_balance_wizard,access_initial_balance_wizard,model_initial_balance_wizard,account.group_account_user,1,1,1,1
+

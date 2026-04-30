@@ -1,0 +1,16 @@
+<odoo>
+    <data>
+        <record id="action_hr_work_entry_set_draft" model="ir.actions.server">
+            <field name="name">Reset to Draft</field>
+            <field name="model_id" ref="hr_work_entry.model_hr_work_entry"/>
+            <field name="binding_model_id" ref="hr_work_entry.model_hr_work_entry"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+target_records = (records or record)
+if target_records:
+    target_records.write({'state': 'draft'})
+            </field>
+        </record>
+    </data>
+</odoo>

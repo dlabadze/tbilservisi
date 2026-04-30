@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_asset_operation_type,access.asset.operation.type,model_asset_operation_type,,1,1,1,1
+access_asset_movement,access.asset.movement,model_asset_movement,,1,1,1,1
+access_asset_movement_line,access.asset.movement.line,model_asset_movement_line,,1,1,1,1

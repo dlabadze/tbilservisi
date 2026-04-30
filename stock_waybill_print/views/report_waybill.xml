@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Paper Format -->
+        <record id="paperformat_waybill_complex" model="report.paperformat">
+            <field name="name">Waybill Complex A4</field>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">10</field>
+            <field name="margin_left">10</field>
+            <field name="margin_right">10</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <!-- Report Action -->
+        <record id="action_report_stock_waybill_complex" model="ir.actions.report">
+            <field name="name">RS საბეჭდი ფორმა</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">stock_waybill_print.report_waybill_template</field>
+            <field name="report_file">stock_waybill_print.report_waybill_template</field>
+            <field name="binding_model_id" ref="stock.model_stock_picking"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="paperformat_waybill_complex"/>
+        </record>
+
+        <!-- QWeb Template -->
+        <template id="report_waybill_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.basic_layout">
+                <style>
+                    .waybill-container {
+                        font-family: Arial, sans-serif;
+                        font-size: 11px;
+                        width: 100%;
+                    }
+                    table.wb-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 10px;
+                    }
+                    table.wb-table td {
+                        vertical-align: top;
+                    }
+                    .wb-small { font-size: 9px; }
+
+                    /* ── Bottom section: all table-based for wkhtmltopdf ── */
+                    .bs { margin-top: 30px; font-size: 11px; width: 100%; }
+                    .bs table { border-collapse: collapse; }
+
+                    /* number cell shared style */
+                    .n {
+                        width: 28px;
+                        text-align: center;
+                        vertical-align: middle;
+                        font-weight: bold;
+                        border-right: 1px solid black;
+                        padding: 4px;
+                    }
+                    /* content cell */
+                    .c {
+                        vertical-align: middle;
+                        padding: 6px;
+                    }
+                    /* sub-label OUTSIDE boxes */
+                    .lbl {
+                        font-size: 9px;
+                        text-align: center;
+                        padding-top: 3px;
+                    }
+                    /* label left-aligned for seller/buyer */
+                    .lbl-left {
+                        font-size: 9px;
+                        padding-top: 2px;
+                        padding-left: 4px;
+                    }
+                </style>
+
+                <div class="waybill-container">
+
+                    <!-- Header Section (Box 1) -->
+                    <table class="wb-table" style="margin-bottom:10px;">
+                        <tr>
+                            <td style="width:20%; border:1px solid white;"></td>
+                            <td style="width:60%; border:1px solid white;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n">1</td>
+                                        <td style="padding:6px; text-align:center; vertical-align:middle; font-weight:bold; font-size:13px; border-right:1px solid black;">
+                                            სასაქონლო ზედნადები #
+                                        </td>
+                                        <td style="padding:6px; text-align:center; vertical-align:middle; font-weight:bold; font-size:13px; width:40%;">
+                                            <span t-field="o.invoice_number"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="width:20%; border:1px solid white;"></td>
+                        </tr>
+                    </table>
+
+                    <!-- Date and Time (Boxes 2 & 3) — labels outside, NO "(დღგ-ს გადამხდელი)" second line -->
+                    <table class="wb-table" style="margin-bottom:10px;">
+                        <tr>
+                            <td style="width:45%; border:1px solid white;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n">2</td>
+                                        <td class="c" style="text-align:center;"><span t-field="o.begin_date" t-options='{"widget": "date"}'/></td>
+                                    </tr>
+                                </table>
+                                <div class="lbl">თარიღი (რიცხვი, თვე, წელი)</div>
+                            </td>
+                            <td style="width:10%; border:1px solid white;"></td>
+                            <td style="width:45%; border:1px solid white;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n">3</td>
+                                        <td class="c" style="text-align:center;"><span t-field="o.begin_date" t-options='{"format": "HH:mm:ss"}'/></td>
+                                    </tr>
+                                </table>
+                                <div class="lbl">დრო (საათი, წუთი)</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ═══ BOX 4 & 5: labels OUTSIDE/BELOW the bordered box ═══ -->
+                    <table class="wb-table" style="margin-bottom:5px;">
+                        <tr>
+                            <!-- BOX 4 -->
+                            <td style="width:48%; padding-right:10px; border:none; vertical-align:top; border:1px solid white;">
+                                <div class="lbl" style="text-align:center; padding-bottom:2px; border:1px solid white;">(დღგ-ს გადამხდელი)</div>
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">4</td>
+                                        <td style="border-right:1px solid black; padding:6px; text-align:center; vertical-align:middle;">
+                                            შპს თბილსერვის ჯგუფი
+                                        </td>
+                                        <td style="width:110px; padding:6px; text-align:center; vertical-align:middle;">
+                                            206267494
+                                        </td>
+                                    </tr>
+                                </table>
+                                <!-- Labels outside, below the box, aligned under each column -->
+                                <table style="width:100%; border-collapse:collapse;">
+                                    <tr>
+                                        <td style="width:28px; border:none; border:1px solid white;"></td>
+                                        <td style="border:none; font-size:9px; padding-top:2px; text-align:center; padding-left:4px; border:1px solid white;">
+                                            გამყიდველის (გამგზავნის) დასახელება ან სახელი და გვარი
+                                        </td>
+                                        <td style="width:110px; border:none; font-size:9px; padding-top:2px; text-align:center; border:1px solid white;">
+                                            საიდენტიფიკაციო/<br/>პირადი ნომერი
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td> 
+                            <!-- BOX 5 -->
+                            <td style="width:48%; padding-left:10px; border:none; vertical-align:top; border:1px solid white;">
+                                <div class="lbl" style="text-align:center; padding-bottom:2px; border:1px solid white;">(დღგ-ს გადამხდელი)</div>
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">5</td>
+                                        <td style="border-right:1px solid black; padding:6px; text-align:center; vertical-align:middle;">
+                                            შპს თბილსერვის ჯგუფი
+                                        </td>
+                                        <td style="width:110px; padding:6px; text-align:center; vertical-align:middle;">
+                                            206267494
+                                        </td>
+                                    </tr>
+                                </table>
+                                <!-- Labels outside, below the box -->
+                                <table style="width:100%; border-collapse:collapse;">
+                                    <tr>
+                                        <td style="width:28px; border:none; border:1px solid white;"></td>
+                                        <td style="border:none; font-size:9px; padding-top:2px; text-align:center; padding-left:4px; border:1px solid white;">
+                                            მყიდველის (მიმღების) დასახელება ან სახელი და გვარი
+                                        </td>
+                                        <td style="width:110px; border:none; font-size:9px; padding-top:2px; text-align:center; border:1px solid white;">
+                                            საიდენტიფიკაციო/<br/>პირადი ნომერი
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ═══ BOX 6, 7, 8 ═══ -->
+                    <table class="wb-table" style="margin-top:8px;">
+                        <tr>
+                            <!-- BOX 6: two-row left cell, right cell spans both rows -->
+                            <td style="width:40%; vertical-align:top; border:1px solid white;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black; vertical-align:middle;">6</td>
+                                        <td style="padding:5px; border-right:1px solid black; vertical-align:middle;">
+                                            <div>ოპერაციის</div>
+                                            <div style="margin-top:2px;">შინაარსი</div>
+                                        </td>
+                                        <td style="padding:5px; text-align:center; vertical-align:middle;"><span t-field="o.delivery"/></td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="width:5%; border:1px solid white;"></td>
+                            <!-- BOX 7 & 8 stacked -->
+                            <td style="width:55%; vertical-align:top; border:1px solid white;">
+                                <!-- BOX 7 -->
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-bottom:0;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">7</td>
+                                        <td style="padding:5px; text-align:center; vertical-align:middle;">
+                                            <span t-field="o.start_location"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="lbl" style="text-align:left; padding-left:34px; margin-bottom:6px;">ტრანსპორტირების დაწყების ადგილი (მისამართი)</div>
+                                <!-- BOX 8 -->
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">8</td>
+                                        <td style="padding:5px; text-align:center; vertical-align:middle;">
+                                            <span t-field="o.editable_end_location"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="lbl" style="text-align:left; padding-left:34px;">ტრანსპორტირების დასრულების ადგილი (მისამართი)</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ═══ BOX 9, 10, X — labels OUTSIDE/BELOW ═══ -->
+                    <table class="wb-table" style="margin-top:8px;">
+                        <tr>
+                            <!-- BOX 9 -->
+                            <td style="width:40%; border:1px solid white; vertical-align:top;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">9</td>
+                                        <td class="c" style="text-align:center;"><span t-field="o.trans_id"/></td>
+                                    </tr>
+                                </table>
+                                <div class="lbl">ტრანსპორტირების სახე</div>
+                            </td>
+                            <td style="width:2%; border:1px solid white;"></td>
+                            <!-- BOX 10 -->
+                            <td style="width:32%; border:1px solid white; vertical-align:top;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">10</td>
+                                        <td class="c" style="text-align:center;"><span t-field="o.car_number"/></td>
+                                    </tr>
+                                </table>
+                                <div class="lbl">სატრანსპორტო საშუალების სახელმწიფო ნომერი</div>
+                            </td>
+                            <td style="width:2%; border:1px solid white;"></td>
+                            <!-- BOX X -->
+                            <td style="width:24%; border:1px solid white; vertical-align:top;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">X</td>
+                                        <td class="c" style="text-align:center;"></td>
+                                    </tr>
+                                </table>
+                                <div class="lbl">მისაბმელი</div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ═══ BOX 11 & 12 — "თანხა ლარებში" OUTSIDE/BELOW ═══ -->
+                    <table class="wb-table" style="margin-top:5px;">
+                        <tr>
+                            <!-- BOX 11 -->
+                            <td style="width:40%; border:1px solid white; vertical-align:top;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">11</td>
+                                        <td style="padding:5px; vertical-align:middle;">
+                                            <div style="font-size:10px;">სატრანსპორტო საშუალების</div>
+                                            <div style="font-size:10px;">მძღოლის პირადი ნომერი</div>
+                                        </td>
+                                        <td style="border-left:1px solid black; padding:5px; text-align:center; vertical-align:middle; width:28px;"><span t-field="o.driver_id"/></td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td style="width:4%; border:1px solid white;"></td>
+                            <!-- BOX 12 -->
+                            <td style="width:56%; border:1px solid white; vertical-align:top;">
+                                <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                    <tr>
+                                        <td class="n" style="border-right:1px solid black;">12</td>
+                                        <td style="padding:5px; vertical-align:middle;">
+                                            <div style="font-size:10px;">გამყიდველის(გამგზავნის)/მყიდველის(მიმღების)</div>
+                                            <div style="font-size:10px;">მიერ გაწეული ტრანსპორტირების ხარჯი</div>
+                                        </td>
+                                        <td style="border-left:1px solid black; padding:5px; text-align:center; vertical-align:middle; width:90px;">
+                                            <div><span t-field="o.transport_cost_payer"/> - <span t-esc="'%.2f' % (o.transport_cost or 0.0)"/></div>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <!-- "თანხა ლარებში" outside/below, aligned under the right value cell -->
+                                <table style="width:100%; border-collapse:collapse;">
+                                    <tr>
+                                        <td style="border:none;"></td>
+                                        <td style="width:90px; border:none; font-size:9px; text-align:center; padding-top:2px;">თანხა ლარებში</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <br/>
+                    <h3 style="text-align:center;">სასაქონლო ზედნადების ცხრილი</h3>
+
+                    <!-- Goods Table -->
+                    <table style="width:100%; border-collapse:collapse; margin-top:10px; border:1px solid black;">
+                        <thead>
+                            <tr style="background-color:#f0f0f0;">
+                                <th style="padding:5px; text-align:center; border:1px solid black;">#</th>
+                                <th style="padding:5px; text-align:center; border:1px solid black;">საქონლის დასახელება</th>
+                                <th style="padding:5px; text-align:center; border:1px solid black;">საქონლის კოდი</th>
+                                <th style="padding:5px; text-align:center; border:1px solid black;">საქონლის ზომის<br/>ერთეული</th>
+                                <th style="padding:5px; text-align:center; border:1px solid black;">საქონლის<br/>რაოდენობა</th>
+                                <th style="padding:5px; text-align:center; border:1px solid black;">საქონლის<br/>ერთეულის ფასი*</th>
+                                <th style="padding:5px; text-align:center; border:1px solid black;">საქონლის ფასი *</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.move_ids" t-as="line">
+                                <td style="padding:5px; text-align:center; border:1px solid black;"><span t-esc="line_index + 1"/></td>
+                                <td style="padding:5px; border:1px solid black;"><span t-field="line.product_id"/></td>
+                                <td style="padding:5px; text-align:center; border:1px solid black;"><span t-field="line.barcode"/></td>
+                                <td style="padding:5px; text-align:center; border:1px solid black;"><span t-field="line.unit_id"/></td>
+                                <td style="padding:5px; text-align:right; border:1px solid black;"><span t-esc="'%.2f' % (line.quantity or 0.0)"/></td>
+                                <td style="padding:5px; text-align:right; border:1px solid black;"><span t-esc="'%.2f' % (line.unit_price or 0.0)"/></td>
+                                <td style="padding:5px; text-align:right; border:1px solid black;"><span t-esc="'%.2f' % (line.cost_including_tax or 0.0)"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="text-align:center; margin:10px 0; font-size:10px;">* * *  საბეჭდი ფორმის ბოლო გვერდი * * *</div>
+
+                    <!-- ═══════════════ BOTTOM SECTION ═══════════════ -->
+                    <div class="bs">
+
+                        <!-- BOX 13: right 60% -->
+                        <table style="width:100%; border-collapse:collapse;">
+                            <tr>
+                                <td style="width:40%; border:none; border:1px solid white;"></td>
+                                <td style="width:60%; border:none; border:1px solid white;">
+                                    <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                        <tr>
+                                            <td class="n">13</td>
+                                            <td class="c"><strong><span t-esc="'%.2f' % sum(o.move_ids.mapped('cost_including_tax'))"/></strong></td>
+                                        </tr>
+                                    </table>
+                                    <div class="lbl">მიწოდებული საქონლის მთლიანი თანხა (ციფრებით და სიტყვიერად)</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- BOXES 14 / 15 -->
+                        <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+                            <tr>
+                                <td style="width:48%; border:none; border:1px solid white;">
+                                    <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                        <tr>
+                                            <td class="n">14</td>
+                                            <td class="c" style="height:30px;"></td>
+                                        </tr>
+                                    </table>
+                                    <div class="lbl">გამყიდველი (გამგზავნი)/საქონლის ჩაბარებაზე უფლებამოსილი პირი<br/>(თანამდებობა, სახელი და გვარი)</div>
+                                </td>
+                                <td style="width:4%; border:none; border:1px solid white;"></td>
+                                <td style="width:48%; border:none; border:1px solid white;">
+                                    <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                        <tr>
+                                            <td class="n">15</td>
+                                            <td class="c" style="height:30px;"></td>
+                                        </tr>
+                                    </table>
+                                    <div class="lbl">მყიდველი (მიმღები)/საქონლის მიღებაზე უფლებამოსილი პირი<br/>(თანამდებობა, სახელი და გვარი)</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- BOXES 16 / 17 -->
+                        <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+                            <tr>
+                                <td style="width:48%; border:none; border:1px solid white;">
+                                    <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                        <tr>
+                                            <td class="n">16</td>
+                                            <td class="c" style="height:30px;"></td>
+                                        </tr>
+                                    </table>
+                                    <div class="lbl">ხელმოწერა</div>
+                                </td>
+                                <td style="width:4%; border:none; border:1px solid white;"></td>
+                                <td style="width:48%; border:none; border:1px solid white;">
+                                    <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                        <tr>
+                                            <td class="n">17</td>
+                                            <td class="c" style="height:30px;"></td>
+                                        </tr>
+                                    </table>
+                                    <div class="lbl">ხელმოწერა</div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- BOX 18: right 60% — num | title | date-col | time-col -->
+                        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                            <tr>
+                                <td style="width:40%; border:none; border:1px solid white;"></td>
+                                <td style="width:60%; border:none; border:1px solid white;">
+                                    <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                        <tr>
+                                            <td class="n" style="height:36px;">18</td>
+                                            <td style="border-right:1px solid black; padding:6px; font-weight:bold; vertical-align:middle; width:45%;">
+                                                მიწოდებული საქონლის ჩაბარების
+                                            </td>
+                                            <td style="border-right:1px solid black; width:27.5%;"></td>
+                                            <td style="width:27.5%;"></td>
+                                        </tr>
+                                    </table>
+                                    <table style="width:100%; border-collapse:collapse;">
+                                        <tr>
+                                            <td style="width:28px; border:none;"></td>
+                                            <td style="width:45%; border:none;"></td>
+                                            <td style="width:27.5%; border:none;" class="lbl">თარიღი (რიცხვი, თვე, წელი)</td>
+                                            <td style="width:27.5%; border:none;" class="lbl">დრო (საათი, წუთი)</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- BOX 19: full width -->
+                        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                            <tr>
+                                <td style="border:none;">
+                                    <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+                                        <tr>
+                                            <td class="n">19</td>
+                                            <td class="c" style="height:30px;"></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    <!-- ═══════════════ END BOTTOM SECTION ═══════════════ -->
+
+                    <div style="font-size:9px; margin-top:10px;">
+                        შენიშვნა: * დღგ-ს გადამხდელისათვის დღგ-ს ჩათვლით, აქციზის გადამხდელისათვის აქციზურ საქონელზე, დღგ-ს და აქციზის ჩათვლით
+                    </div>
+                    <t t-set="now_str" t-value="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y, %H:%M:%S')"/>
+                    <div style="font-size:9px; margin-top:5px;">
+                        ამობეჭდვის თარიღი: <span t-esc="now_str"/>
+                    </div>
+
+                </div>
+            </t>
+            </t>
+        </t>
+        </template>
+    </data>
+</odoo>

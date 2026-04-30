@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Form View -->
+    <record id="view_biuleteni_form" model="ir.ui.view">
+        <field name="name">biuleteni.form</field>
+        <field name="model">biuleteni</field>
+        <field name="arch" type="xml">
+            <form string="ანაზღაურებადი ბიულეტენი">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+
+                    <button name="action_calculate_biuleteni"
+                            string="გამოთვლა"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'validated'"/>
+
+                    <button name="action_validate"
+                            string="დადასტურება"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'validated'"/>
+
+                    <button name="action_reset_draft"
+                            string="დრაფტად დაბრუნება"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="parent_department_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="department_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="employee_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="identification_id" readonly="1"/>
+                            <field name="job_id" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="docnum"/>
+                            <field name="date"/>
+                            <field name="date_2"/>
+                            <field name="month_selection"/>
+                            <field name="sick_days"/>
+                            <field name="total_amount"/>
+                        </group>
+                        <group>
+                            <field name="last_biuleteni_info" readonly="1"/>
+                            <field name="overlap_info" readonly="1" widget="text"
+                                   invisible="not overlap_info"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="დეტალები" name="biuleteni_lines">
+                            <field name="biuleteni_line_ids">
+                                <list editable="bottom" class="o_biuleteni_lines">
+                                    <field name="month" width="120" optional="show"/>
+                                    <button name="action_open_attendance"
+                                            string="დასწრება"
+                                            type="object"
+                                            icon="fa-calendar"
+                                            attrs="{'invisible': [('attendance_det_id','=',False)]}"/>
+                                    <field name="wage" width="140"/>
+                                    <field name="samushdge" width="90"/>
+                                    <field name="missed_days" width="90"/>
+                                    <field name="daily_wage" width="90"/>
+                                    <field name="line_total" width="90"/>
+                                    <field name="contract_id" width="90" optional="show" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="date_start" width="90"/>
+                                    <field name="date_end" width="90"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_biuleteni_list" model="ir.ui.view">
+        <field name="name">biuleteni.list</field>
+        <field name="model">biuleteni</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'"
+                  decoration-success="state == 'validated'">
+                <field name="employee_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="parent_department_id" optional="show" options="{'no_create': True, 'no_open': True}"/>
+                <field name="department_id" optional="show" options="{'no_create': True, 'no_open': True}"/>
+                <field name="job_id" optional="show" options="{'no_create': True, 'no_open': True}"/>
+                <field name="docnum"/>
+                <field name="date"/>
+                <field name="date_2"/>
+                <field name="month_selection"/>
+                <field name="sick_days"/>
+                <field name="total_amount"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_biuleteni_search" model="ir.ui.view">
+        <field name="name">biuleteni.search</field>
+        <field name="model">biuleteni</field>
+        <field name="arch" type="xml">
+            <search string="ძებნა">
+                <field name="employee_id"/>
+                <field name="docnum"/>
+                <field name="date"/>
+                <field name="date_2"/>
+                <field name="month_selection"/>
+                <field name="sick_days"/>
+                <field name="total_amount"/>
+                
+
+                <separator/>
+                <filter name="filter_draft" string="დრაფტი" domain="[('state','=','draft')]"/>
+                <filter name="filter_validated" string="დადასტურებული" domain="[('state','=','validated')]"/>
+
+                <group expand="0" string="დაჯგუფება">
+                    <filter string="თანამშრომლით" name="group_by_employee" context="{'group_by':'employee_id'}"/>
+                    <filter string="წელი" name="group_by_year" context="{'group_by':'date:year'}"/>
+                    <filter string="თვე" name="group_by_month" context="{'group_by':'date:month'}"/>
+                    <filter string="სამსახური" name="group_by_parent_department" context="{'group_by':'parent_department_id'}"/>
+                    <filter string="განყოფილება" name="group_by_department" context="{'group_by':'department_id'}"/>
+                    <filter string="თანამდებობა" name="group_by_job" context="{'group_by':'job_id'}"/>
+                    <filter string="სტატუსით" name="group_by_state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_biuleteni" model="ir.actions.act_window">
+        <field name="name">ბიულეტენები</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">biuleteni</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_biuleteni_search"/>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_biuleteni_root"
+              name="დარიცხვა/დაკავება"
+              web_icon="biuleteni,static/description/icon.png"
+              sequence="10"/>
+
+    <menuitem id="menu_biuleteni_master"
+              name="ბიულეტენები"
+              parent="menu_biuleteni_root"
+              sequence="10"/>
+
+    <menuitem id="menu_biuleteni_list"
+              name="ჩანაწერები"
+              parent="menu_biuleteni_master"
+              action="action_biuleteni"
+              sequence="10"/>
+
+    <!-- ======================== -->
+    <!-- ATTENDANCE CALENDAR FORM -->
+    <!-- ======================== -->
+    <record id="view_biuleteni_attendance_form" model="ir.ui.view">
+        <field name="name">biuleteni.attendance.form</field>
+        <field name="model">biuleteni.attendance</field>
+        <field name="arch" type="xml">
+            <form string="დასწრების დეტალები">
+                <sheet>
+                    <group col="2">
+                        <field name="biuleteni_det_id" invisible="1"/>
+                        <field name="month" string="თვე" readonly="1"/>
+                        <field name="employee_id" string="თანამშრომელი" readonly="1" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
+
+                    <separator string="დასწრება დღეების მიხედვით" colspan="6"/>
+
+                    <div style="padding-top:10px;">
+                        <table style="width:100%; text-align:center; border-collapse:collapse;">
+                            <tr style="font-weight:bold;">
+                                <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td>
+                                <td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td>
+                            </tr>
+                            <tr>
+                                <td><field name="day1"/></td>
+                                <td><field name="day2"/></td>
+                                <td><field name="day3"/></td>
+                                <td><field name="day4"/></td>
+                                <td><field name="day5"/></td>
+                                <td><field name="day6"/></td>
+                                <td><field name="day7"/></td>
+                                <td><field name="day8"/></td>
+                                <td><field name="day9"/></td>
+                                <td><field name="day10"/></td>
+                                <td><field name="day11"/></td>
+                                <td><field name="day12"/></td>
+                                <td><field name="day13"/></td>
+                                <td><field name="day14"/></td>
+                                <td><field name="day15"/></td>
+                            </tr>
+
+                            <tr><td colspan="15" style="height:25px;"></td></tr>
+
+                            <tr style="font-weight:bold;">
+                                <td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td>
+                                <td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td>
+                                <td>30</td><td>31</td>
+                            </tr>
+                            <tr>
+                                <td><field name="day16"/></td>
+                                <td><field name="day17"/></td>
+                                <td><field name="day18"/></td>
+                                <td><field name="day19"/></td>
+                                <td><field name="day20"/></td>
+                                <td><field name="day21"/></td>
+                                <td><field name="day22"/></td>
+                                <td><field name="day23"/></td>
+                                <td><field name="day24"/></td>
+                                <td><field name="day25"/></td>
+                                <td><field name="day26"/></td>
+                                <td><field name="day27"/></td>
+                                <td><field name="day28"/></td>
+                                <td><field name="day29"/></td>
+                                <td><field name="day30"/></td>
+                                <td><field name="day31"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_inherit_biuleteni_shvebuleba" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.biuleteni.shvebuleba</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//notebook" position="inside">
+
+                <!-- ============================
+                     ბიულეტენები TAB
+                ============================ -->
+                <page string="ბიულეტენები" name="page_biuleteni">
+                    <field name="biuleteni_ids" editable="bottom" context="{'default_employee_id': id}">
+                        <list>
+                            <field name="date"/>
+                            <field name="date_2"/>
+                            <field name="month_selection"/>
+                            <field name="sick_days"/>
+                            <field name="total_amount"/>
+                            <field name="state"/>
+                        </list>
+                        <form>
+                            <group>
+                                <group>
+                                    <field name="date"/>
+                                    <field name="date_2"/>
+                                    <field name="month_selection"/>
+                                    <field name="docnum"/>
+                                    <field name="state"/>
+                                </group>
+                                <group>
+                                    <field name="sick_days"/>
+                                    <field name="total_amount"/>
+                                </group>
+                            </group>
+                            <field name="biuleteni_line_ids">
+                                <list>
+                                    <field name="month"/>
+                                    <field name="contract_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="missed_days"/>
+                                    <field name="daily_wage"/>
+                                    <field name="line_total"/>
+                                </list>
+                            </field>
+                        </form>
+                    </field>
+                </page>
+
+                <!-- ============================
+                     შვებულებები TAB
+                ============================ -->
+                <page string="შვებულებები" name="page_shvebuleba">
+                    <field name="shvebuleba_ids" editable="bottom" context="{'default_emp_id': id}">
+                        <list>
+                            <field name="orderdate"/>
+                            <field name="ordernumb"/>
+                            <field name="startdate"/>
+                            <field name="end_datee"/>
+                            <field name="amountday"/>
+                            <field name="daricxelf"/>
+                            <field name="daricshve"/>
+                            <field name="state"/>
+                        </list>
+                        <form>
+                            <group>
+                                <group>
+                                    <field name="orderdate"/>
+                                    <field name="ordernumb"/>
+                                    <field name="ordertype"/>
+                                    <field name="startdate"/>
+                                    <field name="end_datee"/>
+                                    <field name="calamountday"/>
+                                </group>
+                                <group>
+                                    <field name="daricxelf"/>
+                                    <field name="daricshve"/>
+                                    <field name="amountday"/>
+                                    <field name="validatio"/>
+                                    <field name="state"/>
+                                </group>
+                            </group>
+                            <field name="shvebuleba_line_ids">
+                                <list>
+                                    <field name="month"/>
+                                    <field name="contract_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="shvebu_date"/>
+                                    <field name="daily_wage"/>
+                                    <field name="line_total"/>
+                                </list>
+                            </field>
+                        </form>
+                    </field>
+                </page>
+
+
+
+
+               
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

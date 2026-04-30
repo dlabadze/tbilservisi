@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_waybill_search_extension_inherit" model="ir.ui.view">
+        <field name="name">waybill.search.extension</field>
+        <field name="model">waybill</field>
+        <field name="inherit_id" ref="waybill_management_custom.view_waybill_search"/>
+        <field name="arch" type="xml">
+           <xpath expr="//field[@name='waybill_type']" position="after">
+                <field name="seller_tin" string="გამყიდველის საიდინტიფიკაციო"/>
+                <field name="seller_name" string="გამყიდველის სახელი"/>
+           </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Smart button on Repair Order to open related Fleet Services -->
+        <record id="view_repair_order_form_inherit_smart_button_services" model="ir.ui.view">
+            <field name="name">repair.order.form.smart.button.services</field>
+            <field name="model">repair.order</field>
+            <field name="inherit_id" ref="repair.view_repair_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet//div[@name='button_box']" position="inside">
+                    <button name="action_open_services"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-car">
+                        <field name="service_count" widget="statinfo" string="სერვისი"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Smart button on Fleet Service to open linked Repair Order -->
+        <record id="view_fleet_service_form_inherit_smart_button_repair" model="ir.ui.view">
+            <field name="name">fleet.vehicle.log.services.form.smart.button.repair</field>
+            <field name="model">fleet.vehicle.log.services</field>
+            <field name="inherit_id" ref="fleet.fleet_vehicle_log_services_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet//div[@name='button_box']" position="inside">
+                    <button name="action_open_repair"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-wrench">
+                        <field name="repair_id" invisible="1"/>
+                        <span class="o_stat_text">შეკეთება</span>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+
+

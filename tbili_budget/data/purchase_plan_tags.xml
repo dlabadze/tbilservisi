@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Purchase Plan Tags for Quarters -->
+        <record id="tag_quarter_1" model="purchase.plan.tag">
+            <field name="name">პირველი</field>
+            <field name="sequence">1</field>
+            <field name="color">1</field>
+        </record>
+
+        <record id="tag_quarter_2" model="purchase.plan.tag">
+            <field name="name">მეორე</field>
+            <field name="sequence">2</field>
+            <field name="color">3</field>
+        </record>
+
+        <record id="tag_quarter_3" model="purchase.plan.tag">
+            <field name="name">მესამე</field>
+            <field name="sequence">3</field>
+            <field name="color">5</field>
+        </record>
+
+        <record id="tag_quarter_4" model="purchase.plan.tag">
+            <field name="name">მეოთხე</field>
+            <field name="sequence">4</field>
+            <field name="color">7</field>
+        </record>
+    </data>
+</odoo>

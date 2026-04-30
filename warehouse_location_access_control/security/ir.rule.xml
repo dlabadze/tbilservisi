@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 
+        Note: Access control is implemented via model search overrides
+        in stock_location.py and stock_picking.py for better performance
+        and flexibility. Record rules are kept minimal for compatibility.
+        -->
+    </data>
+</odoo>
+

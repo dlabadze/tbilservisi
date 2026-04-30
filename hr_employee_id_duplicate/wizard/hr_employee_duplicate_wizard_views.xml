@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_duplicate_wizard_form" model="ir.ui.view">
+        <field name="name">hr.employee.duplicate.wizard.form</field>
+        <field name="model">hr.employee.duplicate.wizard</field>
+        <field name="arch" type="xml">
+            <form string="ნაპოვნია პირადი ნომრის დუბლიკატი">
+                <sheet>
+                    <div class="alert alert-warning" role="alert">
+                        <p>ყოფილი თანამშრომელი, გსურთ არქივიდან ამოღება?</p>
+                        <ul>
+                            <li><strong>სახელი:</strong> <field name="employee_id" readonly="1" options="{'no_open': True}"/></li>
+                            <li><strong>პირადი ნომერი:</strong> <field name="identification_id" readonly="1"/></li>
+                        </ul>
+                    </div>
+                    <p>გსურთ ამ თანამშრომლის არქივიდან ამოღება და მისი დანიშვნა?</p>
+                    <field name="new_employee_vals" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_unarchive" string="არქივიდან ამოღება და ნახვა" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="გაუქმება" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_employee_duplicate_wizard" model="ir.actions.act_window">
+        <field name="name">დუბლიკატი პირადი ნომერი</field>
+        <field name="res_model">hr.employee.duplicate.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

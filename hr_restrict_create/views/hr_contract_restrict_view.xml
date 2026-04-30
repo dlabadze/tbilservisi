@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="hr_contract_view_form_restrict" model="ir.ui.view">
+            <field name="name">hr.contract.form.restrict</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+            <field name="priority">1000</field>
+            <field name="arch" type="xml">
+                <!-- Apply restriction to the Manager field ONLY for non-admins -->
+                <xpath expr="//field[@name='department_id'][@groups='hr_contract.group_hr_contract_manager']" position="attributes" groups="!base.group_system">
+                    <attribute name="options">{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}</attribute>
+                    <attribute name="can_create">false</attribute>
+                    <attribute name="can_write">false</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='job_id'][@groups='hr_contract.group_hr_contract_manager']" position="attributes" groups="!base.group_system">
+                    <attribute name="options">{'no_create': True, 'no_create_edit': True, 'no_quick_create': True}</attribute>
+                    <attribute name="can_create">false</attribute>
+                    <attribute name="can_write">false</attribute>
+                </xpath>
+
+                <!-- Also ensure the non-manager fields have the quick create disabled for non-admins -->
+                <xpath expr="//field[@name='department_id'][@groups='!hr_contract.group_hr_contract_manager']" position="attributes" groups="!base.group_system">
+                    <attribute name="options">{'no_open': True, 'no_create': True, 'no_create_edit': True, 'no_quick_create': True}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='job_id'][@groups='!hr_contract.group_hr_contract_manager']" position="attributes" groups="!base.group_system">
+                    <attribute name="options">{'no_open': True, 'no_create': True, 'no_create_edit': True, 'no_quick_create': True}</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Leave Type form: add the boolean toggle -->
+    <record id="hr_leave_type_view_form_manual_days" model="ir.ui.view">
+        <field name="name">hr.leave.type.form.manual.days</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="manual_days_override"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Leave form: manual days input, only when the type requires it -->
+    <record id="hr_leave_view_form_manual_days" model="ir.ui.view">
+        <field name="name">hr.leave.form.manual.days</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='holiday_status_id']" position="after">
+                <field name="leave_type_manual_days" invisible="1"/>
+                <field name="number_of_days_manual"
+                       groups="hr_holidays.group_hr_holidays_user"
+                       invisible="not leave_type_manual_days"
+                       required="leave_type_manual_days"
+                       readonly="state in ('validate', 'refuse', 'cancel')"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

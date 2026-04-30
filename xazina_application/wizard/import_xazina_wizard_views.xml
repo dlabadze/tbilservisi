@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_import_xazina_wizard_form" model="ir.ui.view">
+        <field name="name">import.xazina.wizard.form</field>
+        <field name="model">import.xazina.wizard</field>
+        <field name="arch" type="xml">
+            <form string="ხაზინის იმპორტი">
+                <group>
+                    <field name="xazina_type" readonly="1"/>
+                    <field name="excel_file" filename="file_name"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_generate_records" string="იმპორტი" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="გაუქმება" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_import_xazina_wizard" model="ir.actions.act_window">
+        <field name="name">ხაზინის ექსელის იმპორტი</field>
+        <field name="res_model">import.xazina.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_import_xazina_wizard_form"/>
+    </record>
+</odoo>

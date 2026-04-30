@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_account_form_inherit" model="ir.ui.view">
+        <field name="name">account.account.form</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='account_type']" position="before">
+                <field name="also_include_in_report"/>
+                <field name="is_non_partner_account"/>
+                <field name="is_product_account"/>
+                <field name="is_partner_and_sub_account"/>
+                <field name="is_partner_account"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Sub Accounts" name="sub_accounts">
+                    <field name="child_ids">
+                        <list create="false" edit="false" delete="false">
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="is_non_partner_account"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

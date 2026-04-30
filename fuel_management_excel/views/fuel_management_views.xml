@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<!-- Inherit fuel.management list view to add upload and write-off buttons in header -->
+		<record id="view_fuel_management_tree_inherit_excel" model="ir.ui.view">
+			<field name="name">fuel.management.tree.excel</field>
+			<field name="model">fuel.management</field>
+			<field name="inherit_id" ref="fuel_management.view_fuel_management_tree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//list" position="inside">
+					<header>
+						<button name="%(action_fuel_excel_upload_wizard)d" 
+								type="action" 
+								string="ატვირთვა" 
+								class="btn-primary"
+								display="always"/>
+						<button name="action_create_fuel_writeoff" 
+								type="object" 
+								string="საწვავის ჩამოწერა" 
+								class="btn-primary"/>
+						<button name="%(action_fuel_management_journal_wizard)d" 
+								type="action" 
+								string="გატარება (ხელფასი)" 
+								class="btn-warning"/>
+						<button name="action_calculate_consumed_qty" 
+								type="object" 
+								string="გახარჯული რაოდენობის დათვლა" 
+								class="btn-primary"/>
+					</header>
+				</xpath>
+				<xpath expr="//field[@name='date']" position="after">
+					<field name="picking_id" optional="show" string="ჩამოწერა"/>
+				</xpath>
+			</field>
+		</record>
+
+		<!-- Inherit fuel.management form view to add smart button for stock picking -->
+		<record id="view_fuel_management_form_inherit_excel" model="ir.ui.view">
+			<field name="name">fuel.management.form.excel</field>
+			<field name="model">fuel.management</field>
+			<field name="inherit_id" ref="fuel_management.view_fuel_management_form"/>
+			<field name="arch" type="xml">
+				<xpath expr="//sheet" position="inside">
+					<div class="oe_button_box" name="button_box">
+						<button name="action_view_picking" 
+								type="object" 
+								class="oe_stat_button" 
+								icon="fa-truck"
+								invisible="not picking_id">
+							<div class="o_field_widget o_stat_info">
+								<span class="o_stat_text">ჩამოწერა</span>
+							</div>
+						</button>
+						<button name="action_view_journal_entries" 
+								type="object" 
+								class="oe_stat_button" 
+								icon="fa-file-text-o"
+								invisible="not journal_entry_ids">
+							<div class="o_field_widget o_stat_info">
+								გატარება (ხელფასი)
+							</div>
+						</button>
+					</div>
+				</xpath>
+			</field>
+		</record>
+	</data>
+</odoo>

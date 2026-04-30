@@ -1,0 +1,31 @@
+<odoo>
+    <record id="approval_request_view_search_inherit" model="ir.ui.view">
+        <field name="name">approval.request.search.inherit</field>
+        <field name="model">approval.request</field>
+        <field name="inherit_id" ref="approvals.approval_search_view_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//search" position="inside">
+                    <filter string="Employee" name="filter_brdzaneba_employee" domain="[('brdzaneba_employee_id', '=', context.get('active_id'))]"/>
+                    <field name="brdzaneba_employee_id"/>
+                </xpath>
+            </field>
+    </record>
+
+    <record id="view_employee_form_inherit_approvals" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.approvals</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_contract.hr_hr_employee_view_form3"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_open_contract']" position="before">
+                    <button name="action_open_employee_approvals"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-pencil-square-o"
+                            help="Approvals for this employee">
+                        <field name="approval_count" widget="statinfo" string="ბრძანებები"/>
+                    </button>
+                </xpath>
+            </field>
+    </record>
+
+</odoo>

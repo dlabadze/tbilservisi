@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Allow Administrators to read all product variants (bypass multi-company rule) -->
+    <record id="rule_product_product_read_all_for_admin" model="ir.rule">
+        <field name="name">Products: Read All for Administrators</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="domain_force">[]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>
+
+

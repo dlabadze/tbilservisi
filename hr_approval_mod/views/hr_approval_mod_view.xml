@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Update Approval Category View -->
+    <record id="approval_category_view_form_inherit_brdzaneba" model="ir.ui.view">
+        <field name="name">approval.category.view.form.inherit.brdzaneba</field>
+        <field name="model">approval.category</field>
+        <field name="inherit_id" ref="approvals.approval_category_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="ბრძანება">
+                    <field name="has_brdzaneba" widget="radio" options="{'horizontal': True}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Update Approval Request View -->
+    <record id="approval_request_view_form_inherit_brdzaneba" model="ir.ui.view">
+        <field name="name">approval.request.view.form.inherit.brdzaneba</field>
+        <field name="model">approval.request</field>
+        <field name="inherit_id" ref="approvals.approval_request_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group[1]" position="after">
+                <field name="has_brdzaneba" invisible="1"/>
+                
+                <group string="ბრძანების დეტალები" invisible="has_brdzaneba == 'no'">
+                    <group>
+                        <field name="brdzaneba_date" required="has_brdzaneba == 'required'"/>
+                        <field name="brdzaneba_employee_id" required="has_brdzaneba == 'required'"/>
+                        <field name="brdzaneba_identification_id"/>
+                        <field name="brdzaneba_current_department_id" context="{'show_short_name': True}"/>
+                        <field name="brdzaneba_current_job_id"/>
+                    </group>
+                    <group>
+                        <field name="brdzaneba_start_date"/>
+                        <field name="brdzaneba_end_date"/>
+                        <field name="brdzaneba_department_id" context="{'show_short_name': True}"/>
+                        <field name="brdzaneba_job_id"/>
+                        <field name="brdzaneba_shtati"/>
+                        <field name="brdzaneba_salary"/>
+                    </group>
+                </group>
+                <group invisible="has_brdzaneba == 'no'">
+                    <field name="brdzaneba_safudzveli"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

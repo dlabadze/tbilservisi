@@ -1,0 +1,50 @@
+<odoo>
+
+    <!-- ============================
+         WIZARD FORM VIEW
+    ============================== -->
+    <record id="view_shvebuleba_generate_wizard_form" model="ir.ui.view">
+        <field name="name">shvebuleba.generate.wizard.form</field>
+        <field name="model">shvebuleba.generate.wizard</field>
+        <field name="arch" type="xml">
+            <form string="შვებულების გენერირება ბრძანებებიდან">
+                <group>
+                    <field name="date"/>
+                    <field name="department_id" options="{'no_create': True, 'no_open': True}"/>
+                </group>
+                <footer>
+                    <button string="გენერირება"
+                            type="object"
+                            name="action_generate"
+                            class="btn-primary"/>
+                    <button string="დახურვა"
+                            special="cancel"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ============================
+         WINDOW ACTION
+    ============================== -->
+    <record id="action_shvebuleba_generate" model="ir.actions.act_window">
+        <field name="name">ბრძანებებიდან გენერირება</field>
+        <field name="res_model">shvebuleba.generate.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+    <!-- ============================
+         MENU ITEM
+         Change parent="menu_shvebuleba_root"
+         to your actual menu ID.
+    ============================== -->
+    <menuitem id="menu_shvebuleba_generate"
+              name="შვებულების ბრძანებებიდან გენერირება"
+              parent="menu_shvebuleba_master"
+              action="action_shvebuleba_generate"/>
+
+</odoo>
