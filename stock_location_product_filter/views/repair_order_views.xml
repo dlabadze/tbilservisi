@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_repair_order_move_product_domain" model="ir.ui.view">
+        <field name="name">repair.order.move.product.availability.domain</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='parts']//field[@name='move_ids']//field[@name='product_id']" position="before">
+                <field name="product_id_domain" column_invisible="1"/>
+            </xpath>
+            <xpath expr="//page[@name='parts']//field[@name='move_ids']//field[@name='product_id']" position="attributes">
+                <attribute name="domain">product_id_domain</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

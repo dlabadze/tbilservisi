@@ -1,11 +1,11 @@
 {
-    "name": "Internal Transfer Product Filter by Location",
+    "name": "",
     "version": "18.0.1.0.0",
     "summary": "Show only products available at selected source location in internal transfers",
-    "depends": ["stock"],
+    "depends": ["stock","repair"],
     "data": [
         "views/stock_picking_views.xml",
-        "views/product_views.xml"
+        "views/repair_order_views.xml",
     ],
     "author": "Custom",
     "license": "LGPL-3",
