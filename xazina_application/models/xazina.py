@@ -69,6 +69,7 @@ class Xazina(models.Model):
         wizard = self.env['create.gatareba.wizard'].create({
             'xazina_type': xazina_type,
             'xazina_ids': [(6, 0, records.ids)],
+            'journal_id': 82,
         })
         return {
             'type': 'ir.actions.act_window',

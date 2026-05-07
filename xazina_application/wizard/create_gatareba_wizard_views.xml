@@ -7,14 +7,14 @@
             <form string="გატარებების შექმნა">
                 <sheet>
                     <group>
-                        <group string="ანგარიშები">
-                            <field name="journal_id"/>
-                            <field name="debit_account_id"/>
-                            <field name="credit_account_id"/>
+                        <group string="პარამეტრები">
+                            <field name="xazina_type" readonly="1"/>
+                            <field name="journal_id" placeholder="ნაგულისხმევი: ჟურნალი ID=82"/>
+                            <field name="transit_account_code" readonly="1"
+                                   string="შუალედური ანგარიში (ავტო)"/>
                         </group>
                         <group string="ჩანაწერები">
-                            <field name="xazina_type" readonly="1"/>
-                            <field name="record_count" string="გასაგზავნი ჩანაწერები" readonly="1"/>
+                            <field name="record_count" string="ჩანაწერების რაოდენობა" readonly="1"/>
                         </group>
                     </group>
                     <group>
