@@ -10,6 +10,11 @@
                     type="object"
                     string="შემოსავლების ექსელის ატვირთვა"
                     display="always"/>
+                    <button name="action_open_create_gatareba_wizard"
+                    type="object"
+                    string="გატარებების შექმნა"
+                    class="btn-primary"
+                    display="always"/>
                 </header>
                 <field name="xazina_type" column_invisible="1"/>
                 <field name="date"/>
@@ -47,6 +52,11 @@
                     <button name="action_open_xazina_payment_import_wizard" 
                     type="object" 
                     string="გადარიცხვების ექსელის ატვირთვა"
+                    display="always"/>
+                    <button name="action_open_create_gatareba_wizard"
+                    type="object"
+                    string="გატარებების შექმნა"
+                    class="btn-primary"
                     display="always"/>
                 </header>
                 <field name="xazina_type" column_invisible="1"/>

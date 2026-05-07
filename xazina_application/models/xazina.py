@@ -56,3 +56,26 @@ class Xazina(models.Model):
             },
         }
 
+    def action_open_create_gatareba_wizard(self):
+        """Open wizard to create journal entries (გატარებები) from selected records."""
+        active_ids = self.env.context.get('active_ids', self.ids)
+        records = self.browse(active_ids)
+        if not records:
+            records = self
+
+        # Determine xazina_type from the selected records (use first non-empty)
+        xazina_type = records[:1].xazina_type if records else 'შემოსავლები'
+
+        wizard = self.env['create.gatareba.wizard'].create({
+            'xazina_type': xazina_type,
+            'xazina_ids': [(6, 0, records.ids)],
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'გატარებების შექმნა',
+            'res_model': 'create.gatareba.wizard',
+            'res_id': wizard.id,
+            'view_mode': 'form',
+            'target': 'new',
+        }
+
