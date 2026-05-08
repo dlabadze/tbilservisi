@@ -1,5 +1,5 @@
 {
-    "name": "",
+    "name": "Internal Transfer Product Filter by Location",
     "version": "18.0.1.0.0",
     "summary": "Show only products available at selected source location in internal transfers",
     "depends": ["stock","repair"],

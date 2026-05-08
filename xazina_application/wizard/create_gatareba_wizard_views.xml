@@ -11,14 +11,15 @@
                             <field name="xazina_type" readonly="1"/>
                             <field name="journal_id" placeholder="ნაგულისხმევი: ჟურნალი ID=82"/>
                             <field name="transit_account_code" readonly="1"
-                                   string="შუალედური ანგარიში (ავტო)"/>
+                                   string="შუალედური ანგარიში (ავტო)"
+                                   invisible="xazina_type != 'შემოსავლები'"/>
                         </group>
                         <group string="ჩანაწერები">
                             <field name="record_count" string="ჩანაწერების რაოდენობა" readonly="1"/>
                         </group>
                     </group>
                     <group>
-                        <field name="xazina_ids" widget="many2many_tags" readonly="1"
+                        <field name="xazina_ids" readonly="1"
                                string="შერჩეული ჩანაწერები"/>
                     </group>
                 </sheet>

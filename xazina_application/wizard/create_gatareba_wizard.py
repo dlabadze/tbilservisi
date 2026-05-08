@@ -42,7 +42,10 @@ class CreateGatarebWizard(models.TransientModel):
     @api.depends('xazina_type')
     def _compute_transit_info(self):
         for rec in self:
-            rec.transit_account_code = TRANSIT_ACCOUNT.get(rec.xazina_type, '')
+            if rec.xazina_type == 'შემოსავლები':
+                rec.transit_account_code = TRANSIT_ACCOUNT.get('შემოსავლები', '')
+            else:
+                rec.transit_account_code = False
 
     def _get_journal(self):
         journal = self.journal_id or self.env['account.journal'].browse(JOURNAL_ID)
@@ -101,9 +104,24 @@ class CreateGatarebWizard(models.TransientModel):
                 'payment_ref': ref,
                 'partner_name': xazina.reciever_name or False,
                 'narration': xazina.payment_foundation or False,
-                'account_id': transit_account.id,
             }
             line = self.env['account.bank.statement.line'].create(line_vals)
+
+            # For 'შემოსავლები', we automatically set the transit account (1243) and post.
+            # For 'გადარიცხვები', we leave it in suspense/draft as per "standard program" behavior for reconciliation.
+            if self.xazina_type == 'შემოსავლები':
+                move = line.move_id
+                bank_account_id = journal.default_account_id.id
+                counterpart_lines = move.line_ids.filtered(
+                    lambda l: l.account_id.id != bank_account_id
+                )
+                if counterpart_lines:
+                    move.button_draft()
+                    counterpart_lines.with_context(check_move_validity=False).write(
+                        {'account_id': transit_account.id}
+                    )
+                    move.action_post()
+
             created_lines |= line
 
         if not created_lines:
@@ -116,13 +134,7 @@ class CreateGatarebWizard(models.TransientModel):
                 'title': _('გატარებები შეიქმნა'),
                 'message': _('%d საბანკო ჩანაწერი წარმატებით შეიქმნა.') % len(created_lines),
                 'type': 'success',
-                'next': {
-                    'type': 'ir.actions.act_window',
-                    'name': _('გატარებები'),
-                    'res_model': 'account.bank.statement.line',
-                    'view_mode': 'list,form',
-                    'domain': [('id', 'in', created_lines.ids)],
-                    'target': 'current',
-                },
-            },
+                'sticky': False,
+                'next': {'type': 'ir.actions.act_window_close'},
+            }
         }

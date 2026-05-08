@@ -31,60 +31,59 @@ class StockMove(models.Model):
             ])
             move.product_id_domain = [('id', 'in', quants.mapped('product_id').ids)]
 
+    @api.depends('location_id', 'product_id', 'picking_id.location_id', 'picking_id.picking_type_id')
     def _compute_on_hand_at_source(self):
-        # Default all to 0.0
         for move in self:
             move.on_hand_at_source = 0.0
 
-        # Group eligible moves by (source_location_id, company_id)
+        # Use move.location_id, not picking.location_id
         grouped = {}
         for move in self:
             picking = move.picking_id
             if (
-                move.product_id
-                and picking
-                and picking.picking_type_id
-                and picking.picking_type_id.code == "internal"
-                and picking.location_id
-                and picking.location_id.usage in ("internal", "transit")
+                    move.product_id
+                    and move.location_id
+                    and move.location_id.usage in ("internal", "transit")
+                    and picking
+                    and picking.picking_type_id
+                    and picking.picking_type_id.code == "internal"
             ):
-                key = (picking.location_id.id, picking.company_id.id if picking.company_id else None)
+                # Key on move's own source location, not picking header location
+                company_id = picking.company_id.id if picking.company_id else None
+                key = (move.location_id.id, company_id)
                 grouped.setdefault(key, []).append(move)
 
-        for (root_location_id, company_id), moves in grouped.items():
-            # Collect unique product ids
+        for (source_location_id, company_id), moves in grouped.items():
             product_ids = list({m.product_id.id for m in moves})
             if not product_ids:
                 continue
 
-            location = self.env["stock.location"].browse(root_location_id)
+            location = self.env["stock.location"].browse(source_location_id)
             if not location or not location.parent_path:
                 continue
 
-            # Build query using parent_path LIKE for fast child selection; restrict to internal usage
-            where_company = " AND q.company_id = %s" if company_id else ""
-            params = [f"{location.parent_path}%"]
+            # Build params — omit company filter if no company (quants may have company_id = False)
+            params = [f"{location.parent_path}%", tuple(product_ids)]
+            company_clause = ""
             if company_id:
-                params.append(company_id)
-            params.append(tuple(product_ids))
+                company_clause = "AND q.company_id = %s"
+                params.insert(1, company_id)
+
             query = f"""
                 SELECT q.product_id, COALESCE(SUM(q.quantity - q.reserved_quantity), 0) AS available
                   FROM stock_quant q
                   JOIN stock_location l ON l.id = q.location_id
                  WHERE l.parent_path LIKE %s
                    AND l.usage = 'internal'
-                   {where_company}
+                   {company_clause}
                    AND q.product_id IN %s
                  GROUP BY q.product_id
             """
             self.env.cr.execute(query, tuple(params))
             qty_by_product = dict(self.env.cr.fetchall() or [])
 
-            # Assign per move, converting to the move's UoM when needed
             for m in moves:
                 qty = qty_by_product.get(m.product_id.id, 0.0)
                 if m.product_uom and m.product_uom != m.product_id.uom_id:
                     qty = m.product_id.uom_id._compute_quantity(qty, m.product_uom)
                 m.on_hand_at_source = qty
-
-
