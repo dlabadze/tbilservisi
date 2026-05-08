@@ -36,7 +36,6 @@ class StockMove(models.Model):
         for move in self:
             move.on_hand_at_source = 0.0
 
-        # Use move.location_id, not picking.location_id
         grouped = {}
         for move in self:
             picking = move.picking_id
@@ -48,7 +47,6 @@ class StockMove(models.Model):
                     and picking.picking_type_id
                     and picking.picking_type_id.code == "internal"
             ):
-                # Key on move's own source location, not picking header location
                 company_id = picking.company_id.id if picking.company_id else None
                 key = (move.location_id.id, company_id)
                 grouped.setdefault(key, []).append(move)
@@ -62,20 +60,14 @@ class StockMove(models.Model):
             if not location or not location.parent_path:
                 continue
 
-            # Build params — omit company filter if no company (quants may have company_id = False)
             params = [f"{location.parent_path}%", tuple(product_ids)]
-            company_clause = ""
-            if company_id:
-                company_clause = "AND q.company_id = %s"
-                params.insert(1, company_id)
 
-            query = f"""
+            query = """
                 SELECT q.product_id, COALESCE(SUM(q.quantity - q.reserved_quantity), 0) AS available
                   FROM stock_quant q
                   JOIN stock_location l ON l.id = q.location_id
                  WHERE l.parent_path LIKE %s
                    AND l.usage = 'internal'
-                   {company_clause}
                    AND q.product_id IN %s
                  GROUP BY q.product_id
             """

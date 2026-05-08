@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Inject location-based product filter context on product_id inside move_ids list -->
         <record id="view_picking_form_product_domain" model="ir.ui.view">
             <field name="name">stock.picking.form.product.domain.allowed</field>
             <field name="model">stock.picking</field>
@@ -11,12 +10,10 @@
                 <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_id']" position="before">
                     <field name="product_id_domain" column_invisible="1"/>
                 </xpath>
-                    <!-- Merge our filter context into the existing product_id context -->
                 <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_id']" position="attributes">
                     <attribute name="widget"></attribute>
                     <attribute name="domain">product_id_domain</attribute>
                 </xpath>
-                    <!-- Add on_hand_at_source column; picking_code is already available as a column in this list -->
                 <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_id']" position="after">
                     <field name="on_hand_at_source" string="ნაშთი საწყობში" optional="show"
                            column_invisible="parent.picking_type_code != 'internal'"/>
