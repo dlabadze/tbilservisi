@@ -127,7 +127,6 @@ class CreateGatarebWizard(models.TransientModel):
                     move.action_post()
 
             elif self.xazina_type == 'გადარიცხვები':
-                # Set analytic_distribution on the manual operations (counterpart) line
                 if counterpart_lines and xazina.analytic_account_id:
                     analytic_dist = {str(xazina.analytic_account_id.id): 100.0}
                     counterpart_lines.with_context(check_move_validity=False).write(
