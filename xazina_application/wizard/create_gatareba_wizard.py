@@ -97,11 +97,14 @@ class CreateGatarebWizard(models.TransientModel):
             ]
             ref = ' | '.join(p for p in ref_parts if p) or '/'
 
+            # Use commintment_foundation as label if available, else fall back to ref
+            label = xazina.commintment_foundation or ref
+
             line_vals = {
                 'journal_id': journal.id,
                 'date': xazina.date,
                 'amount': amount_sign * xazina.amount_in_gel,
-                'payment_ref': ref,
+                'payment_ref': label,
                 'partner_name': xazina.reciever_name or False,
                 'narration': xazina.payment_foundation or False,
             }
@@ -109,18 +112,27 @@ class CreateGatarebWizard(models.TransientModel):
 
             # For 'შემოსავლები', we automatically set the transit account (1243) and post.
             # For 'გადარიცხვები', we leave it in suspense/draft as per "standard program" behavior for reconciliation.
+            move = line.move_id
+            bank_account_id = journal.default_account_id.id
+            counterpart_lines = move.line_ids.filtered(
+                lambda l: l.account_id.id != bank_account_id
+            )
+
             if self.xazina_type == 'შემოსავლები':
-                move = line.move_id
-                bank_account_id = journal.default_account_id.id
-                counterpart_lines = move.line_ids.filtered(
-                    lambda l: l.account_id.id != bank_account_id
-                )
                 if counterpart_lines:
                     move.button_draft()
                     counterpart_lines.with_context(check_move_validity=False).write(
                         {'account_id': transit_account.id}
                     )
                     move.action_post()
+
+            elif self.xazina_type == 'გადარიცხვები':
+                # Set analytic_distribution on the manual operations (counterpart) line
+                if counterpart_lines and xazina.analytic_account_id:
+                    analytic_dist = {str(xazina.analytic_account_id.id): 100.0}
+                    counterpart_lines.with_context(check_move_validity=False).write(
+                        {'analytic_distribution': analytic_dist}
+                    )
 
             created_lines |= line
 
