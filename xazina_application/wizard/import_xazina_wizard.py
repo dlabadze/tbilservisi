@@ -40,10 +40,34 @@ class ImportXazinaWizard(models.TransientModel):
                 record_date = row['თარიღი']
                 if pd.isna(record_date):
                     continue
+                vendor_name = row.get('მიმღების სახელი')
+                if vendor_name and not isinstance(vendor_name, str):
+                    vendor_name = str(vendor_name).strip() or False
+                elif vendor_name:
+                    vendor_name = vendor_name.strip() or False
+
+
+                partner_id = False
+                if self.xazina_type == 'გადარიცხვები' and vendor_name:
+                    partner = self.env['res.partner'].search(
+                        [('name', '=', vendor_name)], limit=1
+                    )
+                    if not partner:
+                        partner = self.env['res.partner'].create({
+                            'name': vendor_name,
+                            'supplier_rank': 1,
+                        })
+                    else:
+                        if partner.supplier_rank == 0:
+                            partner.supplier_rank = 1
+                    partner_id = partner.id
+
                 info.append({
                     'date': record_date.date(),
                     'year': row.get('წელი'),
                     'xazina_type': self.xazina_type,
+                    'commintment_foundation': vendor_name or False,
+                    'reciever_name': vendor_name or False,
                 })
             if info:
                 self.env['xazina'].create(info)
