@@ -53,21 +53,23 @@ class Xazina(models.Model):
 
     def action_view_bank_lines(self):
         self.ensure_one()
-        return {
+        move_ids = self.bank_statement_line_ids.mapped('move_id').ids
+        action = {
             'type': 'ir.actions.act_window',
             'name': _('საბანკო ჩანაწერები'),
-            'res_model': 'account.bank.statement.line',
+            'res_model': 'account.move',
             'view_mode': 'list,form',
-            'domain': [('xazina_id', '=', self.id)],
+            'domain': [('id', 'in', move_ids)],
             'context': {'create': False},
         }
+        if len(move_ids) == 1:
+            action['view_mode'] = 'form'
+            action['res_id'] = move_ids[0]
+        return action
 
     def action_return_to_draft(self):
         for rec in self:
-            for line in rec.bank_statement_line_ids:
-                move = line.move_id
-                if move and move.state == 'posted':
-                    move.button_draft()
+            rec.bank_statement_line_ids.unlink()
             rec.state = 'draft'
 
     def action_open_xazina_income_import_wizard(self):
@@ -100,7 +102,6 @@ class Xazina(models.Model):
         if not records:
             records = self
 
-        # Determine xazina_type from the selected records
         xazina_type = records[:1].xazina_type if records else 'შემოსავლები'
 
         wizard = self.env['create.gatareba.wizard'].create({
