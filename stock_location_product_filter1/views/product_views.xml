@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Show On Hand at Source in product variants list (used by Search More) -->
+        <record id="view_product_product_tree_on_hand_source" model="ir.ui.view">
+            <field name="name">product.product.tree.on.hand.source</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_product_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='default_code']" position="after">
+                    <field name="on_hand_at_source" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+    
+</odoo>
+
+

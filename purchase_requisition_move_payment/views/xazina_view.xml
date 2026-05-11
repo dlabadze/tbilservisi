@@ -6,13 +6,11 @@
         <field name="model">xazina</field>
         <field name="inherit_id" ref="xazina_application.view_xazina_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//form/sheet" position="before">
-                <header>
-                    <button name="action_open_purchase_requisition_wizard"
-                            string="Purchase Req."
-                            type="object"
-                            class="btn-warning"/>
-                </header>
+            <xpath expr="//header" position="inside">
+                <button name="action_open_purchase_requisition_wizard"
+                        string="Purchase Req."
+                        type="object"
+                        class="btn-warning"/>
             </xpath>
         </field>
     </record>

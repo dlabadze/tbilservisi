@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_shvebuleba_list_inherit_excel_import" model="ir.ui.view">
+        <field name="name">shvebuleba.list.inherit.excel.import</field>
+        <field name="model">shvebuleba</field>
+        <field name="inherit_id" ref="biuleteni.view_shvebuleba_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button
+                        name="action_open_excel_import_wizard"
+                        string="იმპორტი"
+                        type="object"
+                        display="always"
+                    />
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>

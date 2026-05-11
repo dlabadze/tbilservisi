@@ -8,7 +8,10 @@
             <xpath expr="//field[@name='line_ids']/list/field[@name='pcon_am']" position="after">
                 <field name="with_preiskuranti"/>
                 <field name="tender_amount"/>
-                <field name="remaining_resources_amount"/>
+                <field name="remaining_resources_amount" column_invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/list/field[@name='tag_ids']" position="after">
+                <field name="purchase_plan_type"/>
             </xpath>
         </field>
     </record>

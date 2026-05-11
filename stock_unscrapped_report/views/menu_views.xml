@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_unscrapped_stock_report"
+              name="Unscrapped Stock"
+              parent="stock.menu_warehouse_report"
+              action="action_unscrapped_stock_wizard"
+              sequence="100"/>
+
+</odoo>

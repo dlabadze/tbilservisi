@@ -82,6 +82,9 @@ class CreateGatarebWizard(models.TransientModel):
         created_lines = self.env['account.bank.statement.line']
 
         for xazina in records:
+            if xazina.state == 'validated':
+                continue
+
             if not xazina.date:
                 raise UserError(
                     _('ჩანაწერს "%s" არ აქვს თარიღი მითითებული.')
@@ -109,6 +112,7 @@ class CreateGatarebWizard(models.TransientModel):
                 'narration': xazina.payment_foundation or False,
             }
             line = self.env['account.bank.statement.line'].create(line_vals)
+            line.xazina_id = xazina.id
 
             # For 'შემოსავლები', we automatically set the transit account (1243) and post.
             # For 'გადარიცხვები', we leave it in suspense/draft as per "standard program" behavior for reconciliation.
@@ -133,6 +137,7 @@ class CreateGatarebWizard(models.TransientModel):
                         {'analytic_distribution': analytic_dist}
                     )
 
+            xazina.state = 'validated'
             created_lines |= line
 
         if not created_lines:

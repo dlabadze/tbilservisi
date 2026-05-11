@@ -51,6 +51,8 @@ class PurchaseRequisition(models.Model):
     percentage_1 = fields.Float(string='პროცენტი', digits=(5, 2))
     percentage_2 = fields.Float(string='პროცენტი', digits=(5, 2))
     percentage_3 = fields.Float(string='პროცენტი', digits=(5, 2))
+    department_id = fields.Many2one('hr.department', string='სამსახური')
+    spa_or_cmr_number = fields.Char(string='SPA ან CMR ნომერი')
 
     @api.constrains('percentage_1', 'percentage_2', 'percentage_3')
     def _check_percentages_sum(self):

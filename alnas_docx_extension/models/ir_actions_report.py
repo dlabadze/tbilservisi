@@ -24,6 +24,7 @@ class IrActionsReport(models.Model):
             'get_last': misc_tools.get_last,
             'join_field': misc_tools.join_field,
             'count_records': misc_tools.count_records,
+            'num_to_words': misc_tools.num_to_words,
         })
 
         render_image = context.get('render_image')

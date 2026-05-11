@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_unscrapped_stock_report_line_list" model="ir.ui.view">
+        <field name="name">unscrapped.stock.report.line.list</field>
+        <field name="model">unscrapped.stock.report.line</field>
+        <field name="arch" type="xml">
+            <list string="Unscrapped Stock"
+                  create="false" edit="false" delete="false" import="false">
+                <field name="location_id"/>
+                <field name="warehouse_id" optional="show"/>
+                <field name="product_default_code"/>
+                <field name="product_name"/>
+                <field name="categ_id" optional="show"/>
+                <field name="quantity" sum="Total Quantity"/>
+                <field name="uom_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_unscrapped_stock_report_line_search" model="ir.ui.view">
+        <field name="name">unscrapped.stock.report.line.search</field>
+        <field name="model">unscrapped.stock.report.line</field>
+        <field name="arch" type="xml">
+            <search string="Unscrapped Stock">
+                <field name="location_id"/>
+                <field name="warehouse_id"/>
+                <field name="product_id"/>
+                <field name="categ_id"/>
+                <field name="product_default_code"/>
+                <field name="product_name"/>
+                <group expand="1" string="Group By">
+                    <filter name="group_warehouse"
+                            string="Warehouse"
+                            context="{'group_by': 'warehouse_id'}"/>
+                    <filter name="group_location"
+                            string="Location"
+                            context="{'group_by': 'location_id'}"/>
+                    <filter name="group_category"
+                            string="Product Category"
+                            context="{'group_by': 'categ_id'}"/>
+                    <filter name="group_product"
+                            string="Product"
+                            context="{'group_by': 'product_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_unscrapped_stock_report_line" model="ir.actions.act_window">
+        <field name="name">Unscrapped Stock</field>
+        <field name="res_model">unscrapped.stock.report.line</field>
+        <field name="view_mode">list</field>
+        <field name="search_view_id" ref="view_unscrapped_stock_report_line_search"/>
+        <field name="context">{'search_default_group_location': 1}</field>
+    </record>
+
+</odoo>

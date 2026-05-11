@@ -35,30 +35,51 @@ class HrEmployeeExtendedDetails(models.Model):
             else:
                 record.age = 0
 
-    @api.depends('contract_ids')
+    @api.depends('contract_ids', 'contract_ids.state', 'contract_ids.date_start', 'contract_ids.date_end')
     def _compute_work_experience(self):
+        today = date.today()
         for employee in self:
-            # Calculate work experience based on contracts
             total_months = 0
 
-            # Get all valid contracts (running or completed)
+            # Get all valid contracts, sorted by start date descending
             valid_contracts = employee.env['hr.contract'].search([
                 ('employee_id', '=', employee.id),
-                ('state', 'in', ['draft','open', 'close', 'done'])
-            ])
+                ('state', 'in', ['draft', 'open', 'close', 'done']),
+                ('date_start', '!=', False)
+            ], order='date_start desc')
 
-            for contract in valid_contracts:
-                # Determine end date
-                end_date = contract.date_end or date.today()
+            if valid_contracts:
+                # The newest contract determines the end of the calculation
+                chain_end_date = valid_contracts[0].date_end
+                
+                # Cap the end date to today
+                if not chain_end_date or chain_end_date > today:
+                    effective_end_date = today
+                else:
+                    effective_end_date = chain_end_date
+                
+                chain_start_date = valid_contracts[0].date_start
+                previous_start = valid_contracts[0].date_start
 
-                # Calculate months worked for this contract
-                if contract.date_start:
-                    # Calculate months between start and end date
-                    months = relativedelta(end_date, contract.date_start).years * 12 + \
-                             relativedelta(end_date, contract.date_start).months
-
-                    # Ensure we don't count negative months
-                    total_months += max(0, months + 1)  # Add 1 to include the start month
+                # Walk through contracts backwards to find the continuous chain
+                for i in range(1, len(valid_contracts)):
+                    contract = valid_contracts[i]
+                    contract_end = contract.date_end or today
+                    
+                    # Gap calculation: previous_start - contract_end
+                    # If gap is <= 1 day, it's considered continuous (e.g., Dec 31 to Jan 1 is 1 day gap)
+                    gap = (previous_start - contract_end).days
+                    if gap <= 1:
+                        chain_start_date = contract.date_start
+                        previous_start = contract.date_start
+                    else:
+                        break # Chain broken
+                
+                # Calculate total months from chain start to effective end
+                if chain_start_date <= effective_end_date:
+                    delta = relativedelta(effective_end_date, chain_start_date)
+                    months = delta.years * 12 + delta.months
+                    total_months = max(0, months + 1)
 
             employee.work_experience_months = total_months
 

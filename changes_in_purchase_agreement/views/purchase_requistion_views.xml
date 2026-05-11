@@ -49,6 +49,16 @@
                 <field name="purchase_plan_id" />
                 <field name="purchase_plan_line_id" domain="[('plan_id', '=', purchase_plan_id)]"/>
             </xpath>
+            <xpath expr="//field[@name='contract_number']" position="after">
+                <field name="department_id"/>
+                <field name="spa_or_cmr_number"/>
+            </xpath>
+            <xpath expr="//field[@name='spa_number']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='cmr_number']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//field[@name='delivery_type']" position="after">
                 <label for="date_1" string="Date 1 - Percentage 1" invisible="delivery_type != 'გრძელვადიანი'"/>
                 <div class="o_row" invisible="delivery_type != 'გრძელვადიანი'">
@@ -88,6 +98,21 @@
         </field>
     </record>
 
-
+    <record id="view_purchase_requisition_list_inherit_import" model="ir.ui.view">
+        <field name="name">purchase.requisition.list.inherit.import</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="%(changes_in_purchase_agreement.action_import_purchase_requisition_wizard)d"
+                            type="action"
+                            string="Excel იმპორტი"
+                            class="btn-secondary"
+                            display="always"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
 
 </odoo>

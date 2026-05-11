@@ -319,5 +319,7 @@ class HRDepartment(models.Model):
 
     @api.depends('name')
     def _compute_display_name(self):
+        if not self.env.context.get('biuleteni_dept_name'):
+            return super()._compute_display_name()
         for dept in self:
             dept.display_name = dept.name or ''

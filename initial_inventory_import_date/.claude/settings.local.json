@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:/Users/Gedes/OneDrive/Desktop/\" | grep -i 1610)",
+      "Read(//c/Users/Gedes/OneDrive/Desktop/**)",
+      "Bash(python -c 'from openpyxl import load_workbook; wb = load_workbook\\('\\\\''C:/Users/Gedes/OneDrive/Desktop/1610.xlsx'\\\\'', data_only=True\\); ws = wb.worksheets[0]; print\\('\\\\''Sheet:'\\\\'', ws.title\\); print\\('\\\\''Dimensions:'\\\\'', ws.dimensions\\); print\\('\\\\''---'\\\\''\\); *)",
+      "Bash(python -c ' *)",
+      "Bash(git -C \"C:/Users/Gedes/OneDrive/Desktop/initial_inventory_import_date\" rev-parse --is-inside-work-tree)",
+      "Bash(cp \"c:/Users/Gedes/OneDrive/Desktop/JUNK07_05_2026/initial_inventory_import_date/wizard/initial_inventory_import_wizard.py\" \"c:/Users/Gedes/OneDrive/Desktop/JUNK07_05_2026/initial_inventory_import_date/wizard/initial_inventory_import_wizard.py.backup-$\\(date +%Y%m%d-%H%M%S\\)\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Gedes\\OneDrive\\Desktop\\JUNK07_05_2026\\initial_inventory_import_date\\wizard"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_import_purchase_requisition_wizard_form" model="ir.ui.view">
+        <field name="name">import.purchase.requisition.wizard.form</field>
+        <field name="model">import.purchase.requisition.wizard</field>
+        <field name="arch" type="xml">
+            <form string="ექსელიდან იმპორტი">
+                <group>
+                    <field name="excel_file" filename="file_name"/>
+                    <field name="file_name" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_import" string="იმპორტი" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="გაუქმება" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_import_purchase_requisition_wizard" model="ir.actions.act_window">
+        <field name="name">შესყიდვის შეთანხმების იმპორტი</field>
+        <field name="res_model">import.purchase.requisition.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_import_purchase_requisition_wizard_form"/>
+    </record>
+</odoo>

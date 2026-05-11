@@ -103,6 +103,7 @@
         <field name="res_model">zeganakveturi_saati</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_zeganakveturi_saati_search"/>
+        <field name="context">{'biuleteni_dept_name': True}</field>
     </record>
 
     <!-- ====================== MENU ====================== -->

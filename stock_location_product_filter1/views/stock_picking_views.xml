@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inject domain to use computed allowed_product_ids on stock.move list in picking form -->
+        <record id="view_picking_form_product_domain" model="ir.ui.view">
+            <field name="name">stock.picking.form.product.domain.allowed</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='move_ids_without_package']" position="attributes">
+                    <attribute name="context">{}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_id']" position="attributes">
+                    <attribute name="domain">[]</attribute>
+                    <attribute name="context">{'default_picking_type_id': parent.picking_type_id, 'default_location_id': parent.location_id, 'filter_location_id': parent.location_id, 'location': parent.location_id, 'compute_child': True}</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
+
+

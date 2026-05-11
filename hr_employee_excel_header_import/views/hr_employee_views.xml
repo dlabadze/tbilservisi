@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_tree_inherit_excel_header_import" model="ir.ui.view">
+        <field name="name">hr.employee.list.inherit.excel.header.import</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/header" position="inside">
+                <button
+                    name="action_open_excel_header_import_wizard"
+                    string="Excel Import"
+                    type="object"
+                    display="always"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -17,6 +17,7 @@
                     display="always"/>
                 </header>
                 <field name="xazina_type" column_invisible="1"/>
+                <field name="state" widget="badge" decoration-success="state == 'validated'" decoration-muted="state == 'draft'"/>
                 <field name="date"/>
                 <field name="year"/>
                 <field name="request_number"/>
@@ -60,6 +61,7 @@
                     display="always"/>
                 </header>
                 <field name="xazina_type" column_invisible="1"/>
+                <field name="state" widget="badge" decoration-success="state == 'validated'" decoration-muted="state == 'draft'"/>
                 <field name="date"/>
                 <field name="year"/>
                 <field name="request_number"/>
@@ -91,7 +93,24 @@
         <field name="model">xazina</field>
         <field name="arch" type="xml">
             <form string="Xazina">
+                <header>
+                    <button name="action_return_to_draft"
+                        type="object"
+                        string="Return to Draft"
+                        class="btn-secondary"
+                        invisible="state != 'validated'"/>
+                    <field name="state" widget="statusbar" readonly="1"/>
+                </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bank_lines"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-university"
+                            invisible="bank_line_count == 0">
+                            <field name="bank_line_count" widget="statinfo" string="საბანკო ჩანაწერები"/>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="date"/>

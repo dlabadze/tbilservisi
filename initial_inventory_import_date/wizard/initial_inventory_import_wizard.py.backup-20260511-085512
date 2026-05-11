@@ -1,0 +1,386 @@
+# -*- coding: utf-8 -*-
+
+import base64
+import io
+
+from odoo import _, fields, models
+from odoo.exceptions import UserError
+
+try:
+    from openpyxl import load_workbook
+except ImportError:  # pragma: no cover - handled at runtime for missing dependency
+    load_workbook = None
+
+
+class InitialInventoryImportWizard(models.TransientModel):
+    _name = "initial.inventory.import.wizard"
+    _description = "Import Initial Inventory With Date"
+
+    file = fields.Binary(string="Excel File", required=True)
+    filename = fields.Char(string="Filename")
+    date = fields.Datetime(
+        string="Inventory Date",
+        required=True,
+        default=fields.Datetime.now,
+    )
+    inventory_name = fields.Char(
+        string="Reference",
+        required=True,
+        default=lambda self: _("Opening Balance Import"),
+    )
+    quantity_mode = fields.Selection(
+        selection=[
+            ("add", "Add uploaded quantity to current stock"),
+            ("set", "Set final counted quantity"),
+        ],
+        string="Quantity Mode",
+        required=True,
+        default="add",
+        help="Add mode creates a stock movement for the uploaded quantity. "
+        "Set mode uses the uploaded quantity as the final counted stock.",
+    )
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        required=True,
+        default=lambda self: self.env.company,
+    )
+    new_product_category_id = fields.Many2one(
+        "product.category",
+        string="Category for New Products",
+        required=True,
+        help="Used only when a row's default_code is not found and a new product is created.",
+    )
+    new_product_uom_id = fields.Many2one(
+        "uom.uom",
+        string="Unit of Measure for New Products",
+        required=True,
+        default=lambda self: self.env.ref("uom.product_uom_unit", raise_if_not_found=False),
+        help="Used only when a row's default_code is not found and a new product is created.",
+    )
+
+    def _parse_record_ref(self, value, label, row_number, model_name):
+        if value in (None, ""):
+            raise UserError(_("%(label)s is empty on row %(row)s.") % {
+                "label": label,
+                "row": row_number,
+            })
+        value = str(value).strip()
+        try:
+            numeric_value = float(value)
+        except ValueError:
+            record = self.env.ref(value, raise_if_not_found=False)
+            if not record:
+                raise UserError(_("%(label)s external ID was not found on row %(row)s: %(value)s") % {
+                    "label": label,
+                    "row": row_number,
+                    "value": value,
+                })
+            if record._name != model_name:
+                raise UserError(_("%(label)s on row %(row)s points to %(actual)s instead of %(expected)s.") % {
+                    "label": label,
+                    "row": row_number,
+                    "actual": record._name,
+                    "expected": model_name,
+                })
+            return record.id
+        if not numeric_value.is_integer() or numeric_value <= 0:
+            raise UserError(_("%(label)s must be a positive integer ID on row %(row)s.") % {
+                "label": label,
+                "row": row_number,
+            })
+        return int(numeric_value)
+
+    def _parse_quantity(self, value, row_number):
+        if value in (None, ""):
+            raise UserError(_("Quantity is empty on row %s.") % row_number)
+        try:
+            quantity = float(str(value).strip().replace(" ", "").replace(",", "."))
+        except ValueError:
+            raise UserError(_("Quantity must be numeric on row %s.") % row_number)
+        if quantity < 0:
+            raise UserError(_("Quantity cannot be negative on row %s.") % row_number)
+        return quantity
+
+    def _parse_price(self, value, row_number):
+        if value in (None, ""):
+            return None
+        try:
+            price = float(str(value).strip().replace(" ", "").replace(",", "."))
+        except ValueError:
+            raise UserError(_("Starting average price must be numeric on row %s.") % row_number)
+        if price < 0:
+            raise UserError(_("Starting average price cannot be negative on row %s.") % row_number)
+        return price
+
+    def _resolve_product(self, default_code, name, row_number):
+        Product = self.env["product.product"].with_company(self.company_id)
+        default_code = (str(default_code).strip() if default_code not in (None, "") else "")
+        name = (str(name).strip() if name not in (None, "") else "")
+
+        if not name:
+            raise UserError(_("Product name is empty on row %s.") % row_number)
+
+        if default_code:
+            matches = Product.search([
+                ("default_code", "=", default_code),
+                "|", ("company_id", "=", self.company_id.id), ("company_id", "=", False),
+            ])
+            if len(matches) > 1:
+                raise UserError(_(
+                    "Multiple products found for default_code '%(code)s' on row %(row)s. "
+                    "Each default_code must be unique."
+                ) % {"code": default_code, "row": row_number})
+            if matches:
+                return matches.id, False
+
+        new_product = Product.create({
+            "name": name,
+            "default_code": default_code or False,
+            "is_storable": True,
+            "type": "consu",
+            "categ_id": self.new_product_category_id.id,
+            "uom_id": self.new_product_uom_id.id,
+            "uom_po_id": self.new_product_uom_id.id,
+            "company_id": self.company_id.id if self.company_id else False,
+        })
+        return new_product.id, True
+
+    def _read_xlsx_lines(self):
+        self.ensure_one()
+        if load_workbook is None:
+            raise UserError(_("The Python package 'openpyxl' is required to read XLSX files."))
+        if not self.file:
+            raise UserError(_("Please upload an Excel file."))
+
+        try:
+            workbook = load_workbook(
+                filename=io.BytesIO(base64.b64decode(self.file)),
+                read_only=True,
+                data_only=True,
+            )
+        except Exception as error:
+            raise UserError(_("Could not read the XLSX file: %s") % error)
+
+        sheet = workbook.worksheets[0]
+        imported_lines = {}
+        product_prices = {}
+        created_count = 0
+        for row_number, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+            if not row or all(cell in (None, "") for cell in row):
+                continue
+            if len(row) < 5:
+                raise UserError(_(
+                    "Row %s must contain 5 columns: Location external ID, default_code, "
+                    "Product name, Quantity, Starting Average Price."
+                ) % row_number)
+
+            try:
+                quantity = self._parse_quantity(row[3], row_number)
+                price = self._parse_price(row[4], row_number)
+            except UserError:
+                if row_number == 1 and isinstance(row[3], str):
+                    continue
+                raise
+
+            location_id = self._parse_record_ref(row[0], _("Location external ID"), row_number, "stock.location")
+            product_id, was_created = self._resolve_product(row[1], row[2], row_number)
+            if was_created:
+                created_count += 1
+
+            imported_lines[(location_id, product_id)] = (
+                imported_lines.get((location_id, product_id), 0.0) + quantity
+            )
+            if price is not None:
+                existing_price = product_prices.get(product_id)
+                if existing_price is not None and existing_price != price:
+                    raise UserError(_(
+                        "Product on row %(row)s has a different starting average price than an earlier row "
+                        "for the same product. Each product must have one starting average price."
+                    ) % {"row": row_number})
+                product_prices[product_id] = price
+
+        if not imported_lines:
+            raise UserError(_("No inventory lines were found in the XLSX file."))
+        return imported_lines, product_prices, created_count
+
+    def _prepare_quants(self, imported_lines, accounting_date):
+        Quant = self.env["stock.quant"].with_context(inventory_mode=True)
+        quants = self.env["stock.quant"]
+
+        location_ids = {location_id for location_id, _product_id in imported_lines}
+        product_ids = {product_id for _location_id, product_id in imported_lines}
+        locations = self.env["stock.location"].browse(location_ids).exists()
+        products = self.env["product.product"].browse(product_ids).exists()
+        missing_location_ids = sorted(location_ids - set(locations.ids))
+        missing_product_ids = sorted(product_ids - set(products.ids))
+        if missing_location_ids:
+            raise UserError(_("These location IDs do not exist: %s") % ", ".join(map(str, missing_location_ids)))
+        if missing_product_ids:
+            raise UserError(_("These product IDs do not exist: %s") % ", ".join(map(str, missing_product_ids)))
+
+        product_by_id = {product.id: product for product in products}
+        location_by_id = {location.id: location for location in locations}
+
+        for (location_id, product_id), quantity in imported_lines.items():
+            location = location_by_id[location_id]
+            product = product_by_id[product_id].with_company(self.company_id)
+
+            if location.usage != "internal":
+                raise UserError(_("Location %(location)s must be an internal stock location.") % {
+                    "location": location.display_name,
+                })
+            if location.company_id and location.company_id != self.company_id:
+                raise UserError(_("Location %(location)s belongs to another company.") % {
+                    "location": location.display_name,
+                })
+            if not product.is_storable:
+                raise UserError(_("Product %(product)s is not storable.") % {
+                    "product": product.display_name,
+                })
+            if product.tracking != "none":
+                raise UserError(_(
+                    "Product %(product)s uses lot/serial tracking. The current XLSX format has no lot/serial column."
+                ) % {
+                    "product": product.display_name,
+                })
+
+            quant = Quant.search([
+                ("product_id", "=", product.id),
+                ("location_id", "=", location.id),
+                ("lot_id", "=", False),
+                ("package_id", "=", False),
+                ("owner_id", "=", False),
+                ("company_id", "in", [self.company_id.id, False]),
+            ], limit=1)
+            target_quantity = quantity
+            if self.quantity_mode == "add":
+                target_quantity = (quant.quantity if quant else 0.0) + quantity
+            inventory_values = {
+                "inventory_quantity": target_quantity,
+                "accounting_date": accounting_date,
+                "user_id": self.env.user.id,
+            }
+            if quant:
+                quant.with_context(inventory_mode=True).write(inventory_values)
+            else:
+                quant = Quant.create({
+                    **inventory_values,
+                    "product_id": product.id,
+                    "location_id": location.id,
+                })
+            quants |= quant
+
+        return quants
+
+    def _set_svl_create_date(self, svls, inventory_datetime):
+        if not svls:
+            return
+        self.env.cr.execute(
+            """
+            UPDATE stock_valuation_layer
+               SET create_date = %s
+             WHERE id = ANY(%s)
+            """,
+            [inventory_datetime, svls.ids],
+        )
+        svls.invalidate_recordset(["create_date"])
+
+    def _align_account_moves(self, account_moves, accounting_date):
+        for move in account_moves.sudo().exists():
+            move = move.with_context(
+                dv_initial_inventory_skip_sequence_constraint=True,
+                skip_readonly_check=True,
+                check_move_validity=False,
+                skip_account_move_synchronization=True,
+                sequence_date=accounting_date,
+            )
+            original_date = move.date
+            needs_repost = (
+                move.date != accounting_date
+                or (move.name and move.name != "/" and not move._sequence_matches_date())
+            )
+            if move.state == "posted" and needs_repost:
+                if move.inalterable_hash or move.need_cancel_request:
+                    raise UserError(_("Journal entry %s cannot be redated because it is locked.") % move.display_name)
+                move.button_draft()
+
+            if move.state == "draft" and move.date != accounting_date:
+                move.write({"date": accounting_date})
+
+            if move.state == "draft":
+                if (
+                    move.name
+                    and move.name != "/"
+                    and (original_date != accounting_date or not move._sequence_matches_date())
+                ):
+                    move._dv_initial_inventory_clear_sequence()
+                move._post(soft=False)
+
+    def action_import_initial_inventory(self):
+        self.ensure_one()
+
+        inventory_datetime = fields.Datetime.to_datetime(self.date)
+        accounting_date = fields.Datetime.context_timestamp(self, inventory_datetime).date()
+        imported_lines, product_prices, created_count = self._read_xlsx_lines()
+        quants = self._prepare_quants(imported_lines, accounting_date)
+
+        if product_prices:
+            Product = self.env["product.product"].with_company(self.company_id)
+            for product_id, price in product_prices.items():
+                Product.browse(product_id).standard_price = price
+
+        max_move = self.env["stock.move"].search([], order="id desc", limit=1)
+        max_svl = self.env["stock.valuation.layer"].search([], order="id desc", limit=1)
+        max_move_id = max_move.id or 0
+        max_svl_id = max_svl.id or 0
+
+        quants.with_context(
+            inventory_name=self.inventory_name,
+            dv_initial_inventory_datetime=inventory_datetime,
+            dv_initial_inventory_skip_sequence_constraint=True,
+            sequence_date=accounting_date,
+            set_inventory_quantity_auto_apply=True,
+        ).action_apply_inventory()
+
+        product_ids = [product_id for _location_id, product_id in imported_lines]
+        location_ids = [location_id for location_id, _product_id in imported_lines]
+        moves = self.env["stock.move"].search([
+            ("id", ">", max_move_id),
+            ("is_inventory", "=", True),
+            ("company_id", "=", self.company_id.id),
+            ("product_id", "in", product_ids),
+            "|",
+            ("location_id", "in", location_ids),
+            ("location_dest_id", "in", location_ids),
+        ])
+        if moves:
+            moves.write({"date": inventory_datetime})
+            moves.move_line_ids.write({"date": inventory_datetime})
+
+        svls = self.env["stock.valuation.layer"].search([
+            ("id", ">", max_svl_id),
+            ("stock_move_id", "in", moves.ids),
+        ]) | moves.stock_valuation_layer_ids
+        self._set_svl_create_date(svls, inventory_datetime)
+        self._align_account_moves(moves.account_move_ids | svls.account_move_id, accounting_date)
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Initial Inventory Imported"),
+                "message": _(
+                    "%(line_count)s line(s), %(move_count)s stock move(s), %(svl_count)s valuation layer(s) processed. "
+                    "%(created)s new product(s) created."
+                ) % {
+                    "line_count": len(imported_lines),
+                    "move_count": len(moves),
+                    "svl_count": len(svls),
+                    "created": created_count,
+                },
+                "type": "success",
+                "sticky": False,
+                "next": {"type": "ir.actions.act_window_close"},
+            },
+        }

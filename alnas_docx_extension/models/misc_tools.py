@@ -255,3 +255,113 @@ def count_records(recordset):
     if not recordset:
         return 0
     return len(recordset)
+
+
+def num_to_words(amount, part='full'):
+    """
+    Convert a number to Georgian words.
+
+    Modes:
+    - full (default): "<lari> ლარი და <tetri> თეთრი" (when tetri > 0)
+    - lari: only lari words
+    - tetri: only tetri words
+
+    Usage in template:
+        {{ num_to_words(docs.amount_total) }}           # full
+        {{ num_to_words(docs.amount_total, 'lari') }}   # only lari words
+        {{ num_to_words(docs.amount_total, 'tetri') }}  # only tetri words
+    """
+    if amount is False or amount is None or amount == '':
+        amount = 0
+    try:
+        amount = abs(float(amount))
+    except (TypeError, ValueError):
+        amount = 0
+
+    # Separate integer and decimal parts
+    lari = int(amount)
+    tetri = int(round((amount - lari) * 100))
+
+    # Handle edge-case like 1.999 -> tetri 100
+    if tetri == 100:
+        lari += 1
+        tetri = 0
+
+    # Georgian number words
+    ones = ['', 'ერთი', 'ორი', 'სამი', 'ოთხი', 'ხუთი', 'ექვსი', 'შვიდი', 'რვა', 'ცხრა']
+    teens = ['ათი', 'თერთმეტი', 'თორმეტი', 'ცამეტი', 'თოთხმეტი', 'თხუთმეტი',
+             'თექვსმეტი', 'ჩვიდმეტი', 'თვრამეტი', 'ცხრამეტი']
+    tens = ['', '', 'ოცი', 'ოცდაათი', 'ორმოცი', 'ორმოცდაათი', 'სამოცი', 'სამოცდაათი',
+            'ოთხმოცი', 'ოთხმოცდაათი']
+    tens_combined = ['', '', 'ოც', 'ოცდაათ', 'ორმოც', 'ორმოცდაათ', 'სამოც', 'სამოცდაათ',
+                     'ოთხმოც', 'ოთხმოცდაათ']
+    hundreds_alone = ['', 'ასი', 'ორასი', 'სამასი', 'ოთხასი', 'ხუთასი', 'ექვსასი', 'შვიდასი',
+                      'რვაასი', 'ცხრაასი']
+    hundreds_combined = ['', 'ას', 'ორას', 'სამას', 'ოთხას', 'ხუთას', 'ექვსას', 'შვიდას',
+                         'რვაას', 'ცხრაას']
+
+    def convert_under_thousand(n):
+        if n == 0:
+            return ''
+        elif n < 10:
+            return ones[n]
+        elif n < 20:
+            return teens[n - 10]
+        elif n < 100:
+            decade = n // 10
+            ones_part = n % 10
+            if ones_part == 0:
+                return tens[decade]
+            elif decade in [2, 4, 6, 8]:
+                return tens_combined[decade] + 'და' + ones[ones_part]
+            else:
+                return tens_combined[decade - 1] + 'და' + teens[ones_part]
+        else:
+            remainder = n % 100
+            if remainder != 0:
+                return hundreds_combined[n // 100] + ' ' + convert_under_thousand(remainder)
+            else:
+                return hundreds_alone[n // 100]
+
+    def convert_number(n):
+        if n == 0:
+            return "ნული"
+        elif n < 1000:
+            return convert_under_thousand(n)
+        elif n < 1000000:
+            thousands = n // 1000
+            remainder = n % 1000
+            if thousands == 1:
+                if remainder > 0:
+                    return "ათას " + convert_under_thousand(remainder)
+                return "ათასი"
+            if remainder > 0:
+                return convert_under_thousand(thousands) + " ათას " + convert_under_thousand(remainder)
+            return convert_under_thousand(thousands) + " ათასი"
+        else:
+            millions = n // 1000000
+            thousands = (n % 1000000) // 1000
+            remainder = n % 1000
+            result = convert_under_thousand(millions) + " მილიონი"
+            if thousands > 0:
+                if remainder > 0:
+                    result += " " + convert_under_thousand(thousands) + " ათას"
+                else:
+                    result += " " + convert_under_thousand(thousands) + " ათასი"
+            if remainder > 0:
+                result += " " + convert_under_thousand(remainder)
+            return result
+
+    lari_words = convert_number(lari)
+    tetri_words = convert_number(tetri)
+
+    part = (part or 'full').lower()
+    if part == 'lari':
+        return lari_words
+    if part == 'tetri':
+        return tetri_words
+
+    result = lari_words + " ლარი"
+    if tetri > 0:
+        result += " და " + tetri_words + " თეთრი"
+    return result

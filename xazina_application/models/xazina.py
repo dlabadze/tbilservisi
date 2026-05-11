@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 
 
 class Xazina(models.Model):
@@ -31,6 +31,44 @@ class Xazina(models.Model):
         ('შემოსავლები', 'შემოსავლები'),
         ('გადარიცხვები', 'გადარიცხვები'),
     ], string='ხაზინის ტიპი', default='შემოსავლები')
+    state = fields.Selection([
+        ('draft', 'დრაფტი'),
+        ('validated', 'გატარებული'),
+    ], string='სტატუსი', default='draft')
+
+    bank_statement_line_ids = fields.One2many(
+        'account.bank.statement.line',
+        'xazina_id',
+        string='საბანკო ჩანაწერები',
+    )
+    bank_line_count = fields.Integer(
+        string='საბანკო ჩანაწერების რაოდენობა',
+        compute='_compute_bank_line_count',
+    )
+
+    @api.depends('bank_statement_line_ids')
+    def _compute_bank_line_count(self):
+        for rec in self:
+            rec.bank_line_count = len(rec.bank_statement_line_ids)
+
+    def action_view_bank_lines(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('საბანკო ჩანაწერები'),
+            'res_model': 'account.bank.statement.line',
+            'view_mode': 'list,form',
+            'domain': [('xazina_id', '=', self.id)],
+            'context': {'create': False},
+        }
+
+    def action_return_to_draft(self):
+        for rec in self:
+            for line in rec.bank_statement_line_ids:
+                move = line.move_id
+                if move and move.state == 'posted':
+                    move.button_draft()
+            rec.state = 'draft'
 
     def action_open_xazina_income_import_wizard(self):
         return {
@@ -57,13 +95,12 @@ class Xazina(models.Model):
         }
 
     def action_open_create_gatareba_wizard(self):
-        """Open wizard to create journal entries (გატარებები) from selected records."""
         active_ids = self.env.context.get('active_ids', self.ids)
         records = self.browse(active_ids)
         if not records:
             records = self
 
-        # Determine xazina_type from the selected records (use first non-empty)
+        # Determine xazina_type from the selected records
         xazina_type = records[:1].xazina_type if records else 'შემოსავლები'
 
         wizard = self.env['create.gatareba.wizard'].create({

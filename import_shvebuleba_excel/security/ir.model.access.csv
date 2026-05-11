@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_shvebuleba_excel_import_wizard_user,access.shvebuleba.excel.import.wizard.user,model_shvebuleba_excel_import_wizard,base.group_user,1,1,1,1
