@@ -6,8 +6,15 @@
         <field name="binding_model_id" ref="hr_contract.model_hr_contract"/>
         <field name="binding_view_types">list</field>
         <field name="state">code</field>
-        <field name="code">
-            records.write({'work_entry_source': 'attendance'})
-        </field>
+        <field name="code"><![CDATA[
+to_update = records.filtered(lambda c: c.work_entry_source != 'attendance')
+
+if to_update:
+    env.cr.execute(
+        "UPDATE hr_contract SET work_entry_source = 'attendance' WHERE id = ANY(%s)",
+        [to_update.ids]
+    )
+    to_update.invalidate_recordset(['work_entry_source'])
+        ]]></field>
     </record>
 </odoo>
