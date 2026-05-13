@@ -91,8 +91,8 @@ class CreateGatarebWizard(models.TransientModel):
                     % (xazina.request_number or str(xazina.id))
                 )
             if not xazina.amount_in_gel:
-                continue  # skip zero-amount rows
-
+                continue
+            
             ref_parts = [
                 xazina.request_number,
                 xazina.commintment_number,
@@ -131,19 +131,11 @@ class CreateGatarebWizard(models.TransientModel):
                     move.action_post()
 
             elif self.xazina_type == 'გადარიცხვები':
-                if counterpart_lines:
-                    analytic_dist = {}
-                    expenses_analytic = self.env['account.analytic.account'].search([('name', '=', 'ხარჯები')], limit=1)
-                    if expenses_analytic:
-                        analytic_dist[str(expenses_analytic.id)] = 100.0
-
-                    if xazina.analytic_account_id:
-                        analytic_dist[str(xazina.analytic_account_id.id)] = 100.0
-
-                    if analytic_dist:
-                        counterpart_lines.with_context(check_move_validity=False).write(
-                            {'analytic_distribution': analytic_dist}
-                        )
+                if counterpart_lines and xazina.analytic_account_id:
+                    analytic_dist = {str(xazina.analytic_account_id.id): 100.0}
+                    counterpart_lines.with_context(check_move_validity=False).write(
+                        {'analytic_distribution': analytic_dist}
+                    )
 
             xazina.state = 'validated'
             created_lines |= line
