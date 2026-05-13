@@ -37,8 +37,7 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
     selected_month = fields.Selection(
         selection='_get_month_selection',
         string='არჩეული თვე',
-        required=True,
-        default=str(fields.Date.today().month)
+        required=False,
     )
 
     @api.depends()  
@@ -58,8 +57,8 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
                 start_date = fields.Date.from_string(record.date1)
                 end_date = fields.Date.from_string(record.date2)
                 delta = end_date - start_date
-                if delta.days > 30:
-                    raise ValidationError('The end date must be within 30 days of the start date.')
+                #if delta.days > 30:
+                #    raise ValidationError('The end date must be within 30 days of the start date.')
 
     def send_soap_request(self):
         _logger.info("Executing send_soap_request with dates: %s - %s", self.date1, self.date2)
@@ -68,24 +67,29 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
         rs_pass = self.rs_pass
         start_date = self.date1
         end_date = self.date2
-        selected_month_number = int(self.selected_month)
-        current_date = datetime.now()
-        current_year = current_date.year
-        current_month = current_date.month
-    
-        # Determine the year based on the selected month
-        if selected_month_number > current_month:
-            year = current_year - 1
-        else:
-            year = current_year
+        if self.selected_month:
+            selected_month_number = int(self.selected_month)
+            current_date = datetime.now()
+            current_year = current_date.year
+            current_month = current_date.month
+        
+            # Determine the year based on the selected month
+            if selected_month_number > current_month:
+                year = current_year - 1
+            else:
+                year = current_year
 
             # Calculate month start and end
-        month_start = datetime(year, selected_month_number, 1)
-        month_end = month_start + relativedelta(months=1, days=-1)
-    
-        # Format dates for the SOAP request
-        month_start_str = month_start.strftime('%Y-%m-%d')
-        month_end_str = month_end.strftime('%Y-%m-%d')
+            month_start = datetime(year, selected_month_number, 1)
+            month_end = month_start + relativedelta(months=1, days=-1)
+        
+            # Format dates for the SOAP request
+            month_start_str = month_start.strftime('%Y-%m-%d')
+            month_end_str = month_end.strftime('%Y-%m-%d')
+        else:
+            # If no month selected, use the date range from the wizard
+            month_start_str = self.date1.strftime('%Y-%m-%d')
+            month_end_str = self.date2.strftime('%Y-%m-%d')
 
 
 
@@ -459,8 +463,7 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
     selected_month = fields.Selection(
         selection='_get_month_selection',
         string='არჩეული თვე',
-        required=True,
-        default=str(fields.Date.today().month)
+        required=False,
     )
 
     @api.depends()
@@ -480,8 +483,8 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
                 start_date = fields.Date.from_string(record.date1)
                 end_date = fields.Date.from_string(record.date2)
                 delta = end_date - start_date
-                if delta.days > 30:
-                    raise ValidationError('The end date must be within 30 days of the start date.')
+                #if delta.days > 30:
+                #    raise ValidationError('The end date must be within 30 days of the start date.')
 
     def send_soap_request(self):
         _logger.info("Executing send_soap_request for buyer invoices with dates: %s - %s", self.date1, self.date2)
@@ -490,24 +493,29 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
         rs_pass = self.rs_pass
         start_date = self.date1
         end_date = self.date2
-        selected_month_number = int(self.selected_month)
-        current_date = datetime.now()
-        current_year = current_date.year
-        current_month = current_date.month
+        if self.selected_month:
+            selected_month_number = int(self.selected_month)
+            current_date = datetime.now()
+            current_year = current_date.year
+            current_month = current_date.month
 
-        # Determine the year based on the selected month
-        if selected_month_number > current_month:
-            year = current_year - 1
-        else:
-            year = current_year
+            # Determine the year based on the selected month
+            if selected_month_number > current_month:
+                year = current_year - 1
+            else:
+                year = current_year
 
             # Calculate month start and end
-        month_start = datetime(year, selected_month_number, 1)
-        month_end = month_start + relativedelta(months=1, days=-1)
+            month_start = datetime(year, selected_month_number, 1)
+            month_end = month_start + relativedelta(months=1, days=-1)
 
-        # Format dates for the SOAP request
-        month_start_str = month_start.strftime('%Y-%m-%d')
-        month_end_str = month_end.strftime('%Y-%m-%d')
+            # Format dates for the SOAP request
+            month_start_str = month_start.strftime('%Y-%m-%d')
+            month_end_str = month_end.strftime('%Y-%m-%d')
+        else:
+            # If no month selected, use the date range from the wizard
+            month_start_str = self.date1.strftime('%Y-%m-%d')
+            month_end_str = self.date2.strftime('%Y-%m-%d')
 
         # Get un_id and s_user_id using the rs_un_id method
         _logger.info("Getting un_id and s_user_id for account: %s", rs_acc)
