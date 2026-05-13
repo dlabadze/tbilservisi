@@ -10,9 +10,9 @@
                 <field name="buyer_tin"/>
                 <field name="company_review"/>
             </xpath>
-            <xpath expr="//field[@name='job_title']" position="after">
-                <button name="button_get_name_from_tin" string="Get Name from TIN" type="object"/>
-            </xpath>
+<!--            <xpath expr="//field[@name='job_title']" position="after">-->
+<!--                <button name="button_get_name_from_tin" string="Get Name from TIN" type="object"/>-->
+<!--            </xpath>-->
         </field>
     </record>
 </odoo>

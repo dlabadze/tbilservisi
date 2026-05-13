@@ -115,7 +115,7 @@ class CreateGatarebWizard(models.TransientModel):
             line.xazina_id = xazina.id
 
             # For 'შემოსავლები', we automatically set the transit account (1243) and post.
-            # For 'გადარიცხვები', we leave it in suspense/draft as per "standard program" behavior for reconciliation.
+            # For 'გადარიცხვები', we leave standard program behavior for reconciliation.
             move = line.move_id
             bank_account_id = journal.default_account_id.id
             counterpart_lines = move.line_ids.filtered(
@@ -131,11 +131,19 @@ class CreateGatarebWizard(models.TransientModel):
                     move.action_post()
 
             elif self.xazina_type == 'გადარიცხვები':
-                if counterpart_lines and xazina.analytic_account_id:
-                    analytic_dist = {str(xazina.analytic_account_id.id): 100.0}
-                    counterpart_lines.with_context(check_move_validity=False).write(
-                        {'analytic_distribution': analytic_dist}
-                    )
+                if counterpart_lines:
+                    analytic_dist = {}
+                    expenses_analytic = self.env['account.analytic.account'].search([('name', '=', 'ხარჯები')], limit=1)
+                    if expenses_analytic:
+                        analytic_dist[str(expenses_analytic.id)] = 100.0
+
+                    if xazina.analytic_account_id:
+                        analytic_dist[str(xazina.analytic_account_id.id)] = 100.0
+
+                    if analytic_dist:
+                        counterpart_lines.with_context(check_move_validity=False).write(
+                            {'analytic_distribution': analytic_dist}
+                        )
 
             xazina.state = 'validated'
             created_lines |= line
