@@ -2,8 +2,9 @@
     "name": "Purchase Fix Product Name",
     "version": "18.0.1.0.0",
     "category": "Purchase",
-    "depends": ["purchase"],
-    "data": [
+    'depends': ['product', 'purchase'],
+    'data': [
+        'views/report_purchaseorder.xml',
     ],
     "license": "LGPL-3",
     "installable": True,

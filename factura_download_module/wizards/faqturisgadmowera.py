@@ -1,5 +1,5 @@
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 import requests
 import xml.etree.ElementTree as ET
 import logging
@@ -57,41 +57,12 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
                 start_date = fields.Date.from_string(record.date1)
                 end_date = fields.Date.from_string(record.date2)
                 delta = end_date - start_date
-                #if delta.days > 30:
-                #    raise ValidationError('The end date must be within 30 days of the start date.')
 
     def send_soap_request(self):
         _logger.info("Executing send_soap_request with dates: %s - %s", self.date1, self.date2)
 
         rs_acc = self.rs_acc
         rs_pass = self.rs_pass
-        start_date = self.date1
-        end_date = self.date2
-        if self.selected_month:
-            selected_month_number = int(self.selected_month)
-            current_date = datetime.now()
-            current_year = current_date.year
-            current_month = current_date.month
-        
-            # Determine the year based on the selected month
-            if selected_month_number > current_month:
-                year = current_year - 1
-            else:
-                year = current_year
-
-            # Calculate month start and end
-            month_start = datetime(year, selected_month_number, 1)
-            month_end = month_start + relativedelta(months=1, days=-1)
-        
-            # Format dates for the SOAP request
-            month_start_str = month_start.strftime('%Y-%m-%d')
-            month_end_str = month_end.strftime('%Y-%m-%d')
-        else:
-            # If no month selected, use the date range from the wizard
-            month_start_str = self.date1.strftime('%Y-%m-%d')
-            month_end_str = self.date2.strftime('%Y-%m-%d')
-
-
 
         # Get un_id and s_user_id using the rs_un_id method
         _logger.info("Getting un_id and s_user_id for account: %s", rs_acc)
@@ -101,41 +72,86 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
         _logger.info("Getting user_id for account: %s", rs_acc)
         user_id = self.chek(rs_acc, rs_pass)
 
-        # Prepare your SOAP request
-        url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
-        headers = {
-            "Content-Type": "text/xml; charset=utf-8",
-            "SOAPAction": "http://tempuri.org/get_seller_invoices"
-        }
+        # Ensure date1 and date2 are date objects
+        d1 = fields.Date.from_string(self.date1)
+        d2 = fields.Date.from_string(self.date2)
 
-        body = f"""<?xml version="1.0" encoding="utf-8"?>
-            <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-              <soap:Body>
-                <get_seller_invoices xmlns="http://tempuri.org/">
-                  <user_id>{user_id}</user_id>
-                  <un_id>{un_id}</un_id>
-                  <s_dt>{start_date}T00:00:00</s_dt>
-                  <e_dt>{end_date}T23:59:59</e_dt>
-                  <op_s_dt>{month_start_str}T00:00:00</op_s_dt>
-                  <op_e_dt>{month_end_str}T23:59:59</op_e_dt>
-                  <invoice_no></invoice_no>
-                  <sa_ident_no></sa_ident_no>
-                  <desc></desc>
-                  <doc_mos_nom></doc_mos_nom>
-                  <su>{rs_acc}</su>
-                  <sp>{rs_pass}</sp>
-                </get_seller_invoices>
-              </soap:Body>
-            </soap:Envelope>"""
+        # Determine the date chunks to process
+        date_chunks = []
+        if self.selected_month:
+            selected_month_number = int(self.selected_month)
+            current_date_now = datetime.now()
+            current_year = current_date_now.year
+            current_month = current_date_now.month
+        
+            # Determine the year based on the selected month
+            if selected_month_number > current_month:
+                year = current_year - 1
+            else:
+                year = current_year
 
-        _logger.info("Sending SOAP request to %s", url)
-        response = requests.post(url, headers=headers, data=body)
-
-        if response.status_code == 200:
-            _logger.info("SOAP request successful: %s", response.text)
-            self._process_response(response.text)  # Process the response
+            # Calculate month start and end
+            month_start = datetime(year, selected_month_number, 1).date()
+            month_end = (datetime(year, selected_month_number, 1) + relativedelta(months=1, days=-1)).date()
+            date_chunks.append((month_start, month_end))
         else:
-            _logger.error("SOAP request failed with status %s: %s", response.status_code, response.text)
+            # Split the date range into monthly chunks
+            current_date = d1
+            while current_date <= d2:
+                last_day_of_month = current_date + relativedelta(day=31)
+                chunk_end = min(last_day_of_month, d2)
+                date_chunks.append((current_date, chunk_end))
+                current_date = chunk_end + relativedelta(days=1)
+
+        if not date_chunks:
+            raise UserError("არჩეული პერიოდი არასწორია.")
+
+        for op_start, op_end in date_chunks:
+            _logger.info("Processing date chunk: %s to %s", op_start, op_end)
+            
+            # Widen registration dates to ensure we catch invoices registered slightly outside the month
+            reg_start = op_start - relativedelta(months=1)
+            reg_end = op_end + relativedelta(months=1)
+
+            # Prepare your SOAP request
+            url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
+            headers = {
+                "Content-Type": "text/xml; charset=utf-8",
+                "SOAPAction": "http://tempuri.org/get_seller_invoices"
+            }
+
+            body = f"""<?xml version="1.0" encoding="utf-8"?>
+                <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                  <soap:Body>
+                    <get_seller_invoices xmlns="http://tempuri.org/">
+                      <user_id>{user_id}</user_id>
+                      <un_id>{un_id}</un_id>
+                      <s_dt>{reg_start.strftime('%Y-%m-%d')}T00:00:00</s_dt>
+                      <e_dt>{reg_end.strftime('%Y-%m-%d')}T23:59:59</e_dt>
+                      <op_s_dt>{op_start.strftime('%Y-%m-%d')}T00:00:00</op_s_dt>
+                      <op_e_dt>{op_end.strftime('%Y-%m-%d')}T23:59:59</op_e_dt>
+                      <invoice_no></invoice_no>
+                      <sa_ident_no></sa_ident_no>
+                      <desc></desc>
+                      <doc_mos_nom></doc_mos_nom>
+                      <su>{rs_acc}</su>
+                      <sp>{rs_pass}</sp>
+                    </get_seller_invoices>
+                  </soap:Body>
+                </soap:Envelope>"""
+
+            _logger.info("Sending SOAP request to %s for period %s - %s", url, op_start, op_end)
+            try:
+                response = requests.post(url, headers=headers, data=body, timeout=60)
+                if response.status_code == 200:
+                    _logger.info("SOAP request successful for period %s - %s", op_start, op_end)
+                    self._process_response(response.text)  # Process the response
+                else:
+                    _logger.error("SOAP request failed with status %s for period %s - %s: %s", response.status_code, op_start, op_end, response.text)
+                    raise UserError(f"RS.GE-დან მონაცემების წამოღება ვერ მოხერხდა პერიოდისთვის {op_start} - {op_end}. სტატუსი: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                _logger.error("Request error for period %s - %s: %s", op_start, op_end, e)
+                raise UserError(f"RS.GE-სთან კავშირი გაწყდა პერიოდისთვის {op_start} - {op_end}. შეცდომა: {e}")
 
     def _process_response(self, response_text):
         root = ET.fromstring(response_text)
@@ -491,31 +507,6 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
 
         rs_acc = self.rs_acc
         rs_pass = self.rs_pass
-        start_date = self.date1
-        end_date = self.date2
-        if self.selected_month:
-            selected_month_number = int(self.selected_month)
-            current_date = datetime.now()
-            current_year = current_date.year
-            current_month = current_date.month
-
-            # Determine the year based on the selected month
-            if selected_month_number > current_month:
-                year = current_year - 1
-            else:
-                year = current_year
-
-            # Calculate month start and end
-            month_start = datetime(year, selected_month_number, 1)
-            month_end = month_start + relativedelta(months=1, days=-1)
-
-            # Format dates for the SOAP request
-            month_start_str = month_start.strftime('%Y-%m-%d')
-            month_end_str = month_end.strftime('%Y-%m-%d')
-        else:
-            # If no month selected, use the date range from the wizard
-            month_start_str = self.date1.strftime('%Y-%m-%d')
-            month_end_str = self.date2.strftime('%Y-%m-%d')
 
         # Get un_id and s_user_id using the rs_un_id method
         _logger.info("Getting un_id and s_user_id for account: %s", rs_acc)
@@ -525,69 +516,87 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
         _logger.info("Getting user_id for account: %s", rs_acc)
         user_id = self.chek(rs_acc, rs_pass)
 
-        # Prepare your SOAP request for buyer invoices
-        url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
-        headers = {
-            "Content-Type": "text/xml; charset=utf-8",
-            "SOAPAction": "http://tempuri.org/get_buyer_invoices"  # Update the SOAP action
-        }
+        # Ensure date1 and date2 are date objects
+        d1 = fields.Date.from_string(self.date1)
+        d2 = fields.Date.from_string(self.date2)
 
-        body = f"""<?xml version="1.0" encoding="utf-8"?>
-            <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-              <soap:Body>
-                <get_buyer_invoices xmlns="http://tempuri.org/">  <!-- Updated method -->
-                  <user_id>{user_id}</user_id>
-                  <un_id>{un_id}</un_id>
-                  <s_dt>{start_date}T00:00:00</s_dt>
-                  <e_dt>{end_date}T23:59:59</e_dt>
-                  <op_s_dt>{month_start_str}T00:00:00</op_s_dt>
-                  <op_e_dt>{month_end_str}T23:59:59</op_e_dt>
-                  <invoice_no></invoice_no>
-                  <sa_ident_no></sa_ident_no>
-                  <desc></desc>
-                  <doc_mos_nom></doc_mos_nom>
-                  <su>{rs_acc}</su>
-                  <sp>{rs_pass}</sp>
-                </get_buyer_invoices>
-              </soap:Body>
-            </soap:Envelope>"""
+        # Determine the date chunks to process
+        date_chunks = []
+        if self.selected_month:
+            selected_month_number = int(self.selected_month)
+            current_date_now = datetime.now()
+            current_year = current_date_now.year
+            current_month = current_date_now.month
 
-        _logger.info("Sending SOAP request to %s", url)
-        response = requests.post(url, headers=headers, data=body)
+            # Determine the year based on the selected month
+            if selected_month_number > current_month:
+                year = current_year - 1
+            else:
+                year = current_year
 
-        if response.status_code == 200:
-            _logger.info("SOAP request successful: %s", response.text)
-            self._process_response(response.text)  # Process the response
+            # Calculate month start and end
+            month_start = datetime(year, selected_month_number, 1).date()
+            month_end = (datetime(year, selected_month_number, 1) + relativedelta(months=1, days=-1)).date()
+            date_chunks.append((month_start, month_end))
         else:
-            _logger.error("SOAP request failed with status %s: %s", response.status_code, response.text)
+            # Split the date range into monthly chunks
+            current_date = d1
+            while current_date <= d2:
+                last_day_of_month = current_date + relativedelta(day=31)
+                chunk_end = min(last_day_of_month, d2)
+                date_chunks.append((current_date, chunk_end))
+                current_date = chunk_end + relativedelta(days=1)
 
-    def _process_response(self, response_text):
-        root = ET.fromstring(response_text)
-        namespaces = {
-            'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
-            'diffgr': 'urn:schemas-microsoft-com:xml-diffgram-v1',
-            'xmlns': '',
-        }
-    
-        invoice_paths = [
-            './/diffgr:diffgram//DocumentElement/invoices',
-            './/diffgr:diffgram//invoices',
-            './/DocumentElement/invoices',
-            './/invoices'
-        ]
-    
-        invoices = []
-        for path in invoice_paths:
-            invoices = root.findall(path, namespaces)
-            if invoices:
-                break
-    
-        if not invoices:
-            _logger.error("No invoices found in the response")
-            return
-    
-        invoice_data = []
-        
+        if not date_chunks:
+            raise UserError("არჩეული პერიოდი არასწორია.")
+
+        for op_start, op_end in date_chunks:
+            _logger.info("Processing buyer date chunk: %s to %s", op_start, op_end)
+            
+            # Widen registration dates to ensure we catch invoices registered slightly outside the month
+            reg_start = op_start - relativedelta(months=1)
+            reg_end = op_end + relativedelta(months=1)
+
+            # Prepare your SOAP request for buyer invoices
+            url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
+            headers = {
+                "Content-Type": "text/xml; charset=utf-8",
+                "SOAPAction": "http://tempuri.org/get_buyer_invoices"  # Update the SOAP action
+            }
+
+            body = f"""<?xml version="1.0" encoding="utf-8"?>
+                <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                  <soap:Body>
+                    <get_buyer_invoices xmlns="http://tempuri.org/">  <!-- Updated method -->
+                      <user_id>{user_id}</user_id>
+                      <un_id>{un_id}</un_id>
+                      <s_dt>{reg_start.strftime('%Y-%m-%d')}T00:00:00</s_dt>
+                      <e_dt>{reg_end.strftime('%Y-%m-%d')}T23:59:59</e_dt>
+                      <op_s_dt>{op_start.strftime('%Y-%m-%d')}T00:00:00</op_s_dt>
+                      <op_e_dt>{op_end.strftime('%Y-%m-%d')}T23:59:59</op_e_dt>
+                      <invoice_no></invoice_no>
+                      <sa_ident_no></sa_ident_no>
+                      <desc></desc>
+                      <doc_mos_nom></doc_mos_nom>
+                      <su>{rs_acc}</su>
+                      <sp>{rs_pass}</sp>
+                    </get_buyer_invoices>
+                  </soap:Body>
+                </soap:Envelope>"""
+
+            _logger.info("Sending SOAP request to %s for buyer period %s - %s", url, op_start, op_end)
+            try:
+                response = requests.post(url, headers=headers, data=body, timeout=60)
+                if response.status_code == 200:
+                    _logger.info("SOAP request successful for buyer period %s - %s", op_start, op_end)
+                    self._process_response(response.text)  # Process the response
+                else:
+                    _logger.error("SOAP request failed with status %s for buyer period %s - %s: %s", response.status_code, op_start, op_end, response.text)
+                    raise UserError(f"RS.GE-დან მონაცემების წამოღება ვერ მოხერხდა პერიოდისთვის {op_start} - {op_end}. სტატუსი: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                _logger.error("Request error for buyer period %s - %s: %s", op_start, op_end, e)
+                raise UserError(f"RS.GE-სთან კავშირი გაწყდა პერიოდისთვის {op_start} - {op_end}. შეცდომა: {e}")
+
     def _process_response(self, response_text):
         root = ET.fromstring(response_text)
         namespaces = {
