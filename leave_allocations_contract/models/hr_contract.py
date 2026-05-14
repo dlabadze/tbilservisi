@@ -8,11 +8,11 @@ class HrContract(models.Model):
         # Logic before creation
         records = super(HrContract, self).create(vals_list)
         paid_leave_id = self.env['hr.leave.type'].sudo().search([('name', '=', 'ანაზღაურებადი შვებულება')], limit=1)
-        bulletin_id = self.env['hr.leave.type'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
+        # bulletin_id = self.env['hr.leave.type'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
         accrual_plan_id = self.env['hr.leave.accrual.plan'].sudo().search([('name', '=', 'ანაზღაურებადი შვებულება')], limit=1)
-        bulletin_accrual_plan_id = self.env['hr.leave.accrual.plan'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
+        # bulletin_accrual_plan_id = self.env['hr.leave.accrual.plan'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
 
-        if paid_leave_id and bulletin_id:
+        if paid_leave_id and accrual_plan_id:
             for record in records:
                 if record.state == 'open':
                     employee = record.employee_id
@@ -35,25 +35,25 @@ class HrContract(models.Model):
 
                         })
                         rec1.action_approve()
-                    existing_bulletin = self.env['hr.leave.allocation'].sudo().search([
-                        ('employee_id', '=', employee.id),
-                        ('holiday_status_id', '=', bulletin_id.id),
-                        ('date_to', '=', False),
-                    ], limit=1)
+                    # existing_bulletin = self.env['hr.leave.allocation'].sudo().search([
+                    #     ('employee_id', '=', employee.id),
+                    #     ('holiday_status_id', '=', bulletin_id.id),
+                    #     ('date_to', '=', False),
+                    # ], limit=1)
 
-                    # თუ არ არსებობს, ვქმნით
-                    if not existing_bulletin:
-                        rec2 = self.env['hr.leave.allocation'].sudo().create({
-                            'employee_id': employee.id,
-                            'date_from': date_start,
-                            'date_to': False,
-                            'state': 'confirm',
-                            'number_of_days': 60,
-                            'allocation_type': 'accrual',
-                            'holiday_status_id': bulletin_id.id,
-                            'accrual_plan_id': bulletin_accrual_plan_id.id,
-                        })
-                        rec2.action_approve()
+                    # # თუ არ არსებობს, ვქმნით
+                    # if not existing_bulletin:
+                    #     rec2 = self.env['hr.leave.allocation'].sudo().create({
+                    #         'employee_id': employee.id,
+                    #         'date_from': date_start,
+                    #         'date_to': False,
+                    #         'state': 'confirm',
+                    #         'number_of_days': 60,
+                    #         'allocation_type': 'accrual',
+                    #         'holiday_status_id': bulletin_id.id,
+                    #         'accrual_plan_id': bulletin_accrual_plan_id.id,
+                    #     })
+                    #     rec2.action_approve()
         return records
 
     def write(self, vals):
@@ -61,10 +61,10 @@ class HrContract(models.Model):
         result = super(HrContract, self).write(vals)
 
         paid_leave = self.env['hr.leave.type'].sudo().search([('name', '=', 'ანაზღაურებადი შვებულება')], limit=1)
-        bulletin = self.env['hr.leave.type'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
+        # bulletin = self.env['hr.leave.type'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
         accrual_plan_id = self.env['hr.leave.accrual.plan'].sudo().search([('name', '=', 'ანაზღაურებადი შვებულება')], limit=1)
-        bulletin_accrual_plan_id = self.env['hr.leave.accrual.plan'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
-        if not (paid_leave and bulletin):
+        # bulletin_accrual_plan_id = self.env['hr.leave.accrual.plan'].sudo().search([('name', '=', 'ბიულეტენი')], limit=1)
+        if not paid_leave or not accrual_plan_id:
             return result
 
         for record in self:
@@ -94,28 +94,28 @@ class HrContract(models.Model):
                     'number_of_days': 24,
                     'allocation_type': 'accrual',
                     'holiday_status_id': paid_leave.id,
-                    'accrual_plan_id': accrual_plan_id.id,
+                    'accrual_plan_id': accrual_plan_id.id if accrual_plan_id else False,
                 })
                 rec1.action_approve()
 
-            # 2. ვამოწმებთ არსებობს თუ არა უკვე ბიულეტენის აქტიური დარიცხვა
-            existing_bulletin = self.env['hr.leave.allocation'].sudo().search([
-                ('employee_id', '=', employee.id),
-                ('holiday_status_id', '=', bulletin.id),
-                ('date_to', '=', False),
-            ], limit=1)
+            # # 2. ვამოწმებთ არსებობს თუ არა უკვე ბიულეტენის აქტიური დარიცხვა
+            # existing_bulletin = self.env['hr.leave.allocation'].sudo().search([
+            #     ('employee_id', '=', employee.id),
+            #     ('holiday_status_id', '=', bulletin.id),
+            #     ('date_to', '=', False),
+            # ], limit=1)
 
-            # თუ არ არსებობს, ვქმნით
-            if not existing_bulletin:
-                rec2 = self.env['hr.leave.allocation'].sudo().create({
-                    'employee_id': employee.id,
-                    'date_from': date_start,
-                    'date_to': False,
-                    'state': 'confirm',
-                    'number_of_days': 60,
-                    'allocation_type': 'accrual',
-                    'holiday_status_id': bulletin.id,
-                    'accrual_plan_id': bulletin_accrual_plan_id.id,
-                })
-                rec2.action_approve()
+            # # თუ არ არსებობს, ვქმნით
+            # if not existing_bulletin:
+            #     rec2 = self.env['hr.leave.allocation'].sudo().create({
+            #         'employee_id': employee.id,
+            #         'date_from': date_start,
+            #         'date_to': False,
+            #         'state': 'confirm',
+            #         'number_of_days': 60,
+            #         'allocation_type': 'accrual',
+            #         'holiday_status_id': bulletin.id,
+            #         'accrual_plan_id': bulletin_accrual_plan_id.id,
+            #     })
+            #     rec2.action_approve()
         return result
