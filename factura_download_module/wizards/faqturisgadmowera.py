@@ -93,13 +93,18 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
             # Calculate month start and end
             month_start = datetime(year, selected_month_number, 1).date()
             month_end = (datetime(year, selected_month_number, 1) + relativedelta(months=1, days=-1)).date()
-            date_chunks.append((month_start, month_end))
+            
+            # Split the month into 3-day chunks
+            current_date = month_start
+            while current_date <= month_end:
+                chunk_end = min(current_date + relativedelta(days=2), month_end)
+                date_chunks.append((current_date, chunk_end))
+                current_date = chunk_end + relativedelta(days=1)
         else:
-            # Split the date range into monthly chunks
+            # Split the date range into 3-day chunks
             current_date = d1
             while current_date <= d2:
-                last_day_of_month = current_date + relativedelta(day=31)
-                chunk_end = min(last_day_of_month, d2)
+                chunk_end = min(current_date + relativedelta(days=2), d2)
                 date_chunks.append((current_date, chunk_end))
                 current_date = chunk_end + relativedelta(days=1)
 
@@ -537,13 +542,18 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
             # Calculate month start and end
             month_start = datetime(year, selected_month_number, 1).date()
             month_end = (datetime(year, selected_month_number, 1) + relativedelta(months=1, days=-1)).date()
-            date_chunks.append((month_start, month_end))
+            
+            # Split the month into 3-day chunks
+            current_date = month_start
+            while current_date <= month_end:
+                chunk_end = min(current_date + relativedelta(days=2), month_end)
+                date_chunks.append((current_date, chunk_end))
+                current_date = chunk_end + relativedelta(days=1)
         else:
-            # Split the date range into monthly chunks
+            # Split the date range into 3-day chunks
             current_date = d1
             while current_date <= d2:
-                last_day_of_month = current_date + relativedelta(day=31)
-                chunk_end = min(last_day_of_month, d2)
+                chunk_end = min(current_date + relativedelta(days=2), d2)
                 date_chunks.append((current_date, chunk_end))
                 current_date = chunk_end + relativedelta(days=1)
 
