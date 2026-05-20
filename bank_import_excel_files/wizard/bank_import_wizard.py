@@ -108,9 +108,11 @@ class BankImportWizard(models.TransientModel):
 
             vat_to_name_map = {}
             for r in rows:
-                vat_val = str(r[col_index.get('მომხმარებლის იდენთიფიკატორი')]).strip()
-                name_val = str(r[col_index.get('მომხმარებელი')]).strip()
-                if vat_val:
+                idx_vat = col_index.get('მომხმარებლის იდენთიფიკატორი')
+                idx_name = col_index.get('მომხმარებელი')
+                vat_val = str(r[idx_vat]).strip() if idx_vat is not None else ''
+                name_val = str(r[idx_name]).strip() if idx_name is not None else ''
+                if vat_val and vat_val != 'None':
                     vat_to_name_map[vat_val] = name_val
 
             existing_partners = self.env['res.partner'].search([('vat', 'in', list(vat_to_name_map.keys()))])
@@ -132,16 +134,20 @@ class BankImportWizard(models.TransientModel):
                 amount = parse_number(row[col_index.get('თანხა\n(თეთრი)')])
                 raw_date_value = row[col_index.get('ჩარიცხვის დრო')]
                 parsed_date = self.parse_excel_date(raw_date_value)
-                name = f"TBC/{row[col_index['Transaction ID']]}"
+                tx_id_idx = col_index.get('Transaction ID')
+                name = f"TBC/{row[tx_id_idx]}" if tx_id_idx is not None else 'TBC/import'
 
-                client_type = row[col_index.get('კლიენტის ტიპი')]
+                client_type = row[col_index.get('კლიენტის ტიპი')] if col_index.get('კლიენტის ტიპი') is not None else None
 
                 partner_id = partner.id if partner else False
 
-                if partner.category_id.name == "ფიზიკური" :
+                if partner and partner.category_id and partner.category_id.name == "ფიზიკური":
                     target_account_id = self.env['account.account'].search([('code', '=', '1400.01.1421')], limit=1)
-                else :
+                else:
                     target_account_id = self.env['account.account'].search([('code', '=', '1400.01.1422')], limit=1)
+
+                if not target_account_id:
+                    raise UserError("ანგარიში 1400.01.1421 ან 1400.01.1422 ვერ მოიძებნა. გთხოვთ შეამოწმოთ ანგარიშთა გეგმა.")
 
                 line_vals_list.append({
                     'name': name,
@@ -231,7 +237,8 @@ class BankImportWizard(models.TransientModel):
             for row in rows:
                 row_vat = str(row[col_index.get('პარტნიორის საგადასახადო კოდი')]).strip() if col_index.get(
                     'პარტნიორის საგადასახადო კოდი') else ''
-                pname = str(row[col_index['პარტნიორი']]).strip()
+                pname_idx = col_index.get('პარტნიორი')
+                pname = str(row[pname_idx]).strip() if pname_idx is not None else ''
 
                 partner = partner_map.get(row_vat)
 
@@ -339,7 +346,8 @@ class BankImportWizard(models.TransientModel):
                 desc = row[col_index.get('დანიშნულება', '')] or ''
                 add_info = row[col_index.get('დამატებითი ინფორმაცია', '')] or ''
                 payment_ref = f"{desc} / {add_info}".strip(' / ')
-                date_val = row[col_index.get('თარიღი')]
+                idx_date = col_index.get('თარიღი')
+                date_val = self.parse_excel_date(row[idx_date]) if idx_date is not None else False
 
                 in_val = parse_number(row[col_index.get('შემოსული თანხა', 0)]) if 'შემოსული თანხა' in col_index else 0
                 out_val = parse_number(row[col_index.get('გასული თანხა', 0)]) if 'გასული თანხა' in col_index else 0
@@ -357,7 +365,7 @@ class BankImportWizard(models.TransientModel):
 
                 line_vals_list.append({
                     'name': payment_ref,
-                    'date': date_val,
+                    'date': date_val or False,
                     'amount': amount,
                     'journal_id': journal.id,
                     'payment_ref': payment_ref,
@@ -379,21 +387,49 @@ class BankImportWizard(models.TransientModel):
         # GE81 / GE40 / GE73 Logic
         # ---------------------------
         elif self.journal_type in ['ge81', 'ge40', 'ge73']:
-            header_row = 13
             sheet = wb.active
-            headers = [str(c).strip() if c else '' for c in
-                       next(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))]
-            col_index = {h: i for i, h in enumerate(headers)}
 
-            min_row = self.line_from or (header_row + 1)
+            BG_COLUMNS = {
+                'თარიღი': 0,
+                'დებეტი': 3,
+                'კრედიტი': 4,
+                'ოპერაციის შინაარსი': 5,
+                'გამგზავნის დასახელება': 9,
+                'გამგზავნის საიდენტიფიკაციო კოდი': 10,
+                'გამგზავნი ბანკის დასახელება': 13,
+                'მიმღების დასახელება': 14,
+                'მიმღების საიდენტიფიკაციო კოდი': 15,
+            }
+
+            header_row = None
+            for i, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                low_cells = [str(c).strip() if c else '' for c in row]
+                if 'თარიღი' in low_cells or 'Date' in low_cells:
+                    header_row = i
+                    break
+
+            if header_row is not None:
+                headers = [str(c).strip() if c else '' for c in
+                           next(sheet.iter_rows(min_row=header_row, max_row=header_row, values_only=True))]
+                col_index = {h: i for i, h in enumerate(headers)}
+                min_row = self.line_from or (header_row + 1)
+            else:
+                col_index = BG_COLUMNS
+                data_start = 1
+                for i, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                    if any(row):
+                        data_start = i
+                        break
+                min_row = self.line_from or data_start
+
             max_row = self.line_to or sheet.max_row
-
             rows = [r for r in sheet.iter_rows(min_row=min_row, max_row=max_row, values_only=True) if any(r)]
 
             vat_to_name_map = {}
 
             for row in rows:
-                debit = parse_number(row[col_index.get('დებეტი')])
+                idx_debit = col_index.get('დებეტი')
+                debit = parse_number(row[idx_debit]) if idx_debit is not None else 0
 
                 if debit:
                     sid = str(row[col_index.get('მიმღების საიდენტიფიკაციო კოდი')]).strip()
@@ -422,8 +458,10 @@ class BankImportWizard(models.TransientModel):
 
             line_vals_list = []
             for row in rows:
-                debit = parse_number(row[col_index.get('დებეტი')])
-                credit = parse_number(row[col_index.get('კრედიტი')])
+                idx_debit = col_index.get('დებეტი')
+                idx_credit = col_index.get('კრედიტი')
+                debit = parse_number(row[idx_debit]) if idx_debit is not None else 0
+                credit = parse_number(row[idx_credit]) if idx_credit is not None else 0
                 payment_ref = str(row[col_index.get('ოპერაციის შინაარსი')]) or ''
 
                 if credit:
@@ -443,7 +481,7 @@ class BankImportWizard(models.TransientModel):
                 partner = partner_map.get(sid)
 
                 line_vals_list.append({
-                    'date': row[col_index.get('თარიღი')],
+                    'date': self.parse_excel_date(row[col_index.get('თარიღი')]) if col_index.get('თარიღი') is not None else False,
                     'amount': amount,
                     'journal_id': journal.id,
                     'payment_ref': payment_ref,
