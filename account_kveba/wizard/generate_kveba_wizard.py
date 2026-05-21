@@ -28,6 +28,7 @@ class GenerateKvebaWizard(models.TransientModel):
         domain=[('plan_id.name', '=', 'სამსახური')]
     )
     cost = fields.Float(string='ღირებულება დღგ-ს გარეშე', required=True)
+    start_row = fields.Integer(string='Start Row', default=2)
     
     def _generate_and_download_missed_excel(self, missed_rows, created_count):
         """Generate Excel file with missed rows and return download action."""
@@ -150,13 +151,13 @@ class GenerateKvebaWizard(models.TransientModel):
             raise UserError(_("Required accounts not found. Please check account codes: 3132, 1618, 7411, 3322, 3330"))
         
         # Get cost (თვითღირებულება) from product
-        cost = self.cost
+        cost = kveba.standard_price
         
         # Prepare invoice lines
         invoice_lines = []
         missed_rows = []
         
-        for row in range(4, max_row + 1):
+        for row in range(self.start_row, max_row + 1):
             cell_value = sheet[f'D{row}'].value
             cell_value_2 = sheet[f'E{row}'].value
             cell_value_3 = sheet[f'B{row}'].value
