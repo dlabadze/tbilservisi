@@ -1,1 +1,1 @@
-from . import purchase_plans
+from . import purchase_plan
