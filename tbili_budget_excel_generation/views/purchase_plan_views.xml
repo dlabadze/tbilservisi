@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_purchase_plan_form_excel" model="ir.ui.view">
+        <field name="name">purchase.plan.form.excel</field>
+        <field name="model">purchase.plan</field>
+        <field name="inherit_id" ref="tbili_budget.view_purchase_plan_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add <header> with Excel button before <sheet> -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button
+                        name="action_generate_excel"
+                        type="object"
+                        string="ექსელის გენერაცია"
+                        icon="fa-file-excel-o"
+                        class="btn-primary"
+                    />
+                </header>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
