@@ -25,6 +25,7 @@
                         <field name="start_date"/>
                         <field name="end_date"/>
                         <field name="currency_id" invisible="0"/>
+                        <field name="pu_ac_am_total"/>
                     </group>
                     <notebook>
                         <page string="Purchase Plan Lines">

@@ -258,6 +258,16 @@ class PurchasePlan(models.Model):
     currency_id = fields.Many2one('res.currency', required=True, default=lambda self: self.env.company.currency_id)
     line_ids = fields.One2many('purchase.plan.line', 'plan_id', string='Purchase Plan Lines')
     name = fields.Char(string='დასახელება', required=True)
+    pu_ac_am_total = fields.Monetary(
+        string='მიმდინარე ღირებულების ჯამი',
+        store=True,
+        compute='_compute_pu_ac_am_total'
+    )
+
+    @api.depends('line_ids.pu_ac_am', 'line_ids')
+    def _compute_pu_ac_am_total(self):
+        for rec in self:
+            rec.pu_ac_am_total = sum(rec.line_ids.mapped('pu_ac_am'))
 
     @api.constrains('start_date', 'end_date')
     def _check_dates(self):
