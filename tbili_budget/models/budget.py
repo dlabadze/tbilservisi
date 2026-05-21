@@ -517,10 +517,10 @@ class PurchasePlanLine(models.Model):
         self.purchase_reason_id = False
 
     vadebi = fields.Selection([
-        ('1', 'პირველი'),
-        ('2', 'მეორე'),
-        ('3', 'მესამე'),
-        ('4', 'მეოთხე'),
+        ('1', 'ერთწლიანი'),
+        ('2', 'ორწლიანი'),
+        ('3', 'სამწლიანი'),
+        ('4', 'ოთხწლიანი'),
     ], string='შესყიდვის ვადები')
 
     pricekurant = fields.Selection([

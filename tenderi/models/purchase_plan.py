@@ -4,7 +4,7 @@ from odoo import models, fields, api
 class PurchasePlanLine(models.Model):
     _inherit = 'purchase.plan.line'
 
-    with_preiskuranti = fields.Boolean(string='პრესიკურატორით')
+    with_preiskuranti = fields.Boolean(string='პრეისკურანტით?')
     tender_amount = fields.Monetary(string='ტენდერის თანხა')
     remaining_resources_amount = fields.Monetary(string='დარჩენილი რესურსი ხელშეკრულებით', compute='_compute_remaining_resources_amount', store=True)
     purchase_plan_type = fields.Selection(selection=[('1', 'ერთწლიანი'), ('2', 'მრავალწლიანი')], string='შესყიდვის ტიპი')
