@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_tree_restrict_studio" model="ir.ui.view">
+        <field name="name">hr.employee.tree.restrict.studio</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="studio_customization.odoo_studio_hr_emplo_c0b9edfd-9175-4448-a628-58adc03852cf"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='x_studio_contractwage']" position="attributes">
+                <attribute name="groups">hr_employee_studio_restrict.group_hr_employee_studio_viewer</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

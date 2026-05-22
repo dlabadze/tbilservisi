@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="group_hr_employee_studio_viewer" model="res.groups">
+            <field name="name">View Employee Studio Field (x_studio_contractwage)</field>
+            <field name="category_id" ref="base.module_category_human_resources_employees"/>
+        </record>
+    </data>
+</odoo>
