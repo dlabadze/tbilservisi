@@ -25,7 +25,7 @@ class GenerateKvebaWizard(models.TransientModel):
         'account.analytic.account',
         string='Analytic Account',
         required=True,
-        domain=[('plan_id.name', '=', 'სამსახური')]
+        domain=[('plan_id.name', '=', 'დეპარტამენტი')]
     )
     cost = fields.Float(string='ღირებულება დღგ-ს გარეშე', required=True)
     start_row = fields.Integer(string='Start Row', default=2)
@@ -267,6 +267,7 @@ class GenerateKvebaWizard(models.TransientModel):
                     'name': f'3322 - {partner.name}',
                     'debit': 0.0,
                     'credit': amount_3322,
+                    'analytic_distribution': {str(self.analytic_account.id): 100.0},
                 }))
                 
                 # Line 4: 3132 - 3330.01
@@ -283,6 +284,7 @@ class GenerateKvebaWizard(models.TransientModel):
                     'name': f'ДДС - {partner.name}',
                     'debit': 0.0,
                     'credit': amount_3330,
+                    'analytic_distribution': {str(self.analytic_account.id): 100.0},
                 }))
                 
                 # Line 5: 7410 - 3133 პარტნერი (Pension line)
@@ -301,6 +303,7 @@ class GenerateKvebaWizard(models.TransientModel):
                         'name': f'პენსია - {partner.name}',
                         'debit': 0.0,
                         'credit': amount_pension,
+                        'analytic_distribution': {str(self.analytic_account.id): 100.0},
                     }))
                     
                     # Line 6: 3132 პარტნერი - 3133 პარტნერი (Pension line)
@@ -318,6 +321,7 @@ class GenerateKvebaWizard(models.TransientModel):
                         'name': f'პენსია - {partner.name}',
                         'debit': 0.0,
                         'credit': amount_pension,
+                        'analytic_distribution': {str(self.analytic_account.id): 100.0},
                     }))
             else:
                 # Without Pension - based on provided formulas
@@ -359,6 +363,7 @@ class GenerateKvebaWizard(models.TransientModel):
                     'name': f'3322 - {partner.name}',
                     'debit': 0.0,
                     'credit': amount_3322,
+                    'analytic_distribution': {str(self.analytic_account.id): 100.0},
                 }))
                 
                 # Line 4: 3132 - 3330.01
@@ -375,6 +380,7 @@ class GenerateKvebaWizard(models.TransientModel):
                     'name': f'ДДS - {partner.name}',
                     'debit': 0.0,
                     'credit': amount_3330,
+                    'analytic_distribution': {str(self.analytic_account.id): 100.0},
                 }))
         
         # Create account.move
