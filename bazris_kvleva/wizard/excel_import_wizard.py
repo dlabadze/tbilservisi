@@ -70,8 +70,15 @@ class ExcelImportWizard(models.TransientModel):
                 # Column G (index 6): last_date
                 last_date = self._parse_date(row[6].value) if len(row) > 6 and row[6].value else False
                 
-                # Column H (index 7): status
-                status = str(row[7].value) if len(row) > 7 and row[7].value else ''
+                # Column H (index 7): status (accepts Georgian label or technical key)
+                STATUS_MAP = {
+                    'მიმდინარე': 'mimdinare',
+                    'დასაკორექტირებელი': 'dasakorektirebeli',
+                    'შეწყვეტილი': 'shetsqvetili',
+                    'დასრულებული': 'dasrulebuli',
+                }
+                raw_status = str(row[7].value).strip() if len(row) > 7 and row[7].value else ''
+                status = STATUS_MAP.get(raw_status, raw_status)
                 
                 # Column I (index 8): bazris_kvlevis_nomeri
                 bazris_kvlevis_nomeri = str(row[8].value) if len(row) > 8 and row[8].value else ''
