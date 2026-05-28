@@ -23,6 +23,8 @@ class AccountMove(models.Model):
         ], limit=1)
 
         product_name = self.journal_id.name if self.journal_id else False
+        if product_name == 'საჩუქრები':
+            product_name = 'საჩუქარი'
         product = self.env['product.product'].sudo().search([
             ('name', '=', product_name)
         ], limit=1)
