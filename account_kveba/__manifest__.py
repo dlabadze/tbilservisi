@@ -5,6 +5,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/generate_kveba_wizard_views.xml',
+        'views/account_move_views.xml',
     ],
     'installable': True,
     'application': False,
