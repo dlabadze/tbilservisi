@@ -17,7 +17,7 @@
                         <group>
                             <field name="cost" string="ღირებულება დღგ-ს გარეშე" invisible="1"/>
                             <field name="journals"/>
-                            <field name="analytic_account" string="დეპარტამენტი"/>
+                            <field name="analytic_account" string="სამსახური"/>
                             <field name="start_row"/>
                         </group>
                     </group>

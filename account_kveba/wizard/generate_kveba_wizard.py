@@ -25,7 +25,7 @@ class GenerateKvebaWizard(models.TransientModel):
         'account.analytic.account',
         string='Analytic Account',
         required=True,
-        domain=[('plan_id.name', '=', 'დეპარტამენტი')]
+        domain=[('plan_id.name', '=', 'სამსახური')]
     )
     cost = fields.Float(string='ღირებულება დღგ-ს გარეშე', required=True)
     start_row = fields.Integer(string='Start Row', default=2)
