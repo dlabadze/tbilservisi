@@ -110,6 +110,7 @@ class FileEditorSession(models.Model):
         file_name = getattr(approval_request, file_name_field, 'document.docx')
         
         # Create session
+        _logger.info(f"^^File content: {len(file_content)}")
         _logger.info(f"Database name: {self.env.cr.dbname}")
         session = self.create({
             'hash_code': hash_code,
