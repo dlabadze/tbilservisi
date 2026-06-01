@@ -31,13 +31,13 @@ class ExternalFileEditorController(http.Controller):
         token = kwargs.get('token')
         Document = kwargs.get('Document')
         _logger.info(f"to controller.....")
-        _logger.info("=== CALLBACK RECEIVED ===")
-        _logger.info("Database: %s", db)
-        _logger.info("Login: %s", login)
-        _logger.info("Password: %s" if password else "None")
-        _logger.info("Token: %s", token[:20] if token else "None")
-        _logger.info("Document length: %s", len(Document) if Document else 0)
         try:
+            _logger.info("=== CALLBACK RECEIVED ===")
+            _logger.info("Database: %s", db)
+            _logger.info("Login: %s", login)
+            _logger.info("Password: %s" if password else "None")
+            _logger.info("Token: %s", token[:20] if token else "None")
+            _logger.info("Document length: %s", len(Document) if Document else 0)
             # Validate required authentication fields
             if not all([db, login, password]):
                 _logger.error("Missing authentication fields")
@@ -53,13 +53,14 @@ class ExternalFileEditorController(http.Controller):
                     'password': password,
                     'type': 'password'
                 })
+                _logger.info("uid: %s", uid)
                 if not uid:
                     _logger.error("Authentication failed for user: %s", login)
                     return {
                         'success': False,
                         'error': 'Authentication failed'
                     }
-                _logger.info("User authenticated successfully: %s (UID: %s)", login, uid)
+                _logger.info("^^^User authenticated successfully: %s (UID: %s)", login, uid)
             except Exception as auth_error:
                 _logger.exception("Authentication error: %s", str(auth_error))
                 return {
