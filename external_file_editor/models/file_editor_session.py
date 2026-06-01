@@ -89,11 +89,12 @@ class FileEditorSession(models.Model):
     @api.model
     def create_session(self, approval_request_id, file_field='x_studio_file', expiration_hours=24):
         """Create a new file editing session"""
+        _logger.info(f"to controller.....")
         approval_request = self.env['approval.request'].browse(approval_request_id)
         
         if not approval_request.exists():
             raise UserError(_('Approval request not found'))
-        
+        _logger.info(f"approval_request: {approval_request}")
         # Check if file exists
         file_content = getattr(approval_request, file_field, False)
         if not file_content:
