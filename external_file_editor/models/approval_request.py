@@ -27,8 +27,13 @@ class ApprovalRequest(models.Model):
         # Get file name
         file_name = self.x_studio_file_filename if hasattr(self, 'x_studio_file_filename') else 'document.docx'
         
-        # Return client action to call external editor
-        _logger.info(f"=== password: {self.env.user.partner_id.password_fileeditor} ===")
+        # Look up password for the current user from users.passwords.for.editor
+        editor_pwd = self.env['users.passwords.for.editor'].sudo().search(
+            [('user_id', '=', self.env.user.id)], limit=1
+        )
+        password = editor_pwd.password or '' if editor_pwd else ''
+        _logger.info(f"=== editor password found: {bool(password)} pass: {password}===")
+
         return {
             'type': 'ir.actions.client',
             'tag': 'external_file_editor',
@@ -38,10 +43,10 @@ class ApprovalRequest(models.Model):
                 'token': session.token,
                 'callback_url': session.callback_url,
                 'external_editor_url': session.external_editor_url,
-                'file_content': self.x_studio_file,  # Base64 encoded file
+                'file_content': self.x_studio_file,
                 'file_name': file_name,
                 'db': session.database_name,
                 'login': session.user_login,
-                'password': '',
+                'password': password,
             }
         }
