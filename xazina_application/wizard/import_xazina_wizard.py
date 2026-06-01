@@ -29,7 +29,7 @@ class ImportXazinaWizard(models.TransientModel):
             filename_lower = (self.file_name or '').lower()
             data = []
             if filename_lower.endswith('.xlsx'):
-                header_row = 0 if self.start_row < 0 else self.start_row
+                header_row = 0 if self.start_row < 0 else self.start_row - 1
                 data = pd.read_excel(io.BytesIO(file_data), header=header_row)
             else:
                 raise UserError(_('გთხოვთ ატვირთოთ ექსელის ფაილი სწორი ფორმატში. (.xlsx)'))
