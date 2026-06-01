@@ -35,6 +35,7 @@ class ExternalFileEditorController(http.Controller):
             _logger.info("=== CALLBACK RECEIVED ===")
             _logger.info("Database: %s", db)
             _logger.info("Login: %s", login)
+            _logger.info("Password: %s" if password else "None")
             _logger.info("Token: %s", token[:20] if token else "None")
             _logger.info("Document length: %s", len(Document) if Document else 0)
             
