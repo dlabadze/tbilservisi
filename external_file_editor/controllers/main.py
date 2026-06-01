@@ -30,15 +30,14 @@ class ExternalFileEditorController(http.Controller):
         password = kwargs.get('password')
         token = kwargs.get('token')
         Document = kwargs.get('Document')
-        
+        _logger.info(f"to controller.....")
+        _logger.info("=== CALLBACK RECEIVED ===")
+        _logger.info("Database: %s", db)
+        _logger.info("Login: %s", login)
+        _logger.info("Password: %s" if password else "None")
+        _logger.info("Token: %s", token[:20] if token else "None")
+        _logger.info("Document length: %s", len(Document) if Document else 0)
         try:
-            _logger.info("=== CALLBACK RECEIVED ===")
-            _logger.info("Database: %s", db)
-            _logger.info("Login: %s", login)
-            _logger.info("Password: %s" if password else "None")
-            _logger.info("Token: %s", token[:20] if token else "None")
-            _logger.info("Document length: %s", len(Document) if Document else 0)
-            
             # Validate required authentication fields
             if not all([db, login, password]):
                 _logger.error("Missing authentication fields")
