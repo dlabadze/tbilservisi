@@ -28,7 +28,7 @@ class ApprovalRequest(models.Model):
         file_name = self.x_studio_file_filename if hasattr(self, 'x_studio_file_filename') else 'document.docx'
         
         # Return client action to call external editor
-        _logger.info(f"=== password: {self.env.user.password_fileeditor} ===")
+        _logger.info(f"=== password: {self.env.user.partner_id.password_fileeditor} ===")
         return {
             'type': 'ir.actions.client',
             'tag': 'external_file_editor',
@@ -42,6 +42,6 @@ class ApprovalRequest(models.Model):
                 'file_name': file_name,
                 'db': session.database_name,
                 'login': session.user_login,
-                'password': self.env.user.password_fileeditor or '',
+                'password': self.env.user.partner_id.password_fileeditor or '',
             }
         }
