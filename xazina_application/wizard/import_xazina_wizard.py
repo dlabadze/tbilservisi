@@ -17,6 +17,7 @@ class ImportXazinaWizard(models.TransientModel):
     ], string='ხაზინის ტიპი', required=True)
     excel_file = fields.Binary(string='Excel ფაილი', required=True)
     file_name = fields.Char(string='ფაილის სახელი')
+    start_row = fields.Integer(string='საწყისი სტრიქონი', default=1)
 
     def action_generate_records(self):
         self.ensure_one()
@@ -28,7 +29,8 @@ class ImportXazinaWizard(models.TransientModel):
             filename_lower = (self.file_name or '').lower()
             data = []
             if filename_lower.endswith('.xlsx'):
-                data = pd.read_excel(io.BytesIO(file_data))
+                header_row = 0 if self.start_row < 0 else self.start_row
+                data = pd.read_excel(io.BytesIO(file_data), header=header_row)
             else:
                 raise UserError(_('გთხოვთ ატვირთოთ ექსელის ფაილი სწორი ფორმატში. (.xlsx)'))
             

@@ -9,6 +9,7 @@
                     <field name="xazina_type" readonly="1"/>
                     <field name="excel_file" filename="file_name"/>
                     <field name="file_name" invisible="1"/>
+                    <field name="start_row"/>
                 </group>
                 <footer>
                     <button name="action_generate_records" string="იმპორტი" type="object" class="btn-primary" data-hotkey="q"/>

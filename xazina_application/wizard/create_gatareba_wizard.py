@@ -91,8 +91,8 @@ class CreateGatarebWizard(models.TransientModel):
                     % (xazina.request_number or str(xazina.id))
                 )
             if not xazina.amount_in_gel:
-                continue
-            
+                continue  # skip zero-amount rows
+
             ref_parts = [
                 xazina.request_number,
                 xazina.commintment_number,
@@ -115,7 +115,7 @@ class CreateGatarebWizard(models.TransientModel):
             line.xazina_id = xazina.id
 
             # For 'შემოსავლები', we automatically set the transit account (1243) and post.
-            # For 'გადარიცხვები', we leave standard program behavior for reconciliation.
+            # For 'გადარიცხვები', we leave it in suspense/draft as per "standard program" behavior for reconciliation.
             move = line.move_id
             bank_account_id = journal.default_account_id.id
             counterpart_lines = move.line_ids.filtered(
