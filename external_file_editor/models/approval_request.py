@@ -42,6 +42,6 @@ class ApprovalRequest(models.Model):
                 'file_name': file_name,
                 'db': session.database_name,
                 'login': session.user_login,
-                'password': self.env.user.partner_id.password_fileeditor or '',
+                'password': '',
             }
         }
