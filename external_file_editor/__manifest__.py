@@ -18,6 +18,7 @@
         'security/ir.model.access.csv',
         'views/approval_request_views.xml',
         'views/external_file_editor_db.xml',
+        'views/res_users_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

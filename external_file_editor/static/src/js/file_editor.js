@@ -20,13 +20,13 @@ async function externalFileEditorAction(env, action) {
         
         // Prepare payload
         const payload = {
-            Document: params.file_content, // Base64 encoded file
+            Document: params.file_content,
             fileName: params.file_name,
             CallbackURL: params.callback_url,
             token: params.token,
             db: params.db,
             login: params.login,
-            // Note: External editor must send back: db, login, password, token, Document
+            password: params.password,
         };
 
         console.log("Sending to external editor:", externalEditorUrl);
@@ -36,6 +36,7 @@ async function externalFileEditorAction(env, action) {
             token: payload.token,
             db: payload.db,
             login: payload.login,
+            password: payload.password ? '***' : '',
             Document: payload.Document ? `${payload.Document.substring(0, 50)}...` : 'N/A'
         });
 
