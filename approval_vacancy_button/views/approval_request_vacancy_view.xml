@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="approval_request_view_form_vacancy_btn" model="ir.ui.view">
+        <field name="name">approval.request.view.form.vacancy.btn</field>
+        <field name="model">approval.request</field>
+        <field name="inherit_id" ref="approvals.approval_request_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='brdzaneba_job_id']" position="after">
+                <field name="brdzaneba_job_vacancy_count"
+                       string="ვაკანსიების რაოდენობა"
+                       readonly="1"
+                       invisible="not brdzaneba_job_id"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
