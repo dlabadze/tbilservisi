@@ -21,20 +21,20 @@
                         class="btn-primary"/>
                     <button
                         name="create_approval_request"
-                        string="ბრძანებების შექმნა"
+                        string="დადასტურება"
                         type="object"
                         class="btn-secondary"/>
                 </header>
-                <div class="oe_button_box" name="button_box">
-                    <button
-                        name="action_open_approval_requests"
-                        type="object"
-                        class="oe_stat_button"
-                        icon="fa-file-text-o">
-                        <field name="approval_request_count" widget="statinfo" string="ბრძანებები"/>
-                    </button>
-                </div>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_open_approval_requests"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-file-text-o">
+                            <field name="approval_request_count" widget="statinfo" string="ბრძანებები"/>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="name" invisible="1"/>
