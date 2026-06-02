@@ -10,6 +10,7 @@
             <xpath expr="//field[@name='private_street']" position="replace"/>
 
             <xpath expr="//field[@name='mobile_phone']" position="after">
+                <label for="private_street"/>
                 <div class="o_address_format">
                     <field name="private_street" placeholder="Street... " string="ფაქტიური მისამართი"/>
                 </div>

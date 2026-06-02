@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_search_custom" model="ir.ui.view">
+        <field name="name">hr.employee.search.custom</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='private_car_plate']" position="after">
+                <field name="x_studio_fathername" string="მამის სახელი"/>
+                <field name="passport_id" string="პასპორტის ნომერი"/>
+                <field name="mobile_phone" string="მობილურის ნომერი"/>
+                <field name="gender" />
+                <field name="private_street" string="ფაქტიური მისამართი"/>
+                <field name="birthday"/>
+                <field name="age" string="ასაკი"/>
+                <field name="work_experience_months"  string="სამუშაო გამოცდილება(თვე)"/>
+                <field name="x_studio_location"/>
+                <field name="x_studio_address"/>
+                <field name="x_studio_education"/>
+                <field name="x_studio_marital"/>
+                <field name="children"/>
+                <field name="x_studio_depname"/>
+                <field name="x_studio_contractwage"/>
+                <field name="x_studio_shtati"/>
+                <field name="x_studio_citizenship"/>
+                <field name="x_studio_country" />
+                <field name="x_studio_militarystatus" />
+                <field name="x_studio_conviction"/>
+                <field name="x_studio_note"/>
+                <field name="x_studio_migdate"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

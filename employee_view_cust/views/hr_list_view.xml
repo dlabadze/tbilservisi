@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_tree_custom" model="ir.ui.view">
+        <field name="name">hr.employee.tree.custom</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//list/field[@name='country_id']" position="after">
+                <field name="passport_id" optional="show" string="პასპორტის ნომერი"/>
+                <field name="mobile_phone" optional="show" string="მობილურის ნომერი"/>
+                <field name="gender" optional="show" />
+                <field name="private_street" optional="show" string="ფაქტიური მისამართი"/>
+                <field name="birthday" optional="show" />
+                <field name="age" optional="show" string="ასაკი"/>
+                <field name="work_experience_months" optional="show"/>
+                <field name="x_studio_location" optional="show"/>
+                <field name="x_studio_address" optional="show" />
+                <field name="x_studio_education" optional="show"/>
+                <field name="x_studio_marital" optional="show" />
+                <field name="children" optional="show"/>
+                <field name="x_studio_depname" optional="show" />
+                <field name="x_studio_shtati" optional="show"/>
+                <field name="x_studio_citizenship" optional="show" />
+                <field name="x_studio_country" optional="show"/>
+                <field name="x_studio_militarystatus" optional="show"/>
+                <field name="x_studio_conviction" optional="show"/>
+                <field name="x_studio_note" optional="show" />
+                <field name="x_studio_migdate" optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
