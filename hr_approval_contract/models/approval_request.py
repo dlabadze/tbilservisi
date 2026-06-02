@@ -127,6 +127,7 @@ class ApprovalRequest(models.Model):
             "Appointment: Created contract ID=%s for employee '%s'",
             contract.id, self.brdzaneba_employee_id.name,
         )
+        self._write_shtati_to_employee()
 
     def _handle_transfer(self):
 
@@ -145,6 +146,7 @@ class ApprovalRequest(models.Model):
             "Transfer: Cancelled old contracts and created new contract ID=%s for employee '%s'",
             contract.id, self.brdzaneba_employee_id.name,
         )
+        self._write_shtati_to_employee()
 
     def _handle_termination(self):
 
@@ -164,6 +166,16 @@ class ApprovalRequest(models.Model):
             "Termination: Cancelled contracts and archived employee '%s'",
             self.brdzaneba_employee_id.name,
         )
+
+    def _write_shtati_to_employee(self):
+        self.ensure_one()
+        employee = self.brdzaneba_employee_id
+        if employee and self.brdzaneba_shtati and 'x_studio_shtati' in employee._fields:
+            employee.write({'x_studio_shtati': self.brdzaneba_shtati})
+            _logger.info(
+                "Updated x_studio_shtati='%s' on employee '%s'",
+                self.brdzaneba_shtati, employee.name,
+            )
 
     def _validate_required_fields(self):
         self.ensure_one()
