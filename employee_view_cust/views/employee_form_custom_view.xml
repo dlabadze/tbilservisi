@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="hr.open_view_employee_list_my" model="ir.actions.act_window">
-        <name>Employees</name>
-        <res_model>hr.employee</res_model>
-        <view_mode>list,kanban,form,activity,graph,pivot</view_mode>
-    </record>
     <record id="hr_employee_view_form_custom" model="ir.ui.view">
         <field name="name">hr.employee.form.custom</field>
         <field name="model">hr.employee</field>

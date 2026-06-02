@@ -6,6 +6,7 @@
     'depends': ['hr'],
     'data': [
         'views/employee_form_custom_view.xml',
+        'views/list_view_first.xml',
     ],
     'installable': True,
     'application': False,
