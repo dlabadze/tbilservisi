@@ -10,6 +10,14 @@
             <xpath expr="//field[@name='attendance_manager_id']" position="replace"/>
         </field>
     </record>
+          <record id="hr_employee_tree_contract_custom" model="ir.ui.view">
+        <field name="name">hr.employee.tree.contract.custom</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_contract.hr_employee_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='first_contract_date']" position="replace"/>
+        </field>
+    </record>
 
     <record id="hr_employee_tree_holidays_custom" model="ir.ui.view">
         <field name="name">hr.employee.tree.holidays.custom</field>
