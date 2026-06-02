@@ -7,41 +7,43 @@
         <field name="arch" type="xml">
 
             <xpath expr="//list/field[@name='name']" position="attributes">
-                        <attribute name="optional">show</attribute>
+                <attribute name="optional">show</attribute>
             </xpath>
             <xpath expr="//list/field[@name='department_id']" position="attributes">
-                        <attribute name="optional">show</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='job_id']" position="attributes">
+                <attribute name="optional">show</attribute>
             </xpath>
 
-            <xpath expr="//list/field[@name='job_id']" position="attributes">
-                        <attribute name="optional">show</attribute>
-            </xpath>
             <xpath expr="//list/field[@name='activity_user_id']" position="replace"/>
             <xpath expr="//list/field[@name='coach_id']" position="replace"/>
+            <xpath expr="//list/field[@name='category_ids']" position="replace"/>
             <xpath expr="//list/field[@name='country_id']" position="replace"/>
-            <xpath expr="//list/field[@name='category_id']" position="replace"/>
 
-
-            <xpath expr="//list/field[@name='country_id']" position="after">
-                <field name="passport_id" optional="show" string="პასპორტის ნომერი"/>
-                <field name="mobile_phone" optional="show" string="მობილურის ნომერი"/>
-                <field name="gender" optional="show" />
-                <field name="private_street" optional="show" string="ფაქტიური მისამართი"/>
-                <field name="birthday" optional="show" />
-                <field name="age" optional="show" string="ასაკი"/>
-                <field name="work_experience_months" optional="show" strign="სტაჟი (თვე)"/>
-                <field name="x_studio_location" optional="show"/>
-                <field name="x_studio_address" optional="show" />
-                <field name="x_studio_education" optional="show"/>
-                <field name="x_studio_marital" optional="show" />
-                <field name="children" optional="show"/>
-                <field name="x_studio_shtati" optional="show"/>
-                <field name="x_studio_citizenship" optional="show" />
-                <field name="x_studio_country" optional="show"/>
-                <field name="x_studio_militarystatus" optional="show"/>
-                <field name="x_studio_conviction" optional="show"/>
-                <field name="x_studio_note" optional="show" />
-                <field name="x_studio_migdate" optional="show"/>
+            <xpath expr="//list/field[@name='active']" position="after">
+                <field name="x_studio_fathername"     optional="show"  string="მამის სახელი"/>
+                <field name="passport_id"             optional="show"  string="პასპორტის ნომერი"/>
+                <field name="mobile_phone"            optional="show"  string="მობილური"/>
+                <field name="gender"                  optional="show"  string="სქესი"/>
+                <field name="private_street"          optional="show"  string="ფაქტიური მისამართი"/>
+                <field name="birthday"                optional="show"  string="დაბადების თარიღი"/>
+                <field name="age"                     optional="show"  string="ასაკი"/>
+                <field name="work_experience_months"  optional="show"  string="სტაჟი (თვე)"/>
+                <field name="x_studio_location"      optional="show"  string="მდებარეობა"/>
+                <field name="x_studio_address"       optional="show"  string="მისამართი"/>
+                <field name="x_studio_education"     optional="show"  string="განათლება"/>
+                <field name="x_studio_marital"       optional="show"  string="ოჯახური მდგომარეობა"/>
+                <field name="children"               optional="show"  string="შვილები"/>
+                <field name="x_studio_depname"       optional="show"  string="სტრუქტურული ერთეული"/>
+                <field name="x_studio_contractwage"  optional="show"  string="სახელფასო განაკვეთი"/>
+                <field name="x_studio_shtati"        optional="show"  string="შტატი"/>
+                <field name="x_studio_citizenship"   optional="show"  string="მოქალაქეობა"/>
+                <field name="x_studio_country"       optional="show"  string="ქვეყანა"/>
+                <field name="x_studio_militarystatus" optional="show" string="სამხედრო სტატუსი"/>
+                <field name="x_studio_conviction"    optional="show"  string="ნასამართლეობა"/>
+                <field name="x_studio_note"          optional="show"  string="შენიშვნა" widget="char"/>
+                <field name="x_studio_migdate"       optional="show"  string="მიგრაციის თარიღი"/>
             </xpath>
 
         </field>

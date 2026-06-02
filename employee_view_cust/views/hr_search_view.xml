@@ -37,6 +37,8 @@
                 <field name="children"/>
                 <field name="x_studio_note"/>
                 <field name="x_studio_migdate"/>
+                <field name="bank_account_id" string="საბანკო ანგარიში"/>
+
             </xpath>
 
 

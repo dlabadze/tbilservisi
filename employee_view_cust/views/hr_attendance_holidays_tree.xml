@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+  <data>
 
     <record id="hr_employee_tree_attendance_custom" model="ir.ui.view">
         <field name="name">hr.employee.tree.attendance.custom</field>
@@ -19,4 +20,5 @@
         </field>
     </record>
 
+  </data>
 </odoo>
