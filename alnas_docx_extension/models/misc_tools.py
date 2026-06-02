@@ -24,6 +24,52 @@ GEORGIAN_MONTHS = {
     12: 'დეკემბერი',
 }
 
+# Georgian month name forms with postposition suffixes
+GEORGIAN_MONTH_FORMS = {
+    'დან': {
+        1: 'იანვრიდან',
+        2: 'თებერვლიდან',
+        3: 'მარტიდან',
+        4: 'აპრილიდან',
+        5: 'მაისიდან',
+        6: 'ივნისიდან',
+        7: 'ივლისიდან',
+        8: 'აგვისტოდან',
+        9: 'სექტემბრიდან',
+        10: 'ოქტომბრიდან',
+        11: 'ნოემბრიდან',
+        12: 'დეკემბრიდან',
+    },
+    'მდე': {
+        1: 'იანვრამდე',
+        2: 'თებერვლამდე',
+        3: 'მარტამდე',
+        4: 'აპრილამდე',
+        5: 'მაისამდე',
+        6: 'ივნისამდე',
+        7: 'ივლისამდე',
+        8: 'აგვისტომდე',
+        9: 'სექტემბრამდე',
+        10: 'ოქტომბრამდე',
+        11: 'ნოემბრამდე',
+        12: 'დეკემბრამდე',
+    },
+    'ის': {
+        1: 'იანვრის',
+        2: 'თებერვლის',
+        3: 'მარტის',
+        4: 'აპრილის',
+        5: 'მაისის',
+        6: 'ივნისის',
+        7: 'ივლისის',
+        8: 'აგვისტოს',
+        9: 'სექტემბრის',
+        10: 'ოქტომბრის',
+        11: 'ნოემბრის',
+        12: 'დეკემბრის',
+    },
+}
+
 
 def field1(value):
     """
@@ -130,6 +176,61 @@ def date2(date_value, format_type='full'):
     except Exception:
         pass
     
+    return ''
+
+
+def date3(date_value, suffix=''):
+    """
+    Format date as "YYYY წლის DD MonthName[suffix]" with Georgian month names.
+    Args:
+        date_value: datetime, date object, or string
+        suffix: optional postposition suffix - 'დან', 'მდე', or 'ის'
+    Returns:
+        Formatted date string or empty string if value is False/None
+
+    Examples:
+        date3(field)        → "2026 წლის 01 იანვარი"
+        date3(field, 'დან') → "2026 წლის 01 იანვრიდან"
+        date3(field, 'მდე') → "2026 წლის 01 იანვრამდე"
+        date3(field, 'ის')  → "2026 წლის 01, იანვრიის"
+    """
+    if not date_value or date_value is False:
+        return ''
+
+    try:
+        parsed_date = None
+
+        if isinstance(date_value, datetime):
+            parsed_date = date_value
+        elif isinstance(date_value, date):
+            parsed_date = datetime.combine(date_value, datetime.min.time())
+        elif isinstance(date_value, str):
+            for fmt in ['%Y-%m-%d', '%Y-%m-%d %H:%M:%S', '%d/%m/%Y', '%m/%d/%Y']:
+                try:
+                    parsed_date = datetime.strptime(date_value, fmt)
+                    break
+                except ValueError:
+                    continue
+
+        if not parsed_date:
+            return ''
+
+        day = f'{parsed_date.day:02d}'
+        month = parsed_date.month
+        year = parsed_date.year
+
+        if suffix and suffix in GEORGIAN_MONTH_FORMS:
+            month_name = GEORGIAN_MONTH_FORMS[suffix].get(month, '')
+            if suffix == 'ის':
+                return f'{year} წლის {day}, {month_name}'
+            return f'{year} წლის {day} {month_name}'
+
+        month_name = GEORGIAN_MONTHS.get(month, '')
+        return f'{year} წლის {day} {month_name}'
+
+    except Exception:
+        pass
+
     return ''
 
 
