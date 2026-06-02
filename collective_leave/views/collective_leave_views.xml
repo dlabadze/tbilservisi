@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seq_collective_leave" model="ir.sequence">
+        <field name="name">Collective Leave</field>
+        <field name="code">collective.leave</field>
+        <field name="prefix">CL/%(year)s/</field>
+        <field name="padding">4</field>
+    </record>
+
+    <record id="collective_leave_view_form" model="ir.ui.view">
+        <field name="name">collective.leave.view.form</field>
+        <field name="model">collective.leave</field>
+        <field name="arch" type="xml">
+            <form string="კოლექტიური შვებულება">
+                <header>
+                    <button
+                        name="action_compute_employees"
+                        string="თანამშრომლების გამოთვლა"
+                        type="object"
+                        class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" invisible="1"/>
+                            <field name="department_id"/>
+                            <field name="job_id"/>
+                        </group>
+                        <group>
+                            <field name="start_day"/>
+                            <field name="end_day"/>
+                            <field name="days"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="თანამშრომელები">
+                            <field name="collective_leave_emp_ids">
+                                <list editable="bottom">
+                                    <field name="employee_id"/>
+                                    <field name="department_id"/>
+                                    <field name="job_id"/>
+                                    <field name="is_checked"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="მონიშნული">
+                            <field name="employee_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="department_id"/>
+                                    <field name="job_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="collective_leave_view_list" model="ir.ui.view">
+        <field name="name">collective.leave.view.list</field>
+        <field name="model">collective.leave</field>
+        <field name="arch" type="xml">
+            <list string="კოლექტიური შვებულება">
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <field name="start_day"/>
+                <field name="end_day"/>
+                <field name="days"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="collective_leave_action_window" model="ir.actions.act_window">
+        <field name="name">კოლექტიური შვებულება</field>
+        <field name="res_model">collective.leave</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

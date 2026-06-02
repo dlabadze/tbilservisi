@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem
+        id="collective_leave_menu_root"
+        name="კოლექტიური შვებულება"
+        parent="approvals.approvals_menu_root"
+        sequence="10"/>
+
+    <menuitem
+        id="collective_leave_menu_records"
+        name="ჩანაწერები"
+        parent="collective_leave_menu_root"
+        action="collective_leave_action_window"
+        sequence="10"/>
+
+</odoo>
