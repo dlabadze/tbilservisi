@@ -199,7 +199,8 @@ class GenerateKvebaWizard(models.TransientModel):
             # raise UserError(f"has_pension: {has_pension} employee: {employee} employee name: {employee.name}")
             
             # Base amount: quantity * cost (რაოდენობა გამრავლებული თვითღირებულებაზე)
-            base_amount = quantity * cost
+            # E სვეტი გამრავლებული პროდუქტის ღირებულებაზე, დამრგვალებული 4 ნიშნამდე
+            base_amount = round(quantity * cost, 4)
             
             # Line 1: 3132 - 1618 (კვება product line)
             invoice_lines.append((0, 0, {
