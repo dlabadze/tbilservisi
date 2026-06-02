@@ -155,8 +155,9 @@ class ApprovalRequest(models.Model):
 
         if not self.brdzaneba_end_date:
             raise UserError(_("brdzaneba_end_date is required for a Termination operation."))
+        termination_end_date = self.brdzaneba_start_date - timedelta(days=1)
 
-        self._cancel_running_contracts(self.brdzaneba_employee_id, self.brdzaneba_end_date)
+        self._cancel_running_contracts(self.brdzaneba_employee_id, termination_end_date)
 
         self.brdzaneba_employee_id.write({'active': False})
         _logger.info(
