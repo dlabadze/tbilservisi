@@ -22,7 +22,6 @@
             <xpath expr="//list/field[@name='country_id']" position="replace"/>
 
             <xpath expr="//list/field[@name='active']" position="after">
-                <field name="x_studio_fathername"     optional="show"  string="მამის სახელი"/>
                 <field name="passport_id"             optional="show"  string="პასპორტის ნომერი"/>
                 <field name="mobile_phone"            optional="show"  string="მობილური"/>
                 <field name="gender"                  optional="show"  string="სქესი"/>
@@ -35,7 +34,6 @@
                 <field name="x_studio_education"     optional="show"  string="განათლება"/>
                 <field name="x_studio_marital"       optional="show"  string="ოჯახური მდგომარეობა"/>
                 <field name="children"               optional="show"  string="შვილები"/>
-                <field name="x_studio_depname"       optional="show"  string="სტრუქტურული ერთეული"/>
                 <field name="x_studio_contractwage"  optional="show"  string="სახელფასო განაკვეთი"/>
                 <field name="x_studio_shtati"        optional="show"  string="შტატი"/>
                 <field name="x_studio_citizenship"   optional="show"  string="მოქალაქეობა"/>

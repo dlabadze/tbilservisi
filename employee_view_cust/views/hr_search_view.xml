@@ -5,8 +5,8 @@
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_filter"/>
         <field name="arch" type="xml">
-            პირადი ნომერი, თანამშრომელი, მამის სახ, დეპ, სამს,თანამდებობა,ხელფას, პასპორტი,მობილური,ფატ მის, იურიდიული მის, დაბადების ადგ, სქესი,ასაკი, განათლება, ოახური მდგომარეობა, შტატი, სამხედრო ვალდებულება, ნასამართლეობა, ეროვნება
-            <xpath expr="//field[@name='department_id']" position="before">
+
+            <xpath expr="//field[@name='name']" position="before">
                 <field name="identification_id" string="პირადი ნომერი"/>
             </xpath>
 

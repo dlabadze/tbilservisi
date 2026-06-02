@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+  <data>
     <record id="hr.act_hr_employee_tree_view" model="ir.actions.act_window.view">
         <field name="sequence" eval="5"/>
     </record>
@@ -7,4 +8,5 @@
     <record id="hr.open_view_employee_list_my" model="ir.actions.act_window">
         <field name="view_mode">list,kanban,form,activity,graph,pivot</field>
     </record>
+  </data>
 </odoo>
