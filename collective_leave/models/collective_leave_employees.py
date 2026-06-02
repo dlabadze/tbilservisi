@@ -11,12 +11,12 @@ class CollectiveLeaveEmployees(models.Model):
     )
     department_id = fields.Many2one(
         related='employee_id.department_id',
-        string='დეპარტამენტი',
+        string='სამსახური',
         store=True,
     )
     job_id = fields.Many2one(
         related='employee_id.job_id',
-        string='სამსახური',
+        string='თანამდებობა',
         store=True,
     )
     collective_leave_id = fields.Many2one(

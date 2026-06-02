@@ -16,10 +16,24 @@
                 <header>
                     <button
                         name="action_compute_employees"
-                        string="თანამშრომლების გამოთვლა"
+                        string="თანამშრომლების გენერირება"
                         type="object"
                         class="btn-primary"/>
+                    <button
+                        name="create_approval_request"
+                        string="ბრძანებების შექმნა"
+                        type="object"
+                        class="btn-secondary"/>
                 </header>
+                <div class="oe_button_box" name="button_box">
+                    <button
+                        name="action_open_approval_requests"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o">
+                        <field name="approval_request_count" widget="statinfo" string="ბრძანებები"/>
+                    </button>
+                </div>
                 <sheet>
                     <group>
                         <group>
@@ -70,6 +84,11 @@
                 <field name="start_day"/>
                 <field name="end_day"/>
                 <field name="days"/>
+                <button
+                    name="create_approval_request"
+                    string="ბრძანებების შექმნა"
+                    type="object"
+                    icon="fa-file-text-o"/>
             </list>
         </field>
     </record>
