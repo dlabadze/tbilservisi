@@ -40,6 +40,7 @@
                             <field name="name" invisible="1"/>
                             <field name="department_id"/>
                             <field name="job_id"/>
+                            <field name="leave_type_id"/>
                         </group>
                         <group>
                             <field name="start_day"/>

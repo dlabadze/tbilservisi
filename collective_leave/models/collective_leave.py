@@ -56,6 +56,7 @@ class CollectiveLeave(models.Model):
     )
     leave_type_id = fields.Many2one(
         comodel_name="hr.leave.type",
+        string="შვებულების ტიპი",
         default=lambda self: self.env['hr.leave.type'].search([('name', '=', 'შვებულება პირადი')], limit=1),
     )
 
@@ -100,7 +101,7 @@ class CollectiveLeave(models.Model):
             for employee in record.employee_ids:
                 if employee.id in existing_employees:
                     continue
-                self.env['approval.request'].sudo().create({
+                request = self.env['approval.request'].sudo().create({
                     'request_owner_id': self.env.user.id,
                     'category_id': category.id,
                     'brdzaneba_employee_id': employee.id,
@@ -110,6 +111,8 @@ class CollectiveLeave(models.Model):
                     'collective_leave_id': record.id,
                     'x_studio_time_off_type': record.leave_type_id.id if record.leave_type_id else False,
                 })
+                request.sudo().action_confirm()
+                request.sudo().action_approve()
 
 
     @api.model_create_multi
