@@ -160,6 +160,8 @@ class GenerateKvebaWizard(models.TransientModel):
         for row in range(self.start_row, max_row + 1):
             cell_value = sheet[f'D{row}'].value
             cell_value_2 = sheet[f'E{row}'].value
+            if isinstance(cell_value_2, str):
+                continue
             cell_value_3 = sheet[f'B{row}'].value
 
             employee_name = str(cell_value_3)
