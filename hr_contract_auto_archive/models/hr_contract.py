@@ -15,8 +15,10 @@ class HrContract(models.Model):
         for employee in employees_to_archive:
             active_contracts = self.search([
                 ('employee_id', '=', employee.id),
-                ('date_end', '>=', today),
                 ('state', 'not in', ['cancel']),
+                '|',
+                ('date_end', '=', False),
+                ('date_end', '>=', today),
             ])
             if not active_contracts:
                 employee.active = False
