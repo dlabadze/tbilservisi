@@ -52,7 +52,7 @@
                                 <field name="percent_1" widget="percentage" class="oe_inline"/>
                             </div>
                             <label for="year_2" string="წელი 2 - პროცენტი 2" invisible="tender_type != 'მრავალ_წლიანი'"/>
-                            <div class="o_row" invisible="tender_type != ''">
+                            <div class="o_row" invisible="tender_type != 'მრავალ_წლიანი'">
                                 <field name="year_2" class="oe_inline"/>
                                 <span class="mx-2">-</span>
                                 <field name="percent_2" widget="percentage" class="oe_inline"/>
