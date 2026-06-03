@@ -28,6 +28,17 @@ class Tenderi(models.Model):
         ('el_tender', 'ელ. ტენდერი')], string='შესყიდვის საფუძველი')
     purchase_plan_line_id = fields.Many2one('purchase.plan.line', string='შესყიდვის გეგმის ხაზი')
     amount_in_plan_line = fields.Boolean(string='თანხა გეგმის ხაზზე', default=False, copy=False)
+    tender_type = fields.Selection([
+        ('ერთ_წლიანი', 'ერთ წლიანი'),
+        ('მრავალ_წლიანი', 'მრავალ წლიანი')
+    ],string="ტენდერის ტიპი",
+    )
+    year_1 = fields.Char(string='წელი 1')
+    year_2 = fields.Char(string='წელი 2')
+    year_3 = fields.Char(string='წელი 3')
+    percent_1 = fields.Float(string='პროცენტი 1')
+    percent_2 = fields.Float(string='პროცენტი 2')
+    percent_3 = fields.Float(string='პროცენტი 3')
 
     def write(self, vals):
         add_statuses = {
