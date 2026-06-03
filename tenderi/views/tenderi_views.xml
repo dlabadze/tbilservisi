@@ -45,23 +45,23 @@
                             <field name="purchase_plan_line_id"/>
                             <field name="estimated_cost"/>
                             <field name="tender_type"/>
-                            <label for="year_1" string="წელი 1 - პროცენტი 1" invisible="tender_type == False"/>
+                            <label for="year_1" string="წელი 1 - პროცენტი 1" invisible="tender_type != 'მრავალ_წლიანი'"/>
                             <div class="o_row" invisible="tender_type != 'მრავალ_წლიანი'">
                                 <field name="year_1" class="oe_inline"/>
                                 <span class="mx-2">-</span>
-                                <field name="percent_1" class="oe_inline"/>
+                                <field name="percent_1" widget="percentage" class="oe_inline"/>
                             </div>
                             <label for="year_2" string="წელი 2 - პროცენტი 2" invisible="tender_type != 'მრავალ_წლიანი'"/>
                             <div class="o_row" invisible="tender_type != ''">
                                 <field name="year_2" class="oe_inline"/>
                                 <span class="mx-2">-</span>
-                                <field name="percent_2" class="oe_inline"/>
+                                <field name="percent_2" widget="percentage" class="oe_inline"/>
                             </div>
                             <label for="year_3" string="წელი 3 - პროცენტი 3" invisible="tender_type != 'მრავალ_წლიანი'"/>
                             <div class="o_row" invisible="tender_type != 'მრავალ_წლიანი'">
                                 <field name="year_3" class="oe_inline"/>
                                 <span class="mx-2">-</span>
-                                <field name="percent_3" class="oe_inline"/>
+                                <field name="percent_3" widget="percentage" class="oe_inline"/>
                             </div>
                             <field name="tender_notice_number"/>
                             <field name="publicaiton_date"/>
