@@ -40,6 +40,38 @@ class Tenderi(models.Model):
     percent_2 = fields.Float(string='პროცენტი 2')
     percent_3 = fields.Float(string='პროცენტი 3')
 
+    def _compute_final_price_for_plan(self):
+        today_year = str(fields.Date.today().year)
+        if self.tender_type == 'მრავალ_წლიანი':
+            if today_year == self.year_1:
+                percent = self.percent_1
+            elif today_year == self.year_2:
+                percent = self.percent_2
+            elif today_year == self.year_3:
+                percent = self.percent_3
+            else:
+                percent = 0.0
+            return self.final_price * percent
+        return self.final_price or 0.0
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        add_statuses = {
+            'შერჩევა/შეფასება',
+            'გამოცხადებულია',
+            'მიმდინარეობს ხელშეკრულების მომზადება',
+        }
+        records = super().create(vals_list)
+        for rec in records:
+            if rec.tender_status not in add_statuses:
+                continue
+            if not rec.purchase_plan_line_id:
+                continue
+            final_price = rec._compute_final_price_for_plan()
+            rec.purchase_plan_line_id.tender_amount = (rec.purchase_plan_line_id.tender_amount or 0.0) + final_price
+            rec.amount_in_plan_line = True
+        return records
+
     def write(self, vals):
         add_statuses = {
             'შერჩევა/შეფასება',
@@ -65,23 +97,8 @@ class Tenderi(models.Model):
             if not rec.purchase_plan_line_id:
                 continue
             
-            today = fields.Date.today()
-            today_year = str(today.year)
-            final_price = 0.0
+            final_price = rec._compute_final_price_for_plan()
             plan_line = rec.purchase_plan_line_id
-
-            if rec.tender_type == 'მრავალ_წლიანი':
-                if today_year == rec.year_1:
-                    percent = rec.percent_1
-                elif today_year == rec.year_2:
-                    percent = rec.percent_2
-                elif today_year == rec.year_3:
-                    percent = rec.percent_3
-                else:
-                    percent = 0.0
-                final_price = rec.final_price * percent
-            else:
-                final_price = rec.final_price or 0.0
 
             if new_status in add_statuses and not rec.amount_in_plan_line:
                 plan_line.tender_amount = (plan_line.tender_amount or 0.0) + final_price
