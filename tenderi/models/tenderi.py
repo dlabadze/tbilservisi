@@ -64,9 +64,24 @@ class Tenderi(models.Model):
                 continue
             if not rec.purchase_plan_line_id:
                 continue
-
-            final_price = rec.final_price or 0.0
+            
+            today = fields.Date.today()
+            today_year = str(today.year)
+            final_price = 0.0
             plan_line = rec.purchase_plan_line_id
+
+            if rec.tender_type == 'მრავალ_წლიანი':
+                if today_year == rec.year_1:
+                    percent = rec.percent_1
+                elif today_year == rec.year_2:
+                    percent = rec.percent_2
+                elif today_year == rec.year_3:
+                    percent = rec.percent_3
+                else:
+                    percent = 0.0
+                final_price = rec.final_price * percent
+            else:
+                final_price = rec.final_price or 0.0
 
             if new_status in add_statuses and not rec.amount_in_plan_line:
                 plan_line.tender_amount = (plan_line.tender_amount or 0.0) + final_price
