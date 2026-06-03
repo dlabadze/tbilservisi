@@ -12,6 +12,7 @@ from odoo.exceptions import UserError
 PURCHASE_REQUISITION_IMPORT_MAP = (
     ('Start Date', 'date_start', 'date'),
     ('End Date', 'date_end', 'date'),
+    ('Vendor', 'supplier_name', 'char'),
     ('მომწოდებლის საიდ. კოდი', 'supplier_id_code', 'char'),
     ('მოწოდების თარიღი', 'delivery_date', 'date'),
     ('შესყიდვის საშუალება', 'purchase_method', 'selection'),
@@ -62,8 +63,8 @@ class ImportPurchaseRequisitionWizard(models.TransientModel):
             return None
         return float(num)
 
-    def _resolve_vendor_id_from_vat(self, raw):
-        """VAT / საიდ. კოდი → res.partner → vendor_id."""
+    def _resolve_vendor_id_from_vat(self, raw, name=None):
+        """VAT / საიდ. კოდი → res.partner → vendor_id. Creates partner if not found."""
         vat = self._cell_str(raw)
         if not vat:
             return False
@@ -71,7 +72,12 @@ class ImportPurchaseRequisitionWizard(models.TransientModel):
         partner = Partner.search([('vat', '=', vat)], limit=1)
         if not partner:
             partner = Partner.search([('vat', 'ilike', vat)], limit=1)
-        return partner.id if partner else False
+        if not partner:
+            partner = Partner.create({
+                'name': name or vat,
+                'vat': vat,
+            })
+        return partner.id
 
     def _resolve_selection_value(self, field_name, raw):
         """ექსელის ტექსტი ან გასაღები → Selection key."""
@@ -112,10 +118,12 @@ class ImportPurchaseRequisitionWizard(models.TransientModel):
             raw = row[excel_h]
             if pd.isna(raw):
                 continue
+            if fname == 'supplier_name':
+                continue
             if fname == 'supplier_id_code':
-                vid = self._resolve_vendor_id_from_vat(raw)
-                if vid:
-                    vals['vendor_id'] = vid
+                name_raw = row['Vendor'] if 'Vendor' in df_columns else None
+                name = self._cell_str(name_raw) if name_raw is not None and not pd.isna(name_raw) else None
+                vals['vendor_id'] = self._resolve_vendor_id_from_vat(raw, name=name)
                 continue
             if ftype == 'char':
                 vals[fname] = self._cell_str(raw)
