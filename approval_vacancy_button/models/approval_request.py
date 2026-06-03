@@ -1,6 +1,6 @@
 from odoo import models, fields, api
 
-PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13,44]
+PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13,44,25,45,46,47,48,49]
 
 
 class ApprovalRequest(models.Model):
