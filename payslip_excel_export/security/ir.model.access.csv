@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_payslip_excel_export_wizard_user,payslip.excel.export.wizard.user,model_payslip_excel_export_wizard,hr_payroll.group_hr_payroll_user,1,1,1,1
+access_payslip_excel_export_wizard_manager,payslip.excel.export.wizard.manager,model_payslip_excel_export_wizard,hr_payroll.group_hr_payroll_manager,1,1,1,1
+access_payslip_export_column_user,payslip.export.column.user,model_payslip_export_column,hr_payroll.group_hr_payroll_user,1,1,1,1
+access_payslip_export_column_manager,payslip.export.column.manager,model_payslip_export_column,hr_payroll.group_hr_payroll_manager,1,1,1,1
+access_payslip_export_config_user,payslip.export.config.user,model_payslip_export_config,hr_payroll.group_hr_payroll_user,1,1,1,1
+access_payslip_export_config_manager,payslip.export.config.manager,model_payslip_export_config,hr_payroll.group_hr_payroll_manager,1,1,1,1
+access_payslip_export_config_column_user,payslip.export.config.column.user,model_payslip_export_config_column,hr_payroll.group_hr_payroll_user,1,1,1,1
+access_payslip_export_config_column_manager,payslip.export.config.column.manager,model_payslip_export_config_column,hr_payroll.group_hr_payroll_manager,1,1,1,1

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+        id="menu_payslip_excel_export"
+        name="Export Payslips to Excel"
+        parent="hr_work_entry_contract_enterprise.menu_hr_payroll_root"
+        action="action_payslip_excel_export_wizard"
+        sequence="99" />
+</odoo>
