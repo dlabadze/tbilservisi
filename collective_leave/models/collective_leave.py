@@ -119,9 +119,10 @@ class CollectiveLeave(models.Model):
             existing_ids = record.collective_leave_emp_ids.mapped('employee_id').ids
             employees = self.env['hr.employee'].sudo().search([
                 ('department_id', '=', record.department_id.id),
-                ('job_id', '=', record.job_id.id),
                 ('id', 'not in', existing_ids),
             ])
+            if record.job_id and employees:
+                employees = employees.filtered(lambda e: e.job_id.id == record.job_id.id)
 
             year = record.start_day.year if record.start_day else False
             if year and record.leave_type_id:
