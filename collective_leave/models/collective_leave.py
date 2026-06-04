@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from odoo import api, fields, models
 
 
@@ -32,7 +34,9 @@ class CollectiveLeave(models.Model):
     )
     days = fields.Integer(
         string='დღეების რაოდენობა',
-        required=True,
+        compute='_compute_days',
+        store=True,
+        readonly=False,
     )
     collective_leave_emp_ids = fields.One2many(
         comodel_name='collective.leave.employees',
@@ -58,6 +62,36 @@ class CollectiveLeave(models.Model):
         string="შვებულების ტიპი",
         default=lambda self: self.env['hr.leave.type'].search([('name', '=', 'შვებულება პირადი')], limit=1),
     )
+
+    @api.depends('start_day', 'end_day')
+    def _compute_days(self):
+        for record in self:
+            if not record.start_day or not record.end_day:
+                record.days = 0
+                continue
+
+            holidays = self.env['resource.calendar.leaves'].search([
+                ('resource_id', '=', False),
+                ('date_from', '<=', fields.Datetime.to_datetime(record.end_day)),
+                ('date_to', '>=', fields.Datetime.to_datetime(record.start_day)),
+            ])
+
+            holiday_dates = set()
+            for h in holidays:
+                d = h.date_from.date()
+                end = h.date_to.date()
+                while d <= end:
+                    holiday_dates.add(d)
+                    d += timedelta(days=1)
+
+            count = 0
+            current = record.start_day
+            while current <= record.end_day:
+                if current.weekday() != 6 and current not in holiday_dates:
+                    count += 1
+                current += timedelta(days=1)
+
+            record.days = count
 
     def _compute_approval_request_count(self):
         for record in self:
@@ -88,6 +122,18 @@ class CollectiveLeave(models.Model):
                 ('job_id', '=', record.job_id.id),
                 ('id', 'not in', existing_ids),
             ])
+
+            year = record.start_day.year if record.start_day else False
+            if year and record.leave_type_id:
+                already_have_leave = self.env['hr.leave'].sudo().search([
+                    ('holiday_status_id', '=', record.leave_type_id.id),
+                    ('state', 'not in', ['refuse']),
+                    ('date_from', '>=', fields.Datetime.to_datetime(fields.Date.today().replace(year=year, month=1, day=1))),
+                    ('date_from', '<', fields.Datetime.to_datetime(fields.Date.today().replace(year=year + 1, month=1, day=1))),
+                    ('employee_id', 'in', employees.ids),
+                ]).mapped('employee_id').ids
+                employees = employees.filtered(lambda e: e.id not in already_have_leave)
+
             record.collective_leave_emp_ids = [
                 (0, 0, {'employee_id': emp.id})
                 for emp in employees
