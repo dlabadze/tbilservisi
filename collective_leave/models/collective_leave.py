@@ -72,9 +72,7 @@ class CollectiveLeave(models.Model):
 
             holidays = self.env['resource.calendar.leaves'].search([
                 ('resource_id', '=', False),
-                ('date_from', '<=', fields.Datetime.to_datetime(record.end_day)),
-                ('date_to', '>=', fields.Datetime.to_datetime(record.start_day)),
-            ])
+            ]).filtered(lambda h: h.date_from.date() <= record.end_day and h.date_to.date() >= record.start_day)
 
             holiday_dates = set()
             for h in holidays:
