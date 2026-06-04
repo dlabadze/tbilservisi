@@ -20,7 +20,6 @@ class CollectiveLeave(models.Model):
     job_id = fields.Many2one(
         comodel_name='hr.job',
         string='თანამდებობა',
-        required=True,
         domain="[('department_id', '=', department_id)]",
     )
     start_day =  fields.Date(
