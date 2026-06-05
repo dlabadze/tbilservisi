@@ -19,9 +19,8 @@ class ApprovalRequest(models.Model):
             if rec.category_id and rec.category_id.id in PERSONAL_APPLICATION_CATEGORIES:
                 parts = []
                 if rec.brdzaneba_employee_id:
-                    parts.append(rec.brdzaneba_employee_id.name)
+                    parts.append(rec.brdzaneba_employee_id.name + 'ს')
                 parts.append('პირადი განცხადება')
                 if rec.brdzaneba_date:
-                    parts.append(fields.Date.to_string(rec.brdzaneba_date))
+                    parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
                 rec.brdzaneba_safudzveli = ', '.join(parts)
-

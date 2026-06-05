@@ -6,10 +6,6 @@ VIRTUAL_ATT_G = '__att_g__'
 
 
 class PayslipExportConfig(models.Model):
-    """
-    Singleton that persists the user's last column selection.
-    Only one record ever exists — retrieved/created via get_config().
-    """
     _name = 'payslip.export.config'
     _description = 'Payslip Export Column Configuration'
 
@@ -27,7 +23,6 @@ class PayslipExportConfig(models.Model):
         return config
 
     def save_columns(self, wizard_column_ids):
-        """Overwrite saved columns with the wizard's current column list."""
         self.ensure_one()
         self.column_ids.unlink()
         vals_list = []
@@ -45,7 +40,6 @@ class PayslipExportConfig(models.Model):
 
 
 class PayslipExportConfigColumn(models.Model):
-    """Permanent storage for one Excel column entry."""
     _name = 'payslip.export.config.column'
     _description = 'Payslip Export Config Column'
     _order = 'sequence, id'
