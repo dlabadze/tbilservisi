@@ -1,29 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_hr_payslip_tree_inherit_lines" model="ir.ui.view">
-    <field name="name">hr.payslip.tree.inherit.lines</field>
-    <field name="model">hr.payslip</field>
-    <field name="inherit_id" ref="hr_payroll.view_hr_payslip_tree"/>
-    <field name="arch" type="xml">
-        <xpath expr="//field[@name='gross_wage']" position="after">
-            <field name="line_basic"/>
-            <field name="line_db"/>
-            <field name="line_mob"/>
-            <field name="line_qvelmoqmedeba"/>
-            <field name="line_gross"/>
-            <field name="line_fitpass"/>
-            <field name="line_sap"/>
-            <field name="line_sapcomp"/>
-            <field name="line_income"/>
-            <field name="line_profkavsh"/>
-            <field name="line_profkavsh_1"/>
-            <field name="line_fondi"/>
-            <field name="line_net"/>
-            <field name="line_biulet"/>
-            <field name="line_agsr"/>
-            <field name="line_compdazg"/>
-            <field name="line_avansi"/>
-<!--            <field name="line_compdazg"/>-->
+        <field name="name">hr.payslip.tree.inherit.lines</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll.view_hr_payslip_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='gross_wage']" position="after">
+                <field name="line_contract_wage" optional="show"/>
+                <field name="line_salary" optional="show"/>
+                <field name="line_leave" optional="show"/>
+                <field name="line_bulletin" optional="show"/>
+                <field name="line_bonus" optional="show"/>
+                <field name="line_help" optional="show"/>
+                <field name="line_overtime" optional="show"/>
+                <field name="line_letter_plus" optional="show"/>
+                <field name="line_letter_minus" optional="show"/>
+                <field name="line_gross" optional="show"/>
+                <field name="line_pension" optional="show"/>
+                <field name="line_taxable" optional="show"/>
+                <field name="line_tax_exemption" optional="show"/>
+                <field name="line_income_tax" optional="show"/>
+                <field name="line_net" optional="show"/>
+                <field name="line_charity" optional="show"/>
+                <field name="line_execution" optional="show"/>
+                <field name="line_alimony" optional="show"/>
+                <field name="line_insurance" optional="show"/>
+                <field name="line_fitpass" optional="show"/>
+                <field name="line_solidarity" optional="show"/>
+                <field name="line_prof_union" optional="show"/>
+                <field name="line_prof_union_meria" optional="show"/>
+                <field name="line_fine" optional="show"/>
+                <field name="line_other_deductions" optional="show"/>
+                <field name="line_transfer_salary" optional="show"/>
             </xpath>
-    </field>
+        </field>
     </record>
 </odoo>
