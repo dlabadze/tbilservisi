@@ -192,7 +192,7 @@ def date3(date_value, suffix=''):
         date3(field)        → "2026 წლის 01 იანვარი"
         date3(field, 'დან') → "2026 წლის 01 იანვრიდან"
         date3(field, 'მდე') → "2026 წლის 01 იანვრამდე"
-        date3(field, 'ის')  → "2026 წლის 01, იანვრიის"
+        date3(field, 'ის')  → "2026 წლის 01 იანვრიის"
     """
     if not date_value or date_value is False:
         return ''
@@ -222,7 +222,7 @@ def date3(date_value, suffix=''):
         if suffix and suffix in GEORGIAN_MONTH_FORMS:
             month_name = GEORGIAN_MONTH_FORMS[suffix].get(month, '')
             if suffix == 'ის':
-                return f'{year} წლის {day}, {month_name}'
+                return f'{year} წლის {day} {month_name}'
             return f'{year} წლის {day} {month_name}'
 
         month_name = GEORGIAN_MONTHS.get(month, '')
