@@ -12,6 +12,12 @@ class FuelExcelUploadWizard(models.TransientModel):
 	_name = 'fuel.excel.upload.wizard'
 	_description = 'Fuel Excel Upload Wizard'
 
+	IMPORT_TYPE_TO_EXCEL_SHEET = {
+		'sakutari': 'rented',
+		'administratsia': 'own',
+		'saerto': 'common',
+	}
+
 	date = fields.Date(
 		string='თარიღი',
 		required=True,
@@ -30,6 +36,37 @@ class FuelExcelUploadWizard(models.TransientModel):
 
 	file_data = fields.Binary(string='Excel ფაილი', required=True)
 	file_name = fields.Char(string='ფაილის სახელი')
+
+	def _get_excel_sheet_value(self):
+		return self.IMPORT_TYPE_TO_EXCEL_SHEET.get(self.import_type)
+
+	def _get_special_writeoff_location(self):
+		location = self.env.ref('__export__.stock_location_881_5a9a8b7d', raise_if_not_found=False)
+		if not location:
+			raise UserError('სპეციალური ჩამოწერის ლოკაცია ვერ მოიძებნა.')
+		return location
+
+	def _get_special_product_template(self):
+		return self.env.ref('__export__.product_template_24522_e6f6215f', raise_if_not_found=False)
+
+	def _is_special_fuel_product(self, fuel_product_id):
+		if not fuel_product_id:
+			return False
+		product = self.env['product.product'].browse(fuel_product_id)
+		product_template = self._get_special_product_template()
+		return bool(product.exists() and product_template and product.product_tmpl_id == product_template)
+
+	def _get_department_writeoff_location(self, department):
+		if department and 'x_studio_location' in department._fields and department.x_studio_location:
+			return department.x_studio_location
+		return False
+
+	def _get_writeoff_location(self, department, fuel_product_id=False):
+		if self.import_type in ('sakutari', 'administratsia'):
+			return self._get_special_writeoff_location()
+		if self.import_type == 'saerto' and self._is_special_fuel_product(fuel_product_id):
+			return self._get_special_writeoff_location()
+		return self._get_department_writeoff_location(department)
 
 	def _normalize_vehicle_number(self, value):
 		"""Normalize vehicle number by removing dashes and spaces.
@@ -428,10 +465,11 @@ class FuelExcelUploadWizard(models.TransientModel):
 						# else:
 						# 	missed_reason.append('თანამშრომელი ვერ მოიძებნა')
 						
-						# Validate and get location
-						if hasattr(department, 'x_studio_location') and department.x_studio_location:
-							location_id = department.x_studio_location.id
-							location_name = department.x_studio_location.display_name or department.x_studio_location.name or ''
+						# Rented sheet records always use the configured special write-off location.
+						location = self._get_writeoff_location(department, fuel_product_id)
+						if location:
+							location_id = location.id
+							location_name = location.display_name or location.name or ''
 							location_found = True
 						else:
 							missed_reason.append('ლოკაცია ვერ მოიძებნა')
@@ -468,12 +506,14 @@ class FuelExcelUploadWizard(models.TransientModel):
 			# while parent_department.parent_id:
 			# 	parent_department = parent_department.parent_id
 			vals = {
+				'excel_sheet': self._get_excel_sheet_value(),
 				'date': r.get('date'),
 				# 'parent_department_id': parent_department.id,
 				# 'department_id': department.id,
 				'vehicle_id': vehicle_id,
 				'fuel_product_id': fuel_product_id,
 				# 'employee_id': employee_id,
+				'writeoff_location_id': location_id,
 				'filled_qty': filled_qty,
 				'consumed_qty': consumed_qty,
 			}
@@ -558,10 +598,11 @@ class FuelExcelUploadWizard(models.TransientModel):
 						else:
 							missed_reason.append('საწვავის ტიპი ვერ მოიძებნა')
 						
-						# Get location from vehicle
-						if hasattr(department, 'x_studio_location') and department.x_studio_location:
-							location_id = department.x_studio_location.id
-							location_name = department.x_studio_location.display_name or department.x_studio_location.name or ''
+						# Own sheet records use the department write-off location.
+						location = self._get_writeoff_location(department, fuel_product_id)
+						if location:
+							location_id = location.id
+							location_name = location.display_name or location.name or ''
 							location_found = True
 						else:
 							missed_reason.append('ლოკაცია ვერ მოიძებნა')
@@ -588,6 +629,7 @@ class FuelExcelUploadWizard(models.TransientModel):
 			
 			# Create record values
 			vals = {
+				'excel_sheet': self._get_excel_sheet_value(),
 				'date': r.get('date'),
 				'start_odometer': r.get('start_odometer', 0.0),
 				'odometer': r.get('odometer', 0.0),
@@ -596,6 +638,7 @@ class FuelExcelUploadWizard(models.TransientModel):
 				'filled_qty': r.get('filled_qty', 0.0),
 				'consumed_qty': r.get('consumed_qty', 0.0),
 				'final_balance': r.get('final_balance', 0.0),
+				'writeoff_location_id': location_id,
 			}
 			
 			# Add department fields if department found (commented: computed on fuel.management from vehicle_id log_drivers)
@@ -699,10 +742,12 @@ class FuelExcelUploadWizard(models.TransientModel):
 						if hasattr(vehicle, 'fuel_type'):
 							fuel_type = vehicle.fuel_type
 						
-						# Get location from department (not vehicle for saerto)
-						if department and hasattr(department, 'x_studio_location') and department.x_studio_location:
-							location_id = department.x_studio_location.id
-							location_name = department.x_studio_location.display_name or department.x_studio_location.name or ''
+						# Common sheet records use the special location for the configured fuel,
+						# otherwise they fall back to the department write-off location.
+						location = self._get_writeoff_location(department, fuel_product_id)
+						if location:
+							location_id = location.id
+							location_name = location.display_name or location.name or ''
 							location_found = True
 						else:
 							missed_reason.append('ლოკაცია ვერ მოიძებნა')
@@ -758,6 +803,7 @@ class FuelExcelUploadWizard(models.TransientModel):
 			
 			# Create record values
 			vals = {
+				'excel_sheet': self._get_excel_sheet_value(),
 				'date': r.get('date'),
 				'start_odometer': r.get('start_odometer', 0.0),
 				'start_worked_hours': r.get('start_worked_hours', 0.0),
@@ -769,6 +815,7 @@ class FuelExcelUploadWizard(models.TransientModel):
 				'other_transferred': other_transferred,
 				'filled_qty': filled_qty,
 				'final_balance': final_balance,
+				'writeoff_location_id': location_id,
 			}
 			
 			# Add department fields if department found (commented: computed on fuel.management from vehicle_id log_drivers)
