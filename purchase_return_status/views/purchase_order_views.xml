@@ -1,17 +1,14 @@
 <odoo>
-    <data>
-        <record id="purchase_order_tree_return_status" model="ir.ui.view">
-            <field name="name">purchase.order.tree.return.status</field>
-            <field name="model">purchase.order</field>
-            <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='state']" position="after">
-                    <field name="return_status" string="სტატუსი">
-                        <attribute name="decoration-success">return_status == 'received'</attribute>
-                        <attribute name="decoration-danger">return_status == 'returned'</attribute>
-                    </field>
-                </xpath>
+    <record id="purchase_order_tree_return_status" model="ir.ui.view">
+        <field name="name">purchase.order.tree.return.status</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+
+            <field name="state" position="after">
+                <field name="return_status"/>
             </field>
-        </record>
-    </data>
+
+        </field>
+    </record>
 </odoo>
