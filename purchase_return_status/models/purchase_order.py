@@ -11,15 +11,19 @@ class PurchaseOrder(models.Model):
         ],
         string='სტატუსი',
         compute='_compute_return_status',
-        store=True,
         readonly=True,
+        store=False,
     )
 
-    @api.depends('picking_ids.location_dest_id.usage')
     def _compute_return_status(self):
+        StockPicking = self.env['stock.picking']
+
         for order in self:
-            returned = order.picking_ids.filtered(
-                lambda p: p.location_dest_id
-                and p.location_dest_id.usage == 'supplier'
+            returned = StockPicking.search_count([
+                ('purchase_id', '=', order.id),
+                ('location_dest_id.usage', '=', 'supplier'),
+            ])
+
+            order.return_status = (
+                'returned' if returned else 'received'
             )
-            order.return_status = 'returned' if returned else 'received'
