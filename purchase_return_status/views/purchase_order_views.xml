@@ -6,7 +6,10 @@
         <field name="arch" type="xml">
 
             <field name="state" position="after">
-                <field name="return_status" widget="badge"/>
+                <field name="return_status"
+                       widget="badge"
+                       decoration-success="return_status == 'received'"
+                       decoration-danger="return_status == 'returned'"/>
             </field>
 
         </field>

@@ -15,18 +15,11 @@ class PurchaseOrder(models.Model):
         readonly=True,
     )
 
-    @api.depends(
-        'picking_ids',
-        'picking_ids.location_dest_id',
-        'picking_ids.location_dest_id.usage'
-    )
+    @api.depends('picking_ids.location_dest_id.usage')
     def _compute_return_status(self):
         for order in self:
             returned = order.picking_ids.filtered(
                 lambda p: p.location_dest_id
                 and p.location_dest_id.usage == 'supplier'
             )
-
-            order.return_status = (
-                'returned' if returned else 'received'
-            )
+            order.return_status = 'returned' if returned else 'received'
