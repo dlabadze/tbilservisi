@@ -7,7 +7,7 @@ class PurchaseOrder(models.Model):
     return_status = fields.Selection(
         selection=[
             ('received', 'მიღებულია'),
-            ('returned', 'უკან დაბრუნებული'),
+            ('returned', 'დაბრუნებულია'),
         ],
         string='სტატუსი',
         compute='_compute_return_status',

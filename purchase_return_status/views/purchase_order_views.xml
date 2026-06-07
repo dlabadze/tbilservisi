@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
 
             <field name="state" position="after">
-                <field name="return_status"/>
+                <field name="return_status" widget="badge"/>
             </field>
 
         </field>

@@ -8,6 +8,12 @@
     'data': [
         'views/purchase_order_views.xml',
     ],
+    
+    'assets': {
+    'web.assets_backend': [
+        'purchase_return_status/static/src/css/purchase_return_status.css',
+    ],
+},
     'installable': True,
     'application': False,
     'auto_install': False,
