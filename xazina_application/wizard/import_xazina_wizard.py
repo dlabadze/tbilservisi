@@ -51,7 +51,7 @@ class ImportXazinaWizard(models.TransientModel):
                 record_date = row[date_column]
                 if pd.isna(record_date):
                     continue
-                vendor_name = row.get('მიმღების სახელი')
+                vendor_name = row.get('მიმღების სახელი', row.get('მიმღების დასახელება'))
                 if vendor_name and not isinstance(vendor_name, str):
                     vendor_name = str(vendor_name).strip() or False
                 elif vendor_name:

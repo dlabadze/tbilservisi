@@ -5,6 +5,15 @@
         <field name="model">import.xazina.wizard</field>
         <field name="arch" type="xml">
             <form string="ხაზინის იმპორტი">
+                <div class="alert alert-info" role="alert">
+                    <strong>ექსელის ფაილის სვეტების სათაურები უნდა იყოს შემდეგი:</strong>
+                    <ul class="mb-0">
+                        <li>თარიღი <span class="text-muted">(ან: გადარიცხვის თარიღი)</span></li>
+                        <li>წელი</li>
+                        <li>მიმღების სახელი <span class="text-muted">(ან: მიმღების დასახელება)</span></li>
+                        <li>თანხა ლარში <span class="text-muted">(ან: თანხა ლარებში, თანხა)</span></li>
+                    </ul>
+                </div>
                 <group>
                     <field name="xazina_type" readonly="1"/>
                     <field name="excel_file" filename="file_name"/>
