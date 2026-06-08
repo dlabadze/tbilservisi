@@ -40,6 +40,12 @@ class ImportXazinaWizard(models.TransientModel):
             if date_column not in data.columns:
                 raise UserError(_('ექსელის ფაილში არ მოიძებნა სვეტი "თარიღი" ან "გადარიცხვის თარიღი".'))
             data[date_column] = pd.to_datetime(data[date_column], errors='coerce')
+
+            amount_column = False
+            for column_name in ('თანხა ლარში', 'თანხა ლარებში', 'თანხა'):
+                if column_name in data.columns:
+                    amount_column = column_name
+                    break
             info = []
             for _idx, row in data.iterrows():
                 record_date = row[date_column]
@@ -73,6 +79,7 @@ class ImportXazinaWizard(models.TransientModel):
                     'xazina_type': self.xazina_type,
                     'commintment_foundation': vendor_name or False,
                     'reciever_name': vendor_name or False,
+                    'amount_in_gel': row.get(amount_column) or 0.0 if amount_column else 0.0,
                 })
             if info:
                 self.env['xazina'].create(info)
