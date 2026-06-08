@@ -115,14 +115,14 @@ class BankImportWizard(models.TransientModel):
                 if vat_val and vat_val != 'None':
                     vat_to_name_map[vat_val] = name_val
 
-            existing_partners = self.env['res.partner'].search([('vat', 'in', list(vat_to_name_map.keys()))])
+            existing_partners = self.env['res.partner'].with_context(active_test=False).search([('vat', 'in', list(vat_to_name_map.keys()))])
             partner_map = {p.vat: p for p in existing_partners}
 
             missing_vats = set(vat_to_name_map.keys()) - set(partner_map.keys())
             if missing_vats:
                 new_partners_vals = [{'name': vat_to_name_map[v], 'vat': v} for v in missing_vats]
                 if new_partners_vals:
-                    new_partners = self.env['res.partner'].create(new_partners_vals)
+                    new_partners = self.env['res.partner'].with_context(skip_vat_sync=True).create(new_partners_vals)
                     partner_map.update({p.vat: p for p in new_partners})
 
             line_vals_list = []
@@ -174,7 +174,7 @@ class BankImportWizard(models.TransientModel):
                 })
 
                 if partner:
-                    partner.write({
+                    partner.with_context(skip_vat_sync=True).write({
                         'company_type': 'person' if client_type in ['ფ/პ'] else 'company'
                     })
 
@@ -217,7 +217,7 @@ class BankImportWizard(models.TransientModel):
                 rows.append(row)
 
             Partner = self.env['res.partner']
-            existing_partners = Partner.search([('vat', 'in', list(vat_to_name_map.keys()))])
+            existing_partners = Partner.with_context(active_test=False).search([('vat', 'in', list(vat_to_name_map.keys()))])
             partner_map = {p.vat: p for p in existing_partners}
 
             missing_vats = set(vat_to_name_map.keys()) - set(partner_map.keys())
@@ -230,7 +230,7 @@ class BankImportWizard(models.TransientModel):
                         'vat': vat
                     })
                 if new_partners_vals:
-                    new_partners = Partner.create(new_partners_vals)
+                    new_partners = Partner.with_context(skip_vat_sync=True).create(new_partners_vals)
                     partner_map.update({p.vat: p for p in new_partners})
 
             line_vals_list = []
@@ -268,7 +268,7 @@ class BankImportWizard(models.TransientModel):
                 # Apply partner info
                 if partner:
                     # Update partner details as in original code
-                    partner.write({
+                    partner.with_context(skip_vat_sync=True).write({
                         'vat': row_vat,  # Ensures consistency
                         'company_type': 'company' if any(x in pname for x in ['შპს', 'ი/მ', 'სს']) else 'person'
                     })
@@ -325,7 +325,7 @@ class BankImportWizard(models.TransientModel):
 
             Partner = self.env['res.partner']
 
-            existing_partners = Partner.search([('vat', 'in', list(vat_to_name_map.keys()))])
+            existing_partners = Partner.with_context(active_test=False).search([('vat', 'in', list(vat_to_name_map.keys()))])
 
             partner_map = {p.vat: p for p in existing_partners}
 
@@ -338,7 +338,7 @@ class BankImportWizard(models.TransientModel):
                         'vat': vat
                     })
                 if new_partners_vals:
-                    new_partners = Partner.create(new_partners_vals)
+                    new_partners = Partner.with_context(skip_vat_sync=True).create(new_partners_vals)
                     partner_map.update({p.vat: p for p in new_partners})
 
             line_vals_list = []
@@ -373,7 +373,7 @@ class BankImportWizard(models.TransientModel):
                 })
 
                 if partner:
-                    partner.write({
+                    partner.with_context(skip_vat_sync=True).write({
                         'vat': row_vat,
                         'company_type': 'company' if any(x in pname for x in ['შპს', 'ი/მ', 'სს']) else 'person'
                     })
@@ -440,7 +440,7 @@ class BankImportWizard(models.TransientModel):
 
             Partner = self.env['res.partner']
 
-            existing_partners = Partner.search([('vat', 'in', list(vat_to_name_map.keys()))])
+            existing_partners = Partner.with_context(active_test=False).search([('vat', 'in', list(vat_to_name_map.keys()))])
             partner_map = {p.vat: p for p in existing_partners}
 
             missing_vats = set(vat_to_name_map.keys()) - set(partner_map.keys())
@@ -452,7 +452,7 @@ class BankImportWizard(models.TransientModel):
                         'vat': vat
                     })
                 if new_partners_vals:
-                    new_partners = Partner.create(new_partners_vals)
+                    new_partners = Partner.with_context(skip_vat_sync=True).create(new_partners_vals)
                     partner_map.update({p.vat: p for p in new_partners})
             # -----------------------------------------------------------------------
 
@@ -490,7 +490,7 @@ class BankImportWizard(models.TransientModel):
                 })
 
                 if partner:
-                    partner.write({
+                    partner.with_context(skip_vat_sync=True).write({
                         'vat': sid,
                         'company_type': 'company' if any(x in pname for x in ['შპს', 'ი/მ', 'სს']) else 'person'
                     })
