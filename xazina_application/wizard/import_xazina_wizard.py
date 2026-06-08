@@ -36,10 +36,13 @@ class ImportXazinaWizard(models.TransientModel):
             
             if data.empty:
                 raise UserError(_('ექსელის ფაილი ცარიელია.'))
-            data['თარიღი'] = pd.to_datetime(data['თარიღი'], errors='coerce')
+            date_column = 'თარიღი' if 'თარიღი' in data.columns else 'გადარიცხვის თარიღი'
+            if date_column not in data.columns:
+                raise UserError(_('ექსელის ფაილში არ მოიძებნა სვეტი "თარიღი" ან "გადარიცხვის თარიღი".'))
+            data[date_column] = pd.to_datetime(data[date_column], errors='coerce')
             info = []
             for _idx, row in data.iterrows():
-                record_date = row['თარიღი']
+                record_date = row[date_column]
                 if pd.isna(record_date):
                     continue
                 vendor_name = row.get('მიმღების სახელი')
