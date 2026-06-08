@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="action_sync_employee_contract_details" model="ir.actions.server">
+            <field name="name">Sync Employee Job and Department from Contract</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="binding_model_id" ref="hr.model_hr_employee"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">
+if records:
+    for emp in records:
+        contract = env['hr.contract'].search([
+            ('employee_id', '=', emp.id),
+            ('state', '=', 'open')
+        ], limit=1)
+
+        if contract:
+            vals = {}
+            if contract.department_id and emp.department_id != contract.department_id:
+                vals['department_id'] = contract.department_id.id
+            if contract.job_id and emp.job_id != contract.job_id:
+                vals['job_id'] = contract.job_id.id
+                
+            if vals:
+                emp.write(vals)
+            </field>
+        </record>
+    </data>
+</odoo>
