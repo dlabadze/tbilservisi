@@ -1,6 +1,9 @@
+import base64
+import io
 from datetime import timedelta
 
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 
 class CollectiveLeave(models.Model):
@@ -165,3 +168,93 @@ class CollectiveLeave(models.Model):
             if vals.get('name', 'New') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('collective.leave') or 'New'
         return super().create(vals_list)
+
+    def action_generate_excel(self):
+        self.ensure_one()
+
+        try:
+            import xlsxwriter
+        except ImportError:
+            raise UserError(_('xlsxwriter ბიბლიოთეკა საჭიროა Excel-ის გენერაციისთვის.'))
+
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        sheet = workbook.add_worksheet('თანამშრომლები')
+
+        header_fmt = workbook.add_format({
+            'bold': True,
+            'bg_color': '#4472C4',
+            'font_color': '#FFFFFF',
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter',
+            'text_wrap': True,
+        })
+        cell_fmt = workbook.add_format({
+            'border': 1,
+            'valign': 'vcenter',
+        })
+        num_fmt = workbook.add_format({
+            'border': 1,
+            'valign': 'vcenter',
+            'align': 'center',
+        })
+
+        COLUMNS = [
+            ('N', 5, num_fmt),
+            ('სამსახური', 30, cell_fmt),
+            ('თანამდებობა', 30, cell_fmt),
+            ('თანამშრომელი', 30, cell_fmt),
+            ('პირადი ნომერი', 18, cell_fmt),
+            ('საწყისი თარიღი', 16, cell_fmt),
+            ('დასრულების თარიღი', 18, cell_fmt),
+        ]
+
+        sheet.set_row(0, 30)
+        for col_idx, col_def in enumerate(COLUMNS):
+            sheet.write(0, col_idx, col_def[0], header_fmt)
+            sheet.set_column(col_idx, col_idx, col_def[1])
+
+        sheet.freeze_panes(1, 0)
+
+        start_day = self.start_day.strftime('%d.%m.%Y') if self.start_day else ''
+        end_day = self.end_day.strftime('%d.%m.%Y') if self.end_day else ''
+
+        for row_idx, employee in enumerate(self.employee_ids, start=1):
+            values = [
+                row_idx,
+                employee.department_id.display_name or '',
+                employee.job_id.display_name or '',
+                employee.name or '',
+                employee.identification_id or '',
+                start_day,
+                end_day,
+            ]
+            for col_idx, value in enumerate(values):
+                sheet.write(row_idx, col_idx, value, COLUMNS[col_idx][2])
+
+        workbook.close()
+        output.seek(0)
+        excel_data = base64.b64encode(output.read())
+
+        filename = 'collective_leave_{}_{}.xlsx'.format(
+            (self.name or 'export').replace('/', '-'),
+            fields.Date.today(),
+        )
+
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': excel_data,
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': (
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ),
+        })
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/{}?download=true'.format(attachment.id),
+            'target': 'new',
+        }

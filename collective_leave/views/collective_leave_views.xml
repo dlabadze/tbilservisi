@@ -24,6 +24,12 @@
                         string="დადასტურება"
                         type="object"
                         class="btn-secondary"/>
+                    <button
+                        name="action_generate_excel"
+                        string="ექსელის გენერაცია"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not employee_ids"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
