@@ -39,7 +39,7 @@ class ApprovalRequest(models.Model):
                 parts.append('პირადი განცხადება')
                 if rec.brdzaneba_date:
                     parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
-                rec.brdzaneba_safudzveli = ', '.join(parts)
+                rec.brdzaneba_safudzveli = ' '.join(parts)
 
     @api.onchange('category_id')
     def _onchange_brdzaneba_shtati(self):
