@@ -46,3 +46,5 @@ class ApprovalRequest(models.Model):
         for rec in self:
             if rec.category_id and rec.category_id.id == 11:
                 rec.brdzaneba_shtati = 'შტატგარეშე'
+            else :
+                rec.brdzaneba_shtati = False
