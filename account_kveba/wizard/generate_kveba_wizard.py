@@ -184,7 +184,7 @@ class GenerateKvebaWizard(models.TransientModel):
                 employee = self.env['hr.employee'].sudo().search(
                     [
                     ('identification_id', '=', identification_id),
-                    ('active', '=', False),
+                    ('active', 'in', [True, False]),
                     ],
                     limit=1
                 )
