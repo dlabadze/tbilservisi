@@ -1,7 +1,7 @@
 from odoo import models, fields, api
 from datetime import timedelta
 
-PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13, 44, 25, 45, 46, 47, 48, 49]
+PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13,44,25,45,46,47,48,49]
 
 
 class ApprovalRequest(models.Model):
@@ -13,7 +13,6 @@ class ApprovalRequest(models.Model):
         readonly=True,
         store=False,
     )
-
     safudzvelis_date = fields.Date(string="საფუძველის თარიღი")
     dasaqviti_amount = fields.Float(string="დასაქვითი თანხა")
     brdzanebis_nomeri = fields.Char(string="ბრძანების ნომერი")
@@ -45,10 +44,12 @@ class ApprovalRequest(models.Model):
             else :
                 rec.brdzaneba_shtati = False
 
+
+
     @api.onchange('category_id')
     def _onchange_x_studio_time_off_type(self):
         for rec in self:
-            if rec.category_id and rec.category_id.id in [45, 46, 47, 48, 49]:
+            if rec.category_id and rec.category_id.id in [45,46,47,48,49]:
                 if rec.category_id.id == 45:
                     rec.x_studio_time_off_type = 1
                 elif rec.category_id.id == 46:
@@ -59,4 +60,4 @@ class ApprovalRequest(models.Model):
                     rec.x_studio_time_off_type = 3
                 elif rec.category_id.id == 49:
                     rec.x_studio_time_off_type = 3
-
+    
