@@ -18,7 +18,12 @@ class CollectiveChangePosition(models.Model):
         readonly=True,
     )
 
-    job_id = fields.Many2one('hr.job', string='თანამდებობა', required=True)
+    job_id = fields.Many2one(
+        comodel_name='hr.job',
+        string='თანამდებობა',
+        required=True,
+        domain="[('department_id', '=', department_id)]",
+        )
 
     new_department_id = fields.Many2one('hr.department', string='ახალი სამსახური', required=True)
     new_parent_department_id = fields.Many2one(
@@ -29,7 +34,12 @@ class CollectiveChangePosition(models.Model):
         readonly=True,
     )
 
-    new_job_id = fields.Many2one('hr.job', string='ახალი თანამდებობა', required=True)
+    new_job_id = fields.Many2one(
+        comodel_name='hr.job',
+        string='ახალი თანამდებობა',
+        required=True,
+        domain="[('department_id', '=', new_department_id)]",
+    )
 
     collective_ch_position_emp_ids = fields.One2many(
         comodel_name='collective.change.position.emps', 
