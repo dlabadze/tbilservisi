@@ -1,7 +1,7 @@
 from odoo import models, fields, api
 from datetime import timedelta
 
-PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13,44,25,45,46,47,48,49]
+PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13, 44, 25, 45, 46, 47, 48, 49]
 
 
 class ApprovalRequest(models.Model):
@@ -14,6 +14,11 @@ class ApprovalRequest(models.Model):
         store=False,
     )
 
+    safudzvelis_date = fields.Date(string="საფუძველის თარიღი")
+    dasaqviti_amount = fields.Float(string="დასაქვითი თანხა")
+    brdzanebis_nomeri = fields.Char(string="ბრძანების ნომერი")
+
+
     @api.onchange('category_id', 'brdzaneba_employee_id', 'brdzaneba_date', 'safudzvelis_date')
     def _onchange_brdzaneba_safudzveli(self):
         for rec in self:
@@ -24,7 +29,7 @@ class ApprovalRequest(models.Model):
                 parts.append('პირადი განცხადება')
                 if rec.brdzaneba_date:
                     parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
-                rec.brdzaneba_safudzveli = ', '.join(parts)
+                rec.brdzaneba_safudzveli = ' '.join(parts)
             elif rec.category_id and rec.category_id.id == 16:
                 rec.brdzaneba_safudzveli = rec.safudzvelis_date.strftime('%d/%m/%Y') if rec.safudzvelis_date else False
 
@@ -39,3 +44,19 @@ class ApprovalRequest(models.Model):
                 rec.brdzaneba_shtati = 'მოვალეობის შემსრულებელი'
             else :
                 rec.brdzaneba_shtati = False
+
+    @api.onchange('category_id')
+    def _onchange_x_studio_time_off_type(self):
+        for rec in self:
+            if rec.category_id and rec.category_id.id in [45, 46, 47, 48, 49]:
+                if rec.category_id.id == 45:
+                    rec.x_studio_time_off_type = 1
+                elif rec.category_id.id == 46:
+                    rec.x_studio_time_off_type = 6
+                elif rec.category_id.id == 47:
+                    rec.x_studio_time_off_type = 4
+                elif rec.category_id.id == 48:
+                    rec.x_studio_time_off_type = 3
+                elif rec.category_id.id == 49:
+                    rec.x_studio_time_off_type = 3
+
