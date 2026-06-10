@@ -14,21 +14,6 @@ class ApprovalRequest(models.Model):
         store=False,
     )
 
-    release_date = fields.Date(
-        string="გათავისუფლების თარიღი",
-        compute="_compute_release_date",
-        store=True,
-        readonly=False,
-    )
-
-    @api.depends('brdzaneba_end_date', 'category_id')
-    def _compute_release_date(self):
-        for rec in self:
-            if rec.category_id and rec.category_id.id in [24, 25, 26, 27] and rec.brdzaneba_end_date:
-                rec.release_date = rec.brdzaneba_end_date - timedelta(days=1)
-            else:
-                rec.release_date = False
-
     @api.onchange('category_id', 'brdzaneba_employee_id', 'brdzaneba_date')
     def _onchange_brdzaneba_safudzveli(self):
         for rec in self:
@@ -46,5 +31,9 @@ class ApprovalRequest(models.Model):
         for rec in self:
             if rec.category_id and rec.category_id.id == 11:
                 rec.brdzaneba_shtati = 'შტატგარეშე'
+            elif rec.category_id and rec.category_id.id in [12,44]:
+                rec.brdzaneba_shtati = 'შტატი'
+            elif rec.category_id and rec.category_id.id == 10:
+                rec.brdzaneba_shtati = 'მოვალეობის შემსრულებელი'
             else :
                 rec.brdzaneba_shtati = False
