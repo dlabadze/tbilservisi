@@ -54,6 +54,15 @@ class CollectiveChangePosition(models.Model):
         store=True,
     )
 
+    approval_request_ids = fields.One2many(
+        comodel_name='approval.request',
+        inverse_name='collective_change_position_id',
+        string='ბრძანებები',
+    )
+    approval_request_count = fields.Integer(
+        compute='_compute_approval_request_count',
+    )
+
     @api.depends('collective_ch_position_emp_ids.is_checked')
     def _compute_employee_ids(self):
         for record in self:
@@ -84,4 +93,39 @@ class CollectiveChangePosition(models.Model):
                 (0, 0, {'employee_id': emp.id})
                 for emp in employees
             ]
+
+    def _compute_approval_request_count(self):
+        for record in self:
+            record.approval_request_count = len(record.approval_request_ids)
+
+    def action_open_approval_requests(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'ბრძანებები',
+            'res_model': 'approval.request',
+            'view_mode': 'list,form',
+            'domain': [('collective_change_position_id', '=', self.id)],
+            'context': {'default_collective_change_position_id': self.id},
+        }
+
+    def create_approval_request(self):
+        category = self.env['approval.category'].sudo().search([('name', '=', 'დანიშვნა')], limit=1)
+        for record in self:
+            existing_employees = record.approval_request_ids.mapped('brdzaneba_employee_id').ids
+            for employee in record.employee_ids:
+                if employee.id in existing_employees:
+                    continue
+                request = self.env['approval.request'].sudo().create({
+                    'request_owner_id': self.env.user.id,
+                    'category_id': category.id,
+                    'brdzaneba_employee_id': employee.id,
+                    'brdzaneba_start_date': record.start_date,
+                    'brdzaneba_end_date': record.end_date,
+                    'brdzaneba_department_id': record.new_department_id.id,
+                    'brdzaneba_job_id': record.new_job_id.id,
+                    'collective_change_position_id': record.id,
+                })
+                request.sudo().action_confirm()
+                request.sudo().action_approve()
 

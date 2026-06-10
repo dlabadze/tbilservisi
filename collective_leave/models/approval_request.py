@@ -8,3 +8,7 @@ class ApprovalRequest(models.Model):
         comodel_name='collective.leave',
         string='კოლექტიური შვებულება',
     )
+    collective_change_position_id = fields.Many2one(
+        comodel_name='collective.change.position',
+        string='კოლექტიური თანამდებობის ცვლილება',
+    )
