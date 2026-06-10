@@ -358,6 +358,44 @@ def count_records(recordset):
     return len(recordset)
 
 
+# Georgian number words (used by num_to_words and days_to_words)
+_ONES = ['', 'ერთი', 'ორი', 'სამი', 'ოთხი', 'ხუთი', 'ექვსი', 'შვიდი', 'რვა', 'ცხრა']
+_TEENS = ['ათი', 'თერთმეტი', 'თორმეტი', 'ცამეტი', 'თოთხმეტი', 'თხუთმეტი',
+          'თექვსმეტი', 'ჩვიდმეტი', 'თვრამეტი', 'ცხრამეტი']
+_TENS = ['', '', 'ოცი', 'ოცდაათი', 'ორმოცი', 'ორმოცდაათი', 'სამოცი', 'სამოცდაათი',
+         'ოთხმოცი', 'ოთხმოცდაათი']
+_TENS_COMBINED = ['', '', 'ოც', 'ოცდაათ', 'ორმოც', 'ორმოცდაათ', 'სამოც', 'სამოცდაათ',
+                  'ოთხმოც', 'ოთხმოცდაათ']
+_HUNDREDS_ALONE = ['', 'ასი', 'ორასი', 'სამასი', 'ოთხასი', 'ხუთასი', 'ექვსასი', 'შვიდასი',
+                   'რვაასი', 'ცხრაასი']
+_HUNDREDS_COMBINED = ['', 'ას', 'ორას', 'სამას', 'ოთხას', 'ხუთას', 'ექვსას', 'შვიდას',
+                      'რვაას', 'ცხრაას']
+
+
+def _convert_under_thousand(n):
+    if n == 0:
+        return ''
+    elif n < 10:
+        return _ONES[n]
+    elif n < 20:
+        return _TEENS[n - 10]
+    elif n < 100:
+        decade = n // 10
+        ones_part = n % 10
+        if ones_part == 0:
+            return _TENS[decade]
+        elif decade in [2, 4, 6, 8]:
+            return _TENS_COMBINED[decade] + 'და' + _ONES[ones_part]
+        else:
+            return _TENS_COMBINED[decade - 1] + 'და' + _TEENS[ones_part]
+    else:
+        remainder = n % 100
+        if remainder != 0:
+            return _HUNDREDS_COMBINED[n // 100] + ' ' + _convert_under_thousand(remainder)
+        else:
+            return _HUNDREDS_ALONE[n // 100]
+
+
 def num_to_words(amount, part='full'):
     """
     Convert a number to Georgian words.
@@ -388,69 +426,33 @@ def num_to_words(amount, part='full'):
         lari += 1
         tetri = 0
 
-    # Georgian number words
-    ones = ['', 'ერთი', 'ორი', 'სამი', 'ოთხი', 'ხუთი', 'ექვსი', 'შვიდი', 'რვა', 'ცხრა']
-    teens = ['ათი', 'თერთმეტი', 'თორმეტი', 'ცამეტი', 'თოთხმეტი', 'თხუთმეტი',
-             'თექვსმეტი', 'ჩვიდმეტი', 'თვრამეტი', 'ცხრამეტი']
-    tens = ['', '', 'ოცი', 'ოცდაათი', 'ორმოცი', 'ორმოცდაათი', 'სამოცი', 'სამოცდაათი',
-            'ოთხმოცი', 'ოთხმოცდაათი']
-    tens_combined = ['', '', 'ოც', 'ოცდაათ', 'ორმოც', 'ორმოცდაათ', 'სამოც', 'სამოცდაათ',
-                     'ოთხმოც', 'ოთხმოცდაათ']
-    hundreds_alone = ['', 'ასი', 'ორასი', 'სამასი', 'ოთხასი', 'ხუთასი', 'ექვსასი', 'შვიდასი',
-                      'რვაასი', 'ცხრაასი']
-    hundreds_combined = ['', 'ას', 'ორას', 'სამას', 'ოთხას', 'ხუთას', 'ექვსას', 'შვიდას',
-                         'რვაას', 'ცხრაას']
-
-    def convert_under_thousand(n):
-        if n == 0:
-            return ''
-        elif n < 10:
-            return ones[n]
-        elif n < 20:
-            return teens[n - 10]
-        elif n < 100:
-            decade = n // 10
-            ones_part = n % 10
-            if ones_part == 0:
-                return tens[decade]
-            elif decade in [2, 4, 6, 8]:
-                return tens_combined[decade] + 'და' + ones[ones_part]
-            else:
-                return tens_combined[decade - 1] + 'და' + teens[ones_part]
-        else:
-            remainder = n % 100
-            if remainder != 0:
-                return hundreds_combined[n // 100] + ' ' + convert_under_thousand(remainder)
-            else:
-                return hundreds_alone[n // 100]
-
     def convert_number(n):
         if n == 0:
             return "ნული"
         elif n < 1000:
-            return convert_under_thousand(n)
+            return _convert_under_thousand(n)
         elif n < 1000000:
             thousands = n // 1000
             remainder = n % 1000
             if thousands == 1:
                 if remainder > 0:
-                    return "ათას " + convert_under_thousand(remainder)
+                    return "ათას " + _convert_under_thousand(remainder)
                 return "ათასი"
             if remainder > 0:
-                return convert_under_thousand(thousands) + " ათას " + convert_under_thousand(remainder)
-            return convert_under_thousand(thousands) + " ათასი"
+                return _convert_under_thousand(thousands) + " ათას " + _convert_under_thousand(remainder)
+            return _convert_under_thousand(thousands) + " ათასი"
         else:
             millions = n // 1000000
             thousands = (n % 1000000) // 1000
             remainder = n % 1000
-            result = convert_under_thousand(millions) + " მილიონი"
+            result = _convert_under_thousand(millions) + " მილიონი"
             if thousands > 0:
                 if remainder > 0:
-                    result += " " + convert_under_thousand(thousands) + " ათას"
+                    result += " " + _convert_under_thousand(thousands) + " ათას"
                 else:
-                    result += " " + convert_under_thousand(thousands) + " ათასი"
+                    result += " " + _convert_under_thousand(thousands) + " ათასი"
             if remainder > 0:
-                result += " " + convert_under_thousand(remainder)
+                result += " " + _convert_under_thousand(remainder)
             return result
 
     lari_words = convert_number(lari)
@@ -466,3 +468,35 @@ def num_to_words(amount, part='full'):
     if tetri > 0:
         result += " და " + tetri_words + " თეთრი"
     return result
+
+
+def days_to_words(value):
+    """
+    Convert an integer number of days to Georgian words (0 to 1000).
+
+    Examples:
+        days_to_words(5)  -> "ხუთი"
+        days_to_words(10) -> "ათი"
+        days_to_words(25) -> "ოცდახუთი"
+
+    Usage in template:
+        {{ days_to_words(docs.duration_days) }}
+    """
+    if value is False or value is None or value == '':
+        value = 0
+
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        value = 0
+
+    if value < 0 or value > 1000:
+        return ''
+
+    if value == 0:
+        return 'ნული'
+
+    if value == 1000:
+        return 'ათასი'
+
+    return _convert_under_thousand(value)

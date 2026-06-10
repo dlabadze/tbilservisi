@@ -262,6 +262,46 @@ Total Lines: {{ count_records(docs.order_line) }}
 
 ---
 
+## Problem 5: Convert a Number of Days to Georgian Words
+
+### ❌ Before (Problem):
+In your DOCX template:
+```
+ვადა: {{ docs.duration }} დღე
+```
+
+Output shows:
+```
+ვადა: 25 დღე
+```
+
+### ✅ After (Solution):
+In your DOCX template:
+```
+ვადა: {{ days_to_words(docs.duration) }} დღე
+```
+
+Output shows:
+```
+ვადა: ოცდახუთი დღე
+```
+
+**More examples:**
+```
+{{ days_to_words(5) }}    → ხუთი
+{{ days_to_words(10) }}   → ათი
+{{ days_to_words(25) }}   → ოცდახუთი
+{{ days_to_words(100) }}  → ასი
+{{ days_to_words(1000) }} → ათასი
+```
+
+**Notes:**
+- The value is converted to `int` (decimals are truncated, e.g. `2.7` → `2`).
+- Supports values from `0` to `1000`.
+- Values outside this range, or invalid (non-numeric) input, return an empty string. Empty/`False` input returns `ნული`.
+
+---
+
 ## Quick Reference
 
 | Use Case | Function | Example |
@@ -276,4 +316,5 @@ Total Lines: {{ count_records(docs.order_line) }}
 | Get last record | `get_last()` | `{{ get_last(docs.lines).name }}` |
 | Join all field values | `join_field()` | `{{ join_field(docs.lines, 'name') }}` |
 | Count records | `count_records()` | `{{ count_records(docs.lines) }}` |
+| Number of days in words | `days_to_words()` | `{{ days_to_words(docs.duration) }} დღე` |
 
