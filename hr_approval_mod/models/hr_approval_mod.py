@@ -46,8 +46,6 @@ class ApprovalRequest(models.Model):
         for rec in self:
             if rec.category_id and rec.category_id.id in [24, 25, 26, 27, 29, 30, 32] and rec.release_date:
                 rec.brdzaneba_end_date = rec.release_date - timedelta(days=1)
-            else:
-                rec.brdzaneba_end_date = False
 
 class HrDepartment(models.Model):
     _inherit = 'hr.department'
