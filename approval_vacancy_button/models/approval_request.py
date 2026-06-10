@@ -20,6 +20,9 @@ class ApprovalRequest(models.Model):
         store=True,
         readonly=False,
     )
+    safudzvelis_date = fields.Date(string="საფუძველის თარიღი")
+    dasaqviti_amount = fields.Float(string="დასაქვითი თანხა")
+    brdzanebis_nomeri = fields.Char(string="ბრძანების ნომერი")
 
     @api.depends('brdzaneba_end_date', 'category_id')
     def _compute_release_date(self):
@@ -29,7 +32,7 @@ class ApprovalRequest(models.Model):
             else:
                 rec.release_date = False
 
-    @api.onchange('category_id', 'brdzaneba_employee_id', 'brdzaneba_date')
+    @api.onchange('category_id', 'brdzaneba_employee_id', 'brdzaneba_date', 'safudzvelis_date')
     def _onchange_brdzaneba_safudzveli(self):
         for rec in self:
             if rec.category_id and rec.category_id.id in PERSONAL_APPLICATION_CATEGORIES:
@@ -40,6 +43,8 @@ class ApprovalRequest(models.Model):
                 if rec.brdzaneba_date:
                     parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
                 rec.brdzaneba_safudzveli = ' '.join(parts)
+            elif rec.category_id and rec.category_id.id == 16:
+                rec.brdzaneba_safudzveli = rec.safudzvelis_date.strftime('%d/%m/%Y') if rec.safudzvelis_date else False
 
     @api.onchange('category_id')
     def _onchange_brdzaneba_shtati(self):
@@ -65,3 +70,4 @@ class ApprovalRequest(models.Model):
                     rec.x_studio_time_off_type = 3
                 elif rec.category_id.id == 49:
                     rec.x_studio_time_off_type = 3
+    
