@@ -14,4 +14,17 @@
         action="collective_leave_action_window"
         sequence="10"/>
 
+    <menuitem
+        id="collective_change_position_menu_root"
+        name="კოლექტიური თანამდებობის ცვლილება"
+        parent="approvals.approvals_menu_root"
+        sequence="20"/>
+
+    <menuitem
+        id="collective_change_position_menu_records"
+        name="ჩანაწერები"
+        parent="collective_change_position_menu_root"
+        action="collective_change_position_action_window"
+        sequence="10"/>
+
 </odoo>

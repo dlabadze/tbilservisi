@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_collective_leave,access_collective_leave,model_collective_leave,base.group_user,1,1,1,1
 access_collective_leave_employees,access_collective_leave_employees,model_collective_leave_employees,base.group_user,1,1,1,1
+access_collective_change_position,access_collective_change_position,model_collective_change_position,base.group_user,1,1,1,1
+access_collective_change_position_emps,access_collective_change_position_emps,model_collective_change_position_emps,base.group_user,1,1,1,1

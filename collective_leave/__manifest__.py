@@ -5,6 +5,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/collective_leave_views.xml',
+        'views/collective_change_position_views.xml',
         'views/menus.xml',
     ],
     'installable': True,
