@@ -26,6 +26,7 @@ class IrActionsReport(models.Model):
             'count_records': misc_tools.count_records,
             'num_to_words': misc_tools.num_to_words,
             'date3': misc_tools.date3,
+            'days_to_words': misc_tools.days_to_words,
         })
 
         render_image = context.get('render_image')

@@ -1,6 +1,7 @@
 from odoo import models, fields, api, Command
 from odoo.exceptions import UserError
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
+
 
 class ApprovalCategory(models.Model):
     _inherit = 'approval.category'
@@ -23,7 +24,7 @@ class ApprovalRequest(models.Model):
     brdzaneba_current_department_id = fields.Many2one('hr.department', related="brdzaneba_employee_id.department_id", string="მიმდინარე სტრუქტურული ერთეული")
     brdzaneba_current_job_id = fields.Many2one('hr.job', related="brdzaneba_employee_id.job_id", string="მიმდინარე თანამდებობა")
     brdzaneba_start_date = fields.Date(string="დაწყების თარიღი")
-    brdzaneba_end_date = fields.Date(string="დასრულების თარიღი",  compute="_compute_end_date")
+    brdzaneba_end_date = fields.Date(string="დასრულების თარიღი",  compute="_compute_end_date", readonly=False)
     brdzaneba_department_id = fields.Many2one('hr.department', string="სტრუქტურული ერთეული")
     brdzaneba_job_id = fields.Many2one('hr.job', string="თანამდებობა", domain="[('department_id', '=', brdzaneba_department_id)]")
     brdzaneba_shtati = fields.Selection([
@@ -43,7 +44,7 @@ class ApprovalRequest(models.Model):
     @api.depends('release_date', 'category_id')
     def _compute_end_date(self):
         for rec in self:
-            if rec.category_id and rec.category_id.id in [24, 25, 26, 27, 29, 30, 32] and rec.brdzaneba_end_date:
+            if rec.category_id and rec.category_id.id in [24, 25, 26, 27, 29, 30, 32] and rec.release_date:
                 rec.brdzaneba_end_date = rec.release_date - timedelta(days=1)
             else:
                 rec.brdzaneba_end_date = False

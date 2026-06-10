@@ -14,7 +14,7 @@ class ApprovalRequest(models.Model):
         store=False,
     )
 
-    @api.onchange('category_id', 'brdzaneba_employee_id', 'brdzaneba_date')
+    @api.onchange('category_id', 'brdzaneba_employee_id', 'brdzaneba_date', 'safudzvelis_date')
     def _onchange_brdzaneba_safudzveli(self):
         for rec in self:
             if rec.category_id and rec.category_id.id in PERSONAL_APPLICATION_CATEGORIES:
@@ -25,6 +25,8 @@ class ApprovalRequest(models.Model):
                 if rec.brdzaneba_date:
                     parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
                 rec.brdzaneba_safudzveli = ', '.join(parts)
+            elif rec.category_id and rec.category_id.id == 16:
+                rec.brdzaneba_safudzveli = rec.safudzvelis_date.strftime('%d/%m/%Y') if rec.safudzvelis_date else False
 
     @api.onchange('category_id')
     def _onchange_brdzaneba_shtati(self):

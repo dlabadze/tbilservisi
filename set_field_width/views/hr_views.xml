@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_tree_width" model="ir.ui.view">
+        <field name="name">hr.employee.list.width</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="width">225px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='department_id']" position="attributes">
+                <attribute name="width">460px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='job_id']" position="attributes">
+                <attribute name="width">330px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='work_email']" position="attributes">
+                <attribute name="width">160px</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_employee_tree_custom_inherited" model="ir.ui.view">
+        <field name="name">hr.employee.list.inherited</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="employee_view_cust.hr_employee_tree_custom"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='passport_id']" position="attributes">
+                <attribute name="width">150px</attribute>
+            </xpath>
+             <xpath expr="//field[@name='mobile_phone']" position="attributes">
+                <attribute name="width">110px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='gender']" position="attributes">
+                <attribute name="width">120px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='private_street']" position="attributes">
+                <attribute name="width">500px</attribute>
+            </xpath>
+             <xpath expr="//field[@name='x_studio_address']" position="attributes">
+                <attribute name="width">500px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_education']" position="attributes">
+                <attribute name="width">190px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_marital']" position="attributes">
+                <attribute name="width">190px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_citizenship']" position="attributes">
+                <attribute name="width">195px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_militarystatus']" position="attributes">
+                <attribute name="width">210px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_conviction']" position="attributes">
+                <attribute name="width">150px</attribute>
+            </xpath>
+             <xpath expr="//field[@name='work_experience_months']" position="attributes">
+                <attribute name="width">100px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_location']" position="attributes">
+                <attribute name="width">140px</attribute>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_country']" position="attributes">
+                <attribute name="width">170px</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

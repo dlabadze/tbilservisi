@@ -182,7 +182,10 @@ class GenerateKvebaWizard(models.TransientModel):
             employee = False
             if identification_id:
                 employee = self.env['hr.employee'].sudo().search(
-                    [('identification_id', '=', identification_id)],
+                    [
+                    ('identification_id', '=', identification_id),
+                    ('active', 'in', [True, False]),
+                    ],
                     limit=1
                 )
                 partner = employee.work_contact_id if employee else False
