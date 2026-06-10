@@ -29,8 +29,9 @@ class ApprovalRequest(models.Model):
                 if rec.brdzaneba_date:
                     parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
                 rec.brdzaneba_safudzveli = ' '.join(parts)
-            elif rec.category_id and rec.category_id.id == 16:
-                rec.brdzaneba_safudzveli = rec.safudzvelis_date.strftime('%d/%m/%Y') if rec.safudzvelis_date else False
+            elif rec.category_id:
+                rec.brdzaneba_safudzveli = rec.brdzaneba_date.strftime('%d.%m.%Y') if rec.safudzvelis_date else False
+
 
     @api.onchange('category_id')
     def _onchange_brdzaneba_shtati(self):
