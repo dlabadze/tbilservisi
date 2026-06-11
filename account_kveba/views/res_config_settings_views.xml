@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_kveba" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.account.kveba</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='default_accounts']" position="inside">
+                <setting string="კვება გადახურვა:" help="გადახურვის გატარების დებეტისა და კრედიტის ანგარიშები">
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <label for="kveba_gadakhurva_debit_account_id" string="დებეტი" class="col-lg-4 o_light_label"/>
+                            <field name="kveba_gadakhurva_debit_account_id"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="kveba_gadakhurva_credit_account_id" string="კრედიტი" class="col-lg-4 o_light_label"/>
+                            <field name="kveba_gadakhurva_credit_account_id"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

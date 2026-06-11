@@ -10,8 +10,8 @@ class GenerateKvebaWizard(models.TransientModel):
     _description = 'Generate Kveba Wizard'
 
     date = fields.Date('Date', required=True)
-    excel_file = fields.Binary('Excel File', required=True)
-    excel_filename = fields.Char('Excel File Name', required=True)
+    excel_file = fields.Binary('Excel File')
+    excel_filename = fields.Char('Excel File Name')
     journals = fields.Selection(
         selection=[
             ('1', 'კვება'),
@@ -24,11 +24,21 @@ class GenerateKvebaWizard(models.TransientModel):
     analytic_account = fields.Many2one(
         'account.analytic.account',
         string='Analytic Account',
-        required=True,
         domain=[('plan_id.name', '=', 'სამსახური')]
     )
-    cost = fields.Float(string='ღირებულება დღგ-ს გარეშე', required=True)
+    cost = fields.Float(string='ღირებულება დღგ-ს გარეშე')
     start_row = fields.Integer(string='Start Row', default=2)
+    gadakhurva = fields.Boolean(string='გადახურვა')
+    debit_account_id = fields.Many2one(
+        'account.account',
+        string='დებეტი',
+        default=lambda self: self.env.company.kveba_gadakhurva_debit_account_id,
+    )
+    credit_account_id = fields.Many2one(
+        'account.account',
+        string='კრედიტი',
+        default=lambda self: self.env.company.kveba_gadakhurva_credit_account_id,
+    )
     
     def _generate_and_download_missed_excel(self, missed_rows, created_count):
         """Generate Excel file with missed rows and return download action."""
@@ -106,8 +116,85 @@ class GenerateKvebaWizard(models.TransientModel):
         except Exception as e:
             raise UserError(_('ვერ შეიქმნა შეცდომების ფაილი: %s') % str(e))
     
+    @api.onchange('journals')
+    def _onchange_journals_gadakhurva(self):
+        if self.journals != '1':
+            self.gadakhurva = False
+
+    def action_gadakhurva(self):
+        """Create a closing (გადახურვა) journal entry so that the credit account's
+        trial balance debit column becomes 0 as of the selected date.
+
+        The balance is the trial balance end balance: all posted move lines of
+        the credit account with date <= the wizard date, across all journals.
+        If the net balance (debit - credit) is positive, a draft entry is
+        created in the 'კვება' journal crediting the credit account and
+        debiting the debit account by that amount.
+        """
+        self.ensure_one()
+
+        if self.journals != '1':
+            raise UserError(_("გადახურვა შესაძლებელია მხოლოდ 'კვება' ჟურნალისთვის"))
+        if not self.debit_account_id or not self.credit_account_id:
+            raise UserError(_("გთხოვთ შეავსოთ დებეტისა და კრედიტის ანგარიშები"))
+
+        journal = self.env['account.journal'].sudo().search([('name', '=', 'კვება')], limit=1)
+        if not journal:
+            raise UserError(_("Journal '%s' not found") % 'კვება')
+
+        result = self.env['account.move.line'].sudo()._read_group(
+            domain=[
+                ('account_id', '=', self.credit_account_id.id),
+                ('date', '<=', self.date),
+                ('parent_state', '=', 'posted'),
+                ('company_id', '=', self.env.company.id),
+            ],
+            aggregates=['debit:sum', 'credit:sum'],
+        )
+        debit_sum, credit_sum = result[0]
+        currency = self.env.company.currency_id
+        balance = currency.round((debit_sum or 0.0) - (credit_sum or 0.0))
+
+        if currency.compare_amounts(balance, 0.0) <= 0:
+            raise UserError(
+                _("ანგარიშს '%s' არ აქვს დებეტური ნაშთი გადასახურად არჩეული თარიღისთვის")
+                % self.credit_account_id.display_name
+            )
+
+        move = self.env['account.move'].sudo().create({
+            'move_type': 'entry',
+            'date': self.date,
+            'journal_id': journal.id,
+            'ref': 'გადახურვა',
+            'line_ids': [
+                (0, 0, {
+                    'account_id': self.debit_account_id.id,
+                    'name': 'გადახურვა',
+                    'debit': balance,
+                    'credit': 0.0,
+                }),
+                (0, 0, {
+                    'account_id': self.credit_account_id.id,
+                    'name': 'გადახურვა',
+                    'debit': 0.0,
+                    'credit': balance,
+                }),
+            ],
+        })
+
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move',
+            'res_id': move.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
     def action_generate_kveba(self):
         self.ensure_one()
+
+        if not self.analytic_account:
+            raise UserError(_("Analytic account is missing"))
 
         if self.journals == '1':
             kveba = self.env['product.template'].sudo().search([('name', '=', 'კვება')], limit=1)
