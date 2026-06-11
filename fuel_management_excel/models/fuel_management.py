@@ -282,6 +282,7 @@ class FuelManagement(models.Model):
 
 	def _combine_analytic_distributions(self, *distributions):
 		keys = [key for distribution in distributions if distribution for key in distribution.keys()]
+		_logger.info(f"Keeeeeeeeys: {keys}")
 		return {','.join(keys): 100.0} if keys else False
 
 	def action_generate_journal_entry(self):
@@ -339,7 +340,6 @@ class FuelManagement(models.Model):
 			departamenti_plan = self.env["account.analytic.plan"].sudo().search([
 				('name', '=', 'დეპარტამენტი')
 			], limit=1)
-
 			if not departamenti_plan:
 				raise ValidationError(f"Analytic plan 'დეპარტამენტი' is not found.")
 
@@ -349,6 +349,15 @@ class FuelManagement(models.Model):
 
 			if not samsaxuri_plan:
 				raise ValidationError(f"Analytic plan 'სამსახრური' is not found.")
+			
+			vehicle_plan =  self.env["account.analytic.plan"].sudo().search([
+				('name', 'in', ['სატრანსპორტო საშუალებები', 'სატრანსპორტო საშუალება'])
+			], limit=1)
+
+			if not vehicle_plan:
+				raise ValidationError(
+					f"Analytic plan 'სატრანსპორტო საშუალებები' or 'სატრანსპორტო საშუალება' is not found."
+				)
 
 			analytic_account = self.env['account.analytic.account']
 			if rec.department_id:
@@ -367,13 +376,25 @@ class FuelManagement(models.Model):
 			
 			dep_analytic = self.env['account.analytic.account']
 			if rec.parent_department_id:
+				_logger.info("if rec.parent_department_id: is true")
 				dep_analytic = self.env['account.analytic.account'].sudo().search([
-					('name', '=', rec.department_id.name),
+					('name', '=', rec.parent_department_id.name),
 					('plan_id', '=', departamenti_plan.id)
 				], limit=1)
+				_logger.info(dep_analytic)
+			
+			vehicle_analytic = self.env['account.analytic.account']
+			if rec.vehicle_id and rec.vehicle_id.license_plate:
+				vehicle_analytic = self.env['account.analytic.account'].sudo().search([
+					('plan_id', '=', vehicle_plan.id)
+				], limit=1)
+				vehicle_analytic = vehicle_analytic.filtered(lambda x: rec.vehicle_id.license_plate in x.name)[:1]
+			
+			vehicle_analytic_distributions = {str(vehicle_analytic.id): 100.0} if vehicle_analytic else False
 			dep_analytic_distribution = {str(dep_analytic.id): 100.0} if dep_analytic else False
 			analytic_distribution = {str(analytic_account.id): 100.0} if analytic_account else False
-
+			_logger.info(f"dep analytic: {dep_analytic}")
+			_logger.info(f"dep analytic dist: {dep_analytic_distribution}")
 			invoice_lines = []
 			cost = product_id.standard_price
 			quantity = rec.consumed_qty
@@ -412,7 +433,7 @@ class FuelManagement(models.Model):
 
 				# Line 2: 7411 - 3132
 				line_7411 = {'account_id': account_7452_02.id, 'name': f'{partner.name}', 'debit': ammount_7452_02, 'credit': 0.0}
-				combined_distribution = self._combine_analytic_distributions(analytic_distribution, dep_analytic_distribution)
+				combined_distribution = self._combine_analytic_distributions(analytic_distribution, dep_analytic_distribution, vehicle_analytic_distributions)
 				if combined_distribution:
 					line_7411['analytic_distribution'] = combined_distribution
 				invoice_lines.append((0, 0, line_7411))
@@ -493,9 +514,9 @@ class FuelManagement(models.Model):
 				amount_3330 = base_amount * 0.18
 
 				# Line 2: 7411 - 3132
-				combined_distribution = self._combine_analytic_distributions(analytic_distribution, dep_analytic_distribution)
+				combined_distribution = self._combine_analytic_distributions(analytic_distribution, dep_analytic_distribution, vehicle_analytic_distributions)
 				line_7411_no_pen = {'account_id': account_7452_02.id, 'name': f'{partner.name}', 'debit': ammount_7452_02, 'credit': 0.0}
-				if analytic_distribution:
+				if combined_distribution:
 					line_7411_no_pen['analytic_distribution'] = combined_distribution
 				invoice_lines.append((0, 0, line_7411_no_pen))
 
