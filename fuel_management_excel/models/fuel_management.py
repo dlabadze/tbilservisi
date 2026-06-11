@@ -1,5 +1,5 @@
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -280,13 +280,17 @@ class FuelManagement(models.Model):
 				'target': 'current',
 			}
 
+	def _combine_analytic_distributions(self, *distributions):
+		keys = [key for distribution in distributions if distribution for key in distribution.keys()]
+		return {','.join(keys): 100.0} if keys else False
+
 	def action_generate_journal_entry(self):
 		"""
 		Generate journal entry for fuel write-off
 		"""
 		_logger.info(f"=======action_generate_journal_entry=======")
 		_logger.info(f"self: {self}")
-		account_1619 = self.env['account.account'].sudo().search([('code', '=', '1619')], limit=1)
+		account_1616_2 = self.env['account.account'].sudo().search([('code', '=', '1616.2')], limit=1)
 		account_3135 = self.env['account.account'].sudo().search([('code', '=', '3135')], limit=1)
 		account_3322 = self.env['account.account'].sudo().search([('code', '=', '3322')], limit=1)
 		account_3330 = self.env['account.account'].sudo().search([('code', '=', '3330')], limit=1)
@@ -295,7 +299,7 @@ class FuelManagement(models.Model):
 		account_7452_02_02 = self.env['account.account'].sudo().search([('code', '=', '7452.02.02')], limit=1)
 		account_7452_02_01 = self.env['account.account'].sudo().search([('code', '=', '7452.02.01')], limit=1)
 		# Analytic distribution from department
-		if not all([account_1619, account_3135, account_7452_02_02, account_7452_02_01,  account_3322, account_3330, account_7410_11, account_3133_28]):
+		if not all([account_1616_2, account_3135, account_7452_02_02, account_7452_02_01,  account_3322, account_3330, account_7410_11, account_3133_28]):
 			raise UserError(_("Required accounts not found. Please check account codes: 1619, 3135, 7452.02.02, 7452.02.01, 3322, 3330, 7410.11, 3133.28"))
 
 		journal = self.env['account.journal'].sudo().search([('name', '=', 'საწვავი')], limit=1)
@@ -332,18 +336,42 @@ class FuelManagement(models.Model):
 				raise UserError(_('No partner selected.'))
 
 			# Analytic distribution from hr.department: use department's analytic account or find by name
+			departamenti_plan = self.env["account.analytic.plan"].sudo().search([
+				('name', '=', 'დეპარტამენტი')
+			], limit=1)
+
+			if not departamenti_plan:
+				raise ValidationError(f"Analytic plan 'დეპარტამენტი' is not found.")
+
+			samsaxuri_plan = self.env["account.analytic.plan"].sudo().search([
+				('name', '=', 'სამსახური')
+			], limit=1)
+
+			if not samsaxuri_plan:
+				raise ValidationError(f"Analytic plan 'სამსახრური' is not found.")
+
 			analytic_account = self.env['account.analytic.account']
 			if rec.department_id:
 				if hasattr(rec.department_id, 'analytic_account_id') and rec.department_id.analytic_account_id:
 					analytic_account = rec.department_id.analytic_account_id
 				if not analytic_account:
 					analytic_account = self.env['account.analytic.account'].search([
-						('name', '=', rec.department_id.name)
+						('name', '=', rec.department_id.name),
+						('plan_id', '=', samsaxuri_plan.id)
 					], limit=1)
 				if not analytic_account and rec.department_id.complete_name:
 					analytic_account = self.env['account.analytic.account'].search([
-						('name', '=', rec.department_id.complete_name)
+						('name', '=', rec.department_id.complete_name),
+						('plan_id', '=', samsaxuri_plan.id)
 					], limit=1)
+			
+			dep_analytic = self.env['account.analytic.account']
+			if rec.parent_department_id:
+				dep_analytic = self.env['account.analytic.account'].sudo().search([
+					('name', '=', rec.department_id.name),
+					('plan_id', '=', departamenti_plan.id)
+				], limit=1)
+			dep_analytic_distribution = {str(dep_analytic.id): 100.0} if dep_analytic else False
 			analytic_distribution = {str(analytic_account.id): 100.0} if analytic_account else False
 
 			invoice_lines = []
@@ -365,7 +393,7 @@ class FuelManagement(models.Model):
             }))
 
 			line_vals_1619 = {
-                'account_id': account_1619.id,
+                'account_id': account_1616_2.id,
                 'partner_id': partner.id,
                 'name': f'{partner.name}',
                 'quantity': quantity,
@@ -384,8 +412,9 @@ class FuelManagement(models.Model):
 
 				# Line 2: 7411 - 3132
 				line_7411 = {'account_id': account_7452_02.id, 'name': f'{partner.name}', 'debit': ammount_7452_02, 'credit': 0.0}
-				if analytic_distribution:
-					line_7411['analytic_distribution'] = analytic_distribution
+				combined_distribution = self._combine_analytic_distributions(analytic_distribution, dep_analytic_distribution)
+				if combined_distribution:
+					line_7411['analytic_distribution'] = combined_distribution
 				invoice_lines.append((0, 0, line_7411))
 
 				invoice_lines.append((0, 0, {
@@ -464,9 +493,10 @@ class FuelManagement(models.Model):
 				amount_3330 = base_amount * 0.18
 
 				# Line 2: 7411 - 3132
+				combined_distribution = self._combine_analytic_distributions(analytic_distribution, dep_analytic_distribution)
 				line_7411_no_pen = {'account_id': account_7452_02.id, 'name': f'{partner.name}', 'debit': ammount_7452_02, 'credit': 0.0}
 				if analytic_distribution:
-					line_7411_no_pen['analytic_distribution'] = analytic_distribution
+					line_7411_no_pen['analytic_distribution'] = combined_distribution
 				invoice_lines.append((0, 0, line_7411_no_pen))
 
 				invoice_lines.append((0, 0, {
