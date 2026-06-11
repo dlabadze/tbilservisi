@@ -353,6 +353,7 @@ class FuelManagement(models.Model):
 			vehicle_plan =  self.env["account.analytic.plan"].sudo().search([
 				('name', 'in', ['სატრანსპორტო საშუალებები', 'სატრანსპორტო საშუალება'])
 			], limit=1)
+			_logger.info(f"vehicle_plan: {vehicle_plan.name}")
 
 			if not vehicle_plan:
 				raise ValidationError(
@@ -387,7 +388,7 @@ class FuelManagement(models.Model):
 			if rec.vehicle_id and rec.vehicle_id.license_plate:
 				vehicle_analytic = self.env['account.analytic.account'].sudo().search([
 					('plan_id', '=', vehicle_plan.id)
-				], limit=1)
+				])
 				vehicle_analytic = vehicle_analytic.filtered(lambda x: rec.vehicle_id.license_plate in x.name)[:1]
 			
 			vehicle_analytic_distributions = {str(vehicle_analytic.id): 100.0} if vehicle_analytic else False
@@ -480,8 +481,6 @@ class FuelManagement(models.Model):
 
 				# Line 5: 7410.11 - 3133.28
 				line_7410_11 = {'account_id': account_7410_11.id, 'name': f'{partner.name}', 'debit': amount_pension, 'credit': 0.0}
-				if analytic_distribution:
-					line_7410_11['analytic_distribution'] = analytic_distribution
 				invoice_lines.append((0, 0, line_7410_11))
 				
 				invoice_lines.append((0, 0, {
