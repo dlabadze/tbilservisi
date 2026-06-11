@@ -403,6 +403,7 @@ class FuelManagement(models.Model):
 			has_pension = hasattr(partner, 'x_studio_') and partner.x_studio_
 
 			 # Line 1: (3132 - 1619) - საწვავი
+			glob_combined_distribution = self._combine_analytic_distributions(analytic_distribution, dep_analytic_distribution)
 			invoice_lines.append((0, 0, {
                 'account_id': account_3135.id,
                 'partner_id': partner.id,
@@ -412,6 +413,7 @@ class FuelManagement(models.Model):
                 'price_unit': cost,
                 'debit': base_amount,
                 'credit': 0.0,
+				'analytic_distribution': glob_combined_distribution,
             }))
 
 			line_vals_1619 = {
@@ -445,6 +447,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': ammount_7452_02,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				# Line 3: 3132 - 3322
@@ -454,6 +457,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': amount_3322,
 					'credit': 0.0,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				invoice_lines.append((0, 0, {
@@ -461,6 +465,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': amount_3322,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				# Line 4: 3132 - 3330
@@ -470,6 +475,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': amount_3330,
 					'credit': 0.0,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				invoice_lines.append((0, 0, {
@@ -477,6 +483,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': amount_3330,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				# Line 5: 7410.11 - 3133.28
@@ -489,6 +496,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': amount_pension,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				# Line 6: 3132 - 3133.28
@@ -498,6 +506,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': amount_pension,
 					'credit': 0.0,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				invoice_lines.append((0, 0, {
@@ -506,6 +515,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': amount_pension,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 			else:
 				ammount_7452_02 = base_amount * 1.475
@@ -525,6 +535,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': ammount_7452_02,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				# Line 3: 3132 - 3322
@@ -534,6 +545,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': amount_3322,
 					'credit': 0.0,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				invoice_lines.append((0, 0, {
@@ -541,6 +553,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': amount_3322,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				# Line 4: 3132 - 3330
@@ -550,6 +563,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': amount_3330,
 					'credit': 0.0,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 
 				invoice_lines.append((0, 0, {
@@ -557,6 +571,7 @@ class FuelManagement(models.Model):
 					'name': f'{partner.name}',
 					'debit': 0.0,
 					'credit': amount_3330,
+					'analytic_distribution': glob_combined_distribution,
 				}))
 			
 			if invoice_lines:
