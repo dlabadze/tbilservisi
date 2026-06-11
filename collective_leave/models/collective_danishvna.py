@@ -1,11 +1,11 @@
 from odoo import fields, models, api
-
 import logging
 _logger = logging.getLogger(__name__)
 
-class CollectiveChangePosition(models.Model):
-    _name = 'collective.change.position'
-    _description = 'Collective Change Position'
+
+class CollectiveDanishVNA(models.Model):
+    _name = "collective.danishvna"
+    _description = "Collective Danishvna"
 
     registration_date = fields.Date(string='რეგისტრაციის თარიღი', required=True)
     start_date = fields.Date(string='დაწყების თარიღი', required=True)
@@ -43,9 +43,10 @@ class CollectiveChangePosition(models.Model):
         domain="[('department_id', '=', new_department_id)]",
     )
 
-    collective_ch_position_emp_ids = fields.One2many(
-        comodel_name='collective.change.position.emps', 
-        inverse_name='collective_change_position_id',
+
+    collective_danishvna_emp_ids = fields.One2many(
+        comodel_name='collective.danishvna.emps', 
+        inverse_name='collective_danishvna_id',
         string='თანამშრომელები',
     )
 
@@ -58,17 +59,17 @@ class CollectiveChangePosition(models.Model):
 
     approval_request_ids = fields.One2many(
         comodel_name='approval.request',
-        inverse_name='collective_change_position_id',
+        inverse_name='collective_danishvna_id',
         string='ბრძანებები',
     )
     approval_request_count = fields.Integer(
         compute='_compute_approval_request_count',
     )
 
-    @api.depends('collective_ch_position_emp_ids.is_checked')
+    @api.depends('collective_danishvna_emp_ids.is_checked')
     def _compute_employee_ids(self):
         for record in self:
-            record.employee_ids = record.collective_ch_position_emp_ids.filtered('is_checked').mapped('employee_id')
+            record.employee_ids = record.collective_danishvna_emp_ids.filtered('is_checked').mapped('employee_id')
 
     @api.depends('department_id.parent_path', 'new_department_id.parent_path')
     def _compute_parent_department_id(self):
@@ -85,13 +86,13 @@ class CollectiveChangePosition(models.Model):
 
     def action_compute_employees(self):
         for record in self:
-            existing_ids = record.collective_ch_position_emp_ids.mapped('employee_id').ids
+            existing_ids = record.collective_danishvna_emp_ids.mapped('employee_id').ids
             employees = self.env['hr.employee'].sudo().search([
                 ('department_id', '=', record.department_id.id),
                 ('job_id', '=', record.job_id.id),
                 ('id', 'not in', existing_ids),
             ])
-            record.collective_ch_position_emp_ids = [
+            record.collective_danishvna_emp_ids = [
                 (0, 0, {'employee_id': emp.id})
                 for emp in employees
             ]
@@ -107,16 +108,16 @@ class CollectiveChangePosition(models.Model):
             'name': 'ბრძანებები',
             'res_model': 'approval.request',
             'view_mode': 'list,form',
-            'domain': [('collective_change_position_id', '=', self.id)],
-            'context': {'default_collective_change_position_id': self.id},
+            'domain': [('collective_danishvna_id', '=', self.id)],
+            'context': {'default_collective_danishvna_id': self.id},
         }
 
+
     def create_approval_request(self):
-        category = self.env['approval.category'].sudo().search([('name', '=', 'გადაყვანა')], limit=1)
-        # _logger.info(f"Category: {category}")
+        category = self.env['approval.category'].sudo().search([('name', '=', 'დანიშვნა')], limit=1)
+        _logger.info(f"Category: {category}")
         for record in self:
             existing_employees = record.approval_request_ids.mapped('brdzaneba_employee_id').ids
-            # _logger.info(f"Existing employees: {existing_employees}")
             for employee in record.employee_ids:
                 if employee.id in existing_employees:
                     continue
@@ -128,11 +129,8 @@ class CollectiveChangePosition(models.Model):
                     'brdzaneba_end_date': record.end_date,
                     'brdzaneba_department_id': record.new_department_id.id,
                     'brdzaneba_job_id': record.new_job_id.id,
-                    'collective_change_position_id': record.id,
+                    'collective_danishvna_id': record.id,
                 })
-                # _logger.info(f"Request created: {request}")
+                _logger.info(f"Created Request: {request}")
                 request.sudo().action_confirm()
-                # _logger.info(f"Request confirmed: {request}")
                 request.sudo().action_approve()
-                # _logger.info(f"Request approved: {request}")
-

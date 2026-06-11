@@ -27,4 +27,17 @@
         action="collective_change_position_action_window"
         sequence="10"/>
 
+    <menuitem
+        id="collective_danishvna_menu_root"
+        name="კოლექტიური დანიშვნა"
+        parent="approvals.approvals_menu_root"
+        sequence="30"/>
+
+    <menuitem
+        id="collective_danishvna_menu_records"
+        name="ჩანაწერები"
+        parent="collective_danishvna_menu_root"
+        action="collective_danishvna_action_window"
+        sequence="10"/>
+
 </odoo>

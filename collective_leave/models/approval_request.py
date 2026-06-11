@@ -12,3 +12,7 @@ class ApprovalRequest(models.Model):
         comodel_name='collective.change.position',
         string='კოლექტიური თანამდებობის ცვლილება',
     )
+    collective_danishvna_id = fields.Many2one(
+        comodel_name="collective.danishvna",
+        string="კოლექტიური დანიშვნა",
+    )
