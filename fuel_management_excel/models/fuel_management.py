@@ -160,7 +160,15 @@ class FuelManagement(models.Model):
 			('name', '=', 'ჩამოწერის საწყობი')], limit=1)
 		if not chamoweris_sawyobi:
 			raise UserError(_('Write-off destination location was not found.'))
-		
+
+		# Debit correction accounts for the stock accounting entry, based on fuel product
+		account_7452_01_01 = self.env['account.account'].sudo().search([('code', '=', '7452.01.01')], limit=1)
+		account_7452_01_02 = self.env['account.account'].sudo().search([('code', '=', '7452.01.02')], limit=1)
+		if any(record.fuel_product_id.default_code == '13395' and record.ownership_type != 'იჯარით აღებული' for record in records_to_writeoff) and not account_7452_01_01:
+			raise UserError(_("Debit correction account '7452.01.01' was not found."))
+		if any(record.fuel_product_id.default_code == '11818' and record.ownership_type != 'იჯარით აღებული' for record in records_to_writeoff) and not account_7452_01_02:
+			raise UserError(_("Debit correction account '7452.01.02' was not found."))
+
 		# Create a separate stock picking for each selected record
 		created_pickings = self.env['stock.picking']
 		
@@ -175,7 +183,21 @@ class FuelManagement(models.Model):
 			
 			source_location = special_writeoff_location if record.fuel_product_id.default_code == '13395' else record.writeoff_location_id
 			partner = record.employee_id.work_contact_id if record.employee_id else False
-			
+
+			# Debit correction account and analytic distribution only apply to owned vehicles
+			account_corr = False
+			combined_distribution_corr = False
+			if record.ownership_type != 'იჯარით აღებული':
+				if record.fuel_product_id.default_code == '13395':
+					account_corr = account_7452_01_01
+				elif record.fuel_product_id.default_code == '11818':
+					account_corr = account_7452_01_02
+
+				analytic_distribution, dep_analytic_distribution, vehicle_analytic_distributions = record._get_fuel_analytic_distributions()
+				combined_distribution_corr = self._combine_analytic_distributions(
+					analytic_distribution, dep_analytic_distribution, vehicle_analytic_distributions
+				)
+
 			# Create individual stock picking for this record
 			picking_vals = {
 				'picking_type_id': picking_type.id,
@@ -187,6 +209,10 @@ class FuelManagement(models.Model):
 			}
 			if partner:
 				picking_vals['partner_id'] = partner.id
+			if account_corr:
+				picking_vals['stock_account_corr_id'] = account_corr.id
+			if combined_distribution_corr:
+				picking_vals['analytic_distribution_corr'] = combined_distribution_corr
 
 			picking = self.env['stock.picking'].create(picking_vals)
 			created_pickings |= picking
@@ -235,7 +261,11 @@ class FuelManagement(models.Model):
 			
 			# Set the transfer date after validation
 			picking.date_done = record.date
-			
+
+			# Apply the debit correction account/analytic distribution to the stock accounting entries
+			if account_corr:
+				picking.action_correct_debit_account_entries()
+
 			# Update account.move.line names with department and vehicle info
 			# Search for account move lines that reference this picking
 			account_move_lines = self.env['account.move.line'].search([
@@ -284,6 +314,65 @@ class FuelManagement(models.Model):
 		keys = [key for distribution in distributions if distribution for key in distribution.keys()]
 		_logger.info(f"Keeeeeeeeys: {keys}")
 		return {','.join(keys): 100.0} if keys else False
+
+	def _get_fuel_analytic_distributions(self):
+		"""Return (analytic_distribution, dep_analytic_distribution, vehicle_analytic_distributions) for self."""
+		self.ensure_one()
+
+		departamenti_plan = self.env["account.analytic.plan"].sudo().search([
+			('name', '=', 'დეპარტამენტი')
+		], limit=1)
+		if not departamenti_plan:
+			raise ValidationError(_("Analytic plan 'დეპარტამენტი' is not found."))
+
+		samsaxuri_plan = self.env["account.analytic.plan"].sudo().search([
+			('name', '=', 'სამსახური')
+		], limit=1)
+		if not samsaxuri_plan:
+			raise ValidationError(_("Analytic plan 'სამსახრური' is not found."))
+
+		vehicle_plan = self.env["account.analytic.plan"].sudo().search([
+			('name', 'in', ['სატრანსპორტო საშუალებები', 'სატრანსპორტო საშუალება'])
+		], limit=1)
+		if not vehicle_plan:
+			raise ValidationError(
+				_("Analytic plan 'სატრანსპორტო საშუალებები' or 'სატრანსპორტო საშუალება' is not found.")
+			)
+
+		analytic_account = self.env['account.analytic.account']
+		if self.department_id:
+			if hasattr(self.department_id, 'analytic_account_id') and self.department_id.analytic_account_id:
+				analytic_account = self.department_id.analytic_account_id
+			if not analytic_account:
+				analytic_account = self.env['account.analytic.account'].search([
+					('name', '=', self.department_id.name),
+					('plan_id', '=', samsaxuri_plan.id)
+				], limit=1)
+			if not analytic_account and self.department_id.complete_name:
+				analytic_account = self.env['account.analytic.account'].search([
+					('name', '=', self.department_id.complete_name),
+					('plan_id', '=', samsaxuri_plan.id)
+				], limit=1)
+
+		dep_analytic = self.env['account.analytic.account']
+		if self.parent_department_id:
+			dep_analytic = self.env['account.analytic.account'].sudo().search([
+				('name', '=', self.parent_department_id.name),
+				('plan_id', '=', departamenti_plan.id)
+			], limit=1)
+
+		vehicle_analytic = self.env['account.analytic.account']
+		if self.vehicle_id and self.vehicle_id.license_plate:
+			vehicle_analytic = self.env['account.analytic.account'].sudo().search([
+				('plan_id', '=', vehicle_plan.id)
+			])
+			vehicle_analytic = vehicle_analytic.filtered(lambda x: self.vehicle_id.license_plate in x.name)[:1]
+
+		analytic_distribution = {str(analytic_account.id): 100.0} if analytic_account else False
+		dep_analytic_distribution = {str(dep_analytic.id): 100.0} if dep_analytic else False
+		vehicle_analytic_distributions = {str(vehicle_analytic.id): 100.0} if vehicle_analytic else False
+
+		return analytic_distribution, dep_analytic_distribution, vehicle_analytic_distributions
 
 	def action_generate_journal_entry(self):
 		"""
@@ -336,66 +425,8 @@ class FuelManagement(models.Model):
 			if not partner:
 				raise UserError(_('No partner selected.'))
 
-			# Analytic distribution from hr.department: use department's analytic account or find by name
-			departamenti_plan = self.env["account.analytic.plan"].sudo().search([
-				('name', '=', 'დეპარტამენტი')
-			], limit=1)
-			if not departamenti_plan:
-				raise ValidationError(f"Analytic plan 'დეპარტამენტი' is not found.")
-
-			samsaxuri_plan = self.env["account.analytic.plan"].sudo().search([
-				('name', '=', 'სამსახური')
-			], limit=1)
-
-			if not samsaxuri_plan:
-				raise ValidationError(f"Analytic plan 'სამსახრური' is not found.")
-			
-			vehicle_plan =  self.env["account.analytic.plan"].sudo().search([
-				('name', 'in', ['სატრანსპორტო საშუალებები', 'სატრანსპორტო საშუალება'])
-			], limit=1)
-			_logger.info(f"vehicle_plan: {vehicle_plan.name}")
-
-			if not vehicle_plan:
-				raise ValidationError(
-					f"Analytic plan 'სატრანსპორტო საშუალებები' or 'სატრანსპორტო საშუალება' is not found."
-				)
-
-			analytic_account = self.env['account.analytic.account']
-			if rec.department_id:
-				if hasattr(rec.department_id, 'analytic_account_id') and rec.department_id.analytic_account_id:
-					analytic_account = rec.department_id.analytic_account_id
-				if not analytic_account:
-					analytic_account = self.env['account.analytic.account'].search([
-						('name', '=', rec.department_id.name),
-						('plan_id', '=', samsaxuri_plan.id)
-					], limit=1)
-				if not analytic_account and rec.department_id.complete_name:
-					analytic_account = self.env['account.analytic.account'].search([
-						('name', '=', rec.department_id.complete_name),
-						('plan_id', '=', samsaxuri_plan.id)
-					], limit=1)
-			
-			dep_analytic = self.env['account.analytic.account']
-			if rec.parent_department_id:
-				_logger.info("if rec.parent_department_id: is true")
-				dep_analytic = self.env['account.analytic.account'].sudo().search([
-					('name', '=', rec.parent_department_id.name),
-					('plan_id', '=', departamenti_plan.id)
-				], limit=1)
-				_logger.info(dep_analytic)
-			
-			vehicle_analytic = self.env['account.analytic.account']
-			if rec.vehicle_id and rec.vehicle_id.license_plate:
-				vehicle_analytic = self.env['account.analytic.account'].sudo().search([
-					('plan_id', '=', vehicle_plan.id)
-				])
-				vehicle_analytic = vehicle_analytic.filtered(lambda x: rec.vehicle_id.license_plate in x.name)[:1]
-			
-			vehicle_analytic_distributions = {str(vehicle_analytic.id): 100.0} if vehicle_analytic else False
-			dep_analytic_distribution = {str(dep_analytic.id): 100.0} if dep_analytic else False
-			analytic_distribution = {str(analytic_account.id): 100.0} if analytic_account else False
-			_logger.info(f"dep analytic: {dep_analytic}")
-			_logger.info(f"dep analytic dist: {dep_analytic_distribution}")
+			# Analytic distribution from hr.department/vehicle/parent department
+			analytic_distribution, dep_analytic_distribution, vehicle_analytic_distributions = rec._get_fuel_analytic_distributions()
 			invoice_lines = []
 			cost = product_id.standard_price
 			quantity = rec.consumed_qty

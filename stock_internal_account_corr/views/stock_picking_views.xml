@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_internal_account_corr" model="ir.ui.view">
+        <field name="name">stock.picking.form.internal.account.corr</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_correct_debit_account_entries"
+                        string="Correct Debit Accounts"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="picking_type_code != 'internal' or state != 'done'"
+                        groups="account.group_account_manager"/>
+            </xpath>
+
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="stock_account_corr_id"
+                       string="Debit Correction Account"
+                       invisible="picking_type_code != 'internal'"
+                       options="{'no_create': True}"/>
+                <field name="analytic_distribution_corr"
+                       widget="analytic_distribution"
+                       groups="analytic.group_analytic_accounting"
+                       invisible="picking_type_code != 'internal'"/>
+            </xpath>
+
+            <xpath expr="//field[@name='move_ids_without_package']/list/field[@name='product_id']" position="after">
+                <field name="is_internal_transfer_corr" column_invisible="1"/>
+                <field name="move_account_corr_id"
+                       string="Debit Correction Account"
+                       options="{'no_create': True}"
+                       invisible="not is_internal_transfer_corr"
+                       optional="show"/>
+                <field name="analytic_distribution_corr"
+                       widget="analytic_distribution"
+                       groups="analytic.group_analytic_accounting"
+                       invisible="not is_internal_transfer_corr"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
