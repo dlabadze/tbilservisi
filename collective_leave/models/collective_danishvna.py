@@ -138,7 +138,8 @@ class CollectiveDanishVNA(models.Model):
                     'brdzaneba_department_id': record.new_department_id.id,
                     'brdzaneba_job_id': record.new_job_id.id,
                     'collective_danishvna_id': record.id,
-                    'brdzaneba_salary': record.salary
+                    'brdzaneba_salary': record.salary,
+                    'brdzaneba_date': record.registration_date,
                 })
                 _logger.info(f"Created Request: {request}")
                 request.sudo().action_confirm()

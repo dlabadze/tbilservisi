@@ -43,6 +43,7 @@
                     </div>
                     <group>
                         <group>
+                            <field name="registration_date"/>
                             <field name="name" invisible="1"/>
                             <field name="department_id"/>
                             <field name="job_id"/>

@@ -65,6 +65,7 @@ class CollectiveLeave(models.Model):
         string="შვებულების ტიპი",
         default=lambda self: self.env['hr.leave.type'].search([('name', '=', 'შვებულება პირადი')], limit=1),
     )
+    registration_date = fields.Date(stirng="რეგისტრაციის თარიღი")
 
     @api.depends('start_day', 'end_day')
     def _compute_days(self):
@@ -156,6 +157,7 @@ class CollectiveLeave(models.Model):
                     'brdzaneba_end_date': record.end_day,
                     'x_studio_dgeebi_real': record.days,
                     'collective_leave_id': record.id,
+                    'brdzaneba_date': record.registration_date,
                     'x_studio_time_off_type': record.leave_type_id.id if record.leave_type_id else False,
                 })
                 request.sudo().action_confirm()
