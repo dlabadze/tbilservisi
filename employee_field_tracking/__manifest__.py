@@ -6,7 +6,9 @@
         'hr',
         'web_studio',
     ],
-    'data': [],
+    'data': [
+        'views/hr_job_view.xml',
+    ],
     'installable': True,
     'application': False,
     'auto_install': False,
