@@ -2,6 +2,8 @@ from odoo import models, fields, api
 from datetime import timedelta
 
 PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13,44,25,45,46,47,48,49]
+VACATION_DAYS = [46, 48, 49]
+VACAYS = [45,46,47,48,49]
 
 
 class ApprovalRequest(models.Model):
@@ -50,7 +52,7 @@ class ApprovalRequest(models.Model):
     @api.onchange('category_id')
     def _onchange_x_studio_time_off_type(self):
         for rec in self:
-            if rec.category_id and rec.category_id.id in [45,46,47,48,49]:
+            if rec.category_id and rec.category_id.id in VACAYS:
                 if rec.category_id.id == 45:
                     rec.x_studio_time_off_type = 1
                 elif rec.category_id.id == 46:
@@ -65,6 +67,9 @@ class ApprovalRequest(models.Model):
     @api.onchange('category_id', 'brdzaneba_start_date', 'brdzaneba_end_date')
     def _onchange_x_studio_dgeebi_real(self):
         for rec in self:
-            if rec.category_id and rec.category_id.id in [46, 48, 49]:
+            if rec.category_id and rec.category_id.id in VACATION_DAYS:
                 if rec.brdzaneba_start_date and rec.brdzaneba_end_date:
-                    rec.x_studio_dgeebi_real = (rec.brdzaneba_end_date - rec.brdzaneba_start_date).days
+                    dgeebi_real = (rec.brdzaneba_end_date - rec.brdzaneba_start_date).days
+                    rec.x_studio_dgeebi_real = dgeebi_real + 1
+                else:
+                    rec.x_studio_dgeebi_real = dgeebi_real + 1
