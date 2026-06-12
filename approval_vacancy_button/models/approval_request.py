@@ -61,4 +61,10 @@ class ApprovalRequest(models.Model):
                     rec.x_studio_time_off_type = 3
                 elif rec.category_id.id == 49:
                     rec.x_studio_time_off_type = 3
-    
+
+    @api.onchange('category_id', 'brdzaneba_start_date', 'brdzaneba_end_date')
+    def _onchange_x_studio_dgeebi_real(self):
+        for rec in self:
+            if rec.category_id and rec.category_id.id in [46, 48, 49]:
+                if rec.brdzaneba_start_date and rec.brdzaneba_end_date:
+                    rec.x_studio_dgeebi_real = (rec.brdzaneba_end_date - rec.brdzaneba_start_date).days
