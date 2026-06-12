@@ -5,7 +5,7 @@
         <field name="model">hr.job</field>
         <field name="inherit_id" ref="hr_recruitment.hr_job_survey"/>
         <field name="arch" type="xml">
-            <xpath expr="//label[@for='alias_name'][@string='Email Alias']" position="attributes">
+            <xpath expr="//label[@for='alias_name']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//div[@name='alias_def']" position="attributes">
