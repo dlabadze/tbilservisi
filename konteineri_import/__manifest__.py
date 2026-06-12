@@ -9,8 +9,9 @@
         'hr_attendance',
     ],
     'data': [
+        'security/security_groups.xml',
         'security/ir.model.access.csv',
-        'data/attendance_import_cron.xml',      # ✅ REQUIRED
+        'data/attendance_import_cron.xml',
         'views/import_attendance_wizard_view.xml',
         'views/attendance_import_job_view.xml',
     ],

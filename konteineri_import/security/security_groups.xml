@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="group_import_attendance_user" model="res.groups">
+            <field name="name">Import Attendance User</field>
+            <field name="category_id" ref="base.module_category_human_resources_attendances"/>
+            <field name="comment">Allows the user to access the Import Attendance menu.</field>
+        </record>
+    </data>
+</odoo>

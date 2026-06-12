@@ -2,3 +2,6 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_attendance_import_job,attendance.import.job,model_attendance_import_job,base.group_system,1,1,1,1
 access_attendance_json_importer,attendance.json.importer,model_attendance_json_importer,base.group_system,1,1,1,1
 access_import_attendance_wizard,import.attendance.wizard,model_import_attendance_wizard,base.group_system,1,1,1,1
+access_attendance_import_job_user,attendance.import.job user,model_attendance_import_job,konteineri_import.group_import_attendance_user,1,1,1,1
+access_attendance_json_importer_user,attendance.json.importer user,model_attendance_json_importer,konteineri_import.group_import_attendance_user,1,1,1,1
+access_import_attendance_wizard_user,import.attendance.wizard user,model_import_attendance_wizard,konteineri_import.group_import_attendance_user,1,1,1,1
