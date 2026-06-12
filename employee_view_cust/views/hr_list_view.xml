@@ -20,7 +20,9 @@
             <xpath expr="//list/field[@name='coach_id']" position="replace"/>
             <xpath expr="//list/field[@name='category_ids']" position="replace"/>
             <xpath expr="//list/field[@name='country_id']" position="replace"/>
-
+              <xpath expr="//field[@name='work_email']" position="after">
+                <field name="x_studio_location" optional="show" string="დაბადების ადგილი" width="170px"/>
+              </xpath>
             <xpath expr="//list/field[@name='active']" position="after">
                 <field name="passport_id"             optional="show"  string="პასპორტის ნომერი"/>
                 <field name="mobile_phone"            optional="show"  string="მობილური"/>
