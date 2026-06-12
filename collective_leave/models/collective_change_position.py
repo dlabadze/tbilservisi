@@ -138,6 +138,7 @@ class CollectiveChangePosition(models.Model):
                     'brdzaneba_department_id': record.new_department_id.id,
                     'brdzaneba_job_id': record.new_job_id.id,
                     'collective_change_position_id': record.id,
+                    'brdzaneba_salary': record.salary
                 })
                 # _logger.info(f"Request created: {request}")
                 request.sudo().action_confirm()
