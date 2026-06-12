@@ -45,6 +45,7 @@
                             <field name="new_department_id"/>
                             <field name="new_parent_department_id"/>
                             <field name="new_job_id"/>
+                            <field name="salary"/>
                         </group>
                     </group>
                     <notebook>

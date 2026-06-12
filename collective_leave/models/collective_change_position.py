@@ -64,6 +64,15 @@ class CollectiveChangePosition(models.Model):
     approval_request_count = fields.Integer(
         compute='_compute_approval_request_count',
     )
+    salary = fields.Float(string='ხელფასი')
+
+
+    @api.onchange('new_job_id')
+    def _onchange_salary(self):
+        if self.new_job_id and 'x_studio_expected_salary' in self.new_job_id._fields:
+            self.salary = self.new_job_id.x_studio_expected_salary
+        else:
+            self.salary = 0.0
 
     @api.depends('collective_ch_position_emp_ids.is_checked')
     def _compute_employee_ids(self):
