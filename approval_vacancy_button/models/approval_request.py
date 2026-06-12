@@ -72,4 +72,4 @@ class ApprovalRequest(models.Model):
                     dgeebi_real = (rec.brdzaneba_end_date - rec.brdzaneba_start_date).days
                     rec.x_studio_dgeebi_real = dgeebi_real + 1
                 else:
-                    rec.x_studio_dgeebi_real = dgeebi_real + 1
+                    rec.x_studio_dgeebi_real = 0
