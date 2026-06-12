@@ -118,8 +118,13 @@ class GenerateKvebaWizard(models.TransientModel):
     
     @api.onchange('journals')
     def _onchange_journals_gadakhurva(self):
-        if self.journals != '1':
-            self.gadakhurva = False
+        company = self.env.company
+        self.debit_account_id = company.kveba_gadakhurva_debit_account_id
+        if self.journals == '2':
+            self.credit_account_id = self.env['account.account'].sudo().search(
+                [('code', '=', '1617')], limit=1)
+        else:
+            self.credit_account_id = company.kveba_gadakhurva_credit_account_id
 
     def action_gadakhurva(self):
         """Create a closing (გადახურვა) journal entry so that the credit account's
@@ -128,19 +133,18 @@ class GenerateKvebaWizard(models.TransientModel):
         The balance is the trial balance end balance: all posted move lines of
         the credit account with date <= the wizard date, across all journals.
         If the net balance (debit - credit) is positive, a draft entry is
-        created in the 'კვება' journal crediting the credit account and
-        debiting the debit account by that amount.
+        created in the selected journal ('კვება' or 'საჩუქრები') crediting the
+        credit account and debiting the debit account by that amount.
         """
         self.ensure_one()
 
-        if self.journals != '1':
-            raise UserError(_("გადახურვა შესაძლებელია მხოლოდ 'კვება' ჟურნალისთვის"))
         if not self.debit_account_id or not self.credit_account_id:
             raise UserError(_("გთხოვთ შეავსოთ დებეტისა და კრედიტის ანგარიშები"))
 
-        journal = self.env['account.journal'].sudo().search([('name', '=', 'კვება')], limit=1)
+        journal_name = 'კვება' if self.journals == '1' else 'საჩუქრები'
+        journal = self.env['account.journal'].sudo().search([('name', '=', journal_name)], limit=1)
         if not journal:
-            raise UserError(_("Journal '%s' not found") % 'კვება')
+            raise UserError(_("Journal '%s' not found") % journal_name)
 
         result = self.env['account.move.line'].sudo()._read_group(
             domain=[

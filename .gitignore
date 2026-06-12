@@ -1,0 +1,84 @@
+*.jfif
+სერვისები.txt
+სერვისების აღწერა.docx
+salesoap2.py
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+.envrc
+.venv/
+env/
+ENV/
+
+# Odoo runtime files
+*.log
+*.pid
+*.db
+*.sqlite3
+
+# Odoo filestore (if inside project)
+filestore/
+data_dir/
+.sessions/
+
+# Odoo config files containing credentials
+odoo.conf
+*.conf
+
+# Compiled translations
+*.mo
+
+# Backup files
+*.bak
+*.swp
+*~
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# VSCode
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+
+# Python build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Node (Odoo web assets if used)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Coverage / testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Temporary files
+tmp/
+temp/
+
+# Docker
+*.env
+docker-compose.override.yml
+
+# Odoo upgrade scripts temp
+*.orig
+*.rej
