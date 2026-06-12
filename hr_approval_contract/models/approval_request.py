@@ -21,6 +21,7 @@ TERMINATION_CATEGORIES = [
     25,
     26,
     27,
+    29,
     30,
 ]
 
@@ -157,7 +158,12 @@ class ApprovalRequest(models.Model):
 
         if not self.brdzaneba_end_date:
             raise UserError(_("brdzaneba_end_date is required for a Termination operation."))
-        termination_end_date = self.brdzaneba_start_date - timedelta(days=1)
+
+        category_id = self.category_id.id if self.category_id else ''
+        if category_id in [24, 25, 26, 27, 29]:
+            termination_end_date = self.release_date - timedelta(days=1)
+        else:
+            termination_end_date = self.brdzaneba_start_date - timedelta(days=1)
 
         self._cancel_running_contracts(self.brdzaneba_employee_id, termination_end_date)
 
