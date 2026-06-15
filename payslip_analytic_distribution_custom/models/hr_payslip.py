@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from odoo import models
 
 class HrPayslip(models.Model):
@@ -14,19 +15,23 @@ class HrPayslip(models.Model):
                 
                 for line in move.line_ids:
                     if line.account_id and line.account_id.code == '3139':
-                        distribution = dict(line.analytic_distribution or {})
+                        account_ids = []
                         
                         department = slip.contract_id.department_id
                         if department and hasattr(department, 'analytic_account_id') and department.analytic_account_id:
-                            distribution[str(department.analytic_account_id.id)] = 100.0
+                            account_ids.append(str(department.analytic_account_id.id))
                             
                         studio_depname = slip.contract_id.x_studio_depname
                         if studio_depname:
                             analytic_account = self.env['account.analytic.account'].search([('name', '=', studio_depname)], limit=1)
                             if analytic_account:
-                                distribution[str(analytic_account.id)] = 100.0
+                                account_ids.append(str(analytic_account.id))
                                 
-                        if distribution:
+                        if account_ids:
+                            combined_key = ",".join(account_ids)
+                            distribution = dict(line.analytic_distribution or {})
+                            distribution = {k: v for k, v in distribution.items() if v != 100.0}
+                            distribution[combined_key] = 100.0
                             line.write({'analytic_distribution': distribution})
                 
                 if was_posted:
