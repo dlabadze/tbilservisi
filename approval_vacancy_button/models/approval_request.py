@@ -1,8 +1,8 @@
 from odoo import models, fields, api
 from datetime import timedelta
 
-PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12, 13,44,25,45,46,47,48,49]
-VACATION_DAYS = [46, 48, 49]
+PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12,25,44,45,46,47,48,49]
+VACATION_DAYS = [46,47, 48, 49]
 VACAYS = [45,46,47,48,49]
 
 
@@ -18,6 +18,8 @@ class ApprovalRequest(models.Model):
     safudzvelis_date = fields.Date(string="საფუძველის თარიღი")
     dasaqviti_amount = fields.Float(string="დასაქვითი თანხა")
     brdzanebis_nomeri = fields.Char(string="ბრძანების ნომერი")
+    new_surname = fields.Char(string="ახალი გვარი")
+
 
 
     @api.onchange('category_id', 'brdzaneba_employee_id', 'brdzaneba_date', 'safudzvelis_date')
@@ -28,8 +30,12 @@ class ApprovalRequest(models.Model):
                 if rec.brdzaneba_employee_id:
                     parts.append(rec.brdzaneba_employee_id.name + 'ს')
                 parts.append('პირადი განცხადება')
-                if rec.brdzaneba_date:
-                    parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
+                if rec.category_id.id == 25:
+                    if rec.safudzvelis_date:
+                        parts.append(rec.safudzvelis_date.strftime('%d.%m.%Y'))
+                else:
+                    if rec.brdzaneba_date:
+                        parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
                 rec.brdzaneba_safudzveli = ' '.join(parts)
             elif rec.category_id and rec.safudzvelis_date:
                 rec.brdzaneba_safudzveli = rec.safudzvelis_date.strftime('%d.%m.%Y') if rec.safudzvelis_date else False
