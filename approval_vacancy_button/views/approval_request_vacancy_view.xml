@@ -10,6 +10,7 @@
                        string="ვაკანსიების რაოდენობა"
                        readonly="1"
                        invisible="not brdzaneba_job_id"/>
+                <field name="new_surname"/>
             </xpath>
 
         </field>

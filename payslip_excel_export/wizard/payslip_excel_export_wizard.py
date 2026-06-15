@@ -309,7 +309,7 @@ class PayslipExcelExportWizard(models.TransientModel):
             for col_idx, col in enumerate(columns, start=1):
                 value = col._get_cell_value(slip, att_counts)
                 cell = ws.cell(row=row_idx, column=col_idx, value=value)
-                cell.font   = DATA_FONT
+                cell.font = DATA_FONT
                 cell.border = THIN_BORDER
                 if row_fill:
                     cell.fill = row_fill
@@ -332,8 +332,8 @@ class PayslipExcelExportWizard(models.TransientModel):
             else:
                 val = ''
             cell = ws.cell(row=total_row, column=col_idx, value=val)
-            cell.font   = TOTAL_FONT
-            cell.fill   = TOTAL_FILL
+            cell.font = TOTAL_FONT
+            cell.fill = TOTAL_FILL
             cell.border = THIN_BORDER
             if col._is_numeric():
                 cell.alignment = RIGHT_ALIGN
