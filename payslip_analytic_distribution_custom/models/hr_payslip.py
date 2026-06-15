@@ -5,35 +5,6 @@ _logger = logging.getLogger(__name__)
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
-    x_worked_days_attendance = fields.Float(string="სამუშაო დღეების რაოდენობა", compute='_compute_x_attendance_rate', store=True)
-    x_worked_days_rate = fields.Float(string="Rate", compute='_compute_x_attendance_rate', store=True)
-
-    @api.depends('employee_id', 'date_from', 'date_to', 'contract_id.wage', 'worked_days_line_ids.number_of_days')
-    def _compute_x_attendance_rate(self):
-        for slip in self:
-            if not slip.employee_id or not slip.date_from or not slip.date_to:
-                slip.x_worked_days_attendance = 0.0
-                slip.x_worked_days_rate = 0.0
-                continue
-                
-            attendances = self.env['hr.attendance'].search([
-                ('employee_id', '=', slip.employee_id.id),
-                ('check_in', '>=', slip.date_from),
-                ('check_out', '<=', slip.date_to),
-                ('x_studio_selection_field_99n_1j76jab36', '=', 'X')
-            ])
-            num_x = len(attendances)
-            slip.x_worked_days_attendance = num_x
-            
-            if num_x > 0 and slip.contract_id:
-                # Sum of number_of_days in worked_days_line_ids
-                total_days = sum(line.number_of_days for line in slip.worked_days_line_ids)
-                if total_days > 0:
-                    slip.x_worked_days_rate = (slip.contract_id.wage / total_days) * num_x
-                else:
-                    slip.x_worked_days_rate = 0.0
-            else:
-                slip.x_worked_days_rate = 0.0
 
     def _action_create_account_move(self):
         res = super(HrPayslip, self)._action_create_account_move()
@@ -79,3 +50,38 @@ class HrPayslip(models.Model):
                 if was_posted:
                     move.action_post()
         return res
+
+
+class HrPayslipWorkedDays(models.Model):
+    _inherit = 'hr.payslip.worked_days'
+    x_worked_days_attendance = fields.Float(string="ნამუშევარი დღეების რაოდენობა", compute='_compute_x_attendance_rate', store=True)
+    x_worked_days_rate = fields.Float(string="Rate", compute='_compute_x_attendance_rate', store=True)
+
+    @api.depends('payslip_id.employee_id', 'payslip_id.date_from', 'payslip_id.date_to', 'payslip_id.contract_id.wage',
+                 'payslip_id.worked_days_line_ids.number_of_days')
+    def _compute_x_attendance_rate(self):
+        for wd in self:
+            slip = wd.payslip_id
+            if not slip or not slip.employee_id or not slip.date_from or not slip.date_to:
+                wd.x_worked_days_attendance = 0.0
+                wd.x_worked_days_rate = 0.0
+                continue
+
+            attendances = self.env['hr.attendance'].search([
+                ('employee_id', '=', slip.employee_id.id),
+                ('check_in', '>=', slip.date_from),
+                ('check_out', '<=', slip.date_to),
+                ('x_studio_selection_field_99n_1j76jab36', '=', 'X')
+            ])
+            num_x = len(attendances)
+            wd.x_worked_days_attendance = num_x
+
+            if num_x > 0 and slip.contract_id:
+                # Sum of number_of_days in worked_days_line_ids
+                total_days = sum(line.number_of_days for line in slip.worked_days_line_ids)
+                if total_days > 0:
+                    wd.x_worked_days_rate = (slip.contract_id.wage / total_days) * num_x
+                else:
+                    wd.x_worked_days_rate = 0.0
+            else:
+                wd.x_worked_days_rate = 0.0
