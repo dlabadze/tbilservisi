@@ -5,8 +5,8 @@ _logger = logging.getLogger(__name__)
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
-    x_worked_days_attendance = fields.Float(string="X Attendances", compute='_compute_x_attendance_rate', store=True)
-    x_worked_days_rate = fields.Float(string="X Rate", compute='_compute_x_attendance_rate', store=True)
+    x_worked_days_attendance = fields.Float(string="სამუშაო დღეების რაოდენობა", compute='_compute_x_attendance_rate', store=True)
+    x_worked_days_rate = fields.Float(string="Rate", compute='_compute_x_attendance_rate', store=True)
 
     @api.depends('employee_id', 'date_from', 'date_to', 'contract_id.wage', 'worked_days_line_ids.number_of_days')
     def _compute_x_attendance_rate(self):
@@ -48,7 +48,6 @@ class HrPayslip(models.Model):
                     if line.account_id and line.account_id.code == '3139':
                         account_ids = []
 
-                        # Plan - დეპარტამენტი
                         department = slip.contract_id.department_id
                         if department:
                             dept_display = department.with_context(lang='ka_GE').display_name
@@ -73,7 +72,6 @@ class HrPayslip(models.Model):
                                 _logger.warning("NO SERVICE ANALYTIC FOUND FOR: %s", studio_depname)
 
                         if account_ids:
-                            # Combine IDs into a single comma-separated key for one line
                             combined_key = ",".join(account_ids)
                             distribution = {combined_key: 100.0}
                             line.write({'analytic_distribution': distribution})
