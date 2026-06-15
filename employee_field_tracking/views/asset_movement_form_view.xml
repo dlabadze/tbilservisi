@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_asset_movement_form_inherit_archived" model="ir.ui.view">
+        <field name="name">asset.movement.form.inherit.archived</field>
+        <field name="model">asset.movement</field>
+        <field name="inherit_id" ref="asset_movement.view_asset_movement_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="context">{'active_test': False}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

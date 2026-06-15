@@ -5,9 +5,11 @@
     'depends': [
         'hr',
         'web_studio',
+        'asset_movement'
     ],
     'data': [
         'views/hr_job_view.xml',
+        'views/asset_movement_form_view.xml',
     ],
     'installable': True,
     'application': False,
