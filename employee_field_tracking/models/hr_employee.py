@@ -20,3 +20,19 @@ class HrEmployeeTracking(models.Model):
     x_studio_shegavati = fields.Float(tracking=True)
     x_studio_start_date_1 = fields.Date(tracking=True)
     bank_account_id = fields.Many2one('res.partner.bank', tracking=True)
+
+    @api.model
+    def _search(self, domain, offset=0, limit=None, order=None):
+        if not self.env.context.get('from_employee_module'):
+            return super(HrEmployee, self.with_context(active_test=False))._search(
+                domain, offset=offset, limit=limit, order=order
+            )
+        return super()._search(domain, offset=offset, limit=limit, order=order)
+
+    @api.model
+    def name_search(self, name='', args=None, operator='ilike', limit=100):
+        if not self.env.context.get('from_employee_module'):
+            return super(HrEmployee, self.with_context(active_test=False)).name_search(
+                name=name, args=args, operator=operator, limit=limit
+            )
+        return super().name_search(name=name, args=args, operator=operator, limit=limit)
