@@ -2,141 +2,141 @@
 
 import { patch } from "@web/core/utils/patch";
 import { ListRenderer } from "@web/views/list/list_renderer";
+import { onMounted, onWillUnmount, onPatched } from "@odoo/owl";
 
 patch(ListRenderer.prototype, {
     setup() {
         super.setup(...arguments);
-        
-        console.log("🔍 ListRenderer setup called");
-        console.log("Model:", this.props.list?.resModel);
-        console.log("Context:", this.props.list?.context);
-        
-        // Check if this is an inventory.line list
-        const isInventoryLine = this.props.list?.resModel === 'inventory.line';
-        
-        if (isInventoryLine) {
-            console.log("✅ This is inventory.line - setting up arrows!");
-            this.scrollAmount = 300;
-            
-            // Use onMounted hook
-            this.onMounted(() => {
-                console.log("🎯 onMounted called for inventory.line");
-                setTimeout(() => {
-                    console.log("⏰ setTimeout fired, calling setupScrollArrows");
-                    this.setupScrollArrows();
-                }, 200);
-            });
-            
-            this.onWillUnmount(() => {
-                this.cleanupScrollArrows();
-            });
-        } else {
-            console.log("⏭️ Not inventory.line, skipping");
-        }
+
+        this.scrollAmount = 300;
+
+        onMounted(() => {
+            // Wait slightly for DOM to settle and calculate correct widths
+            this.setupScrollTimeout = setTimeout(() => {
+                this.setupScrollArrows();
+            }, 250);
+        });
+
+        onPatched(() => {
+            this.updateArrowVisibility();
+        });
+
+        onWillUnmount(() => {
+            clearTimeout(this.setupScrollTimeout);
+            this.cleanupScrollArrows();
+        });
     },
 
     setupScrollArrows() {
-        console.log("🚀 setupScrollArrows called!");
-        
-        // Try multiple selectors to find the scrollable container
-        let tableContainer = null;
-        
-        if (this.rootRef?.el) {
-            console.log("Root element found:", this.rootRef.el);
-            
-            // Try different selectors
-            tableContainer = this.rootRef.el.querySelector('.o_list_table_wrapper') ||
-                           this.rootRef.el.querySelector('.o_list_view') ||
-                           this.rootRef.el.closest('.o_list_renderer') ||
-                           this.rootRef.el;
-            
-            console.log("Table container:", tableContainer);
-        } else {
-            console.log("❌ No rootRef.el found!");
+        if (!this.rootRef?.el) {
             return;
         }
-        
+
+        // Find the wrapper container that has overflow-x: auto
+        const tableContainer = this.rootRef.el.querySelector('.o_list_table_wrapper') || 
+                               this.rootRef.el.querySelector('.o_list_renderer') || 
+                               this.rootRef.el;
+
         if (!tableContainer) {
-            console.log('❌ Table container not found');
             return;
         }
 
-        // Check if already has arrows
-        if (document.querySelector('.inventory-scroll-arrow')) {
-            console.log('⚠️ Arrows already exist');
-            return;
-        }
+        // Remove any existing scroll arrows inside this renderer to avoid duplicates
+        this.cleanupScrollArrows();
 
-        console.log('✅ Creating scroll arrows...');
-
-        // Create left arrow
+        // Create left arrow element
         const leftArrow = document.createElement('div');
-        leftArrow.className = 'inventory-scroll-arrow inventory-scroll-arrow-left visible';
+        leftArrow.className = 'inventory-scroll-arrow inventory-scroll-arrow-left';
         leftArrow.innerHTML = '<i class="fa fa-chevron-left"></i>';
-        leftArrow.style.cssText = `
-            position: fixed;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        `;
+        
+        // Create right arrow element
+        const rightArrow = document.createElement('div');
+        rightArrow.className = 'inventory-scroll-arrow inventory-scroll-arrow-right';
+        rightArrow.innerHTML = '<i class="fa fa-chevron-right"></i>';
+
+        // Add event listeners for click to scroll smoothly
         leftArrow.addEventListener('click', (e) => {
             e.stopPropagation();
-            console.log('⬅️ Left arrow clicked');
-            tableContainer.scrollBy({ left: -300, behavior: 'smooth' });
+            tableContainer.scrollBy({ left: -this.scrollAmount, behavior: 'smooth' });
         });
-        
-        // Create right arrow
-        const rightArrow = document.createElement('div');
-        rightArrow.className = 'inventory-scroll-arrow inventory-scroll-arrow-right visible';
-        rightArrow.innerHTML = '<i class="fa fa-chevron-right"></i>';
-        rightArrow.style.cssText = `
-            position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        `;
+
         rightArrow.addEventListener('click', (e) => {
             e.stopPropagation();
-            console.log('➡️ Right arrow clicked');
-            tableContainer.scrollBy({ left: 300, behavior: 'smooth' });
+            tableContainer.scrollBy({ left: this.scrollAmount, behavior: 'smooth' });
         });
 
-        // Append to body for visibility
-        document.body.appendChild(leftArrow);
-        document.body.appendChild(rightArrow);
+        // Append arrows to this.rootRef.el (must have relative positioning in CSS)
+        this.rootRef.el.appendChild(leftArrow);
+        this.rootRef.el.appendChild(rightArrow);
 
-        // Store references
         this.leftArrow = leftArrow;
         this.rightArrow = rightArrow;
         this.tableContainer = tableContainer;
+
+        // Listen for scroll events on the container to dynamically toggle visibility of the arrows
+        this.onTableScroll = () => {
+            this.updateArrowVisibility();
+        };
+        this.tableContainer.addEventListener('scroll', this.onTableScroll);
+
+        // Also watch for size changes using ResizeObserver
+        if (window.ResizeObserver) {
+            this.resizeObserver = new ResizeObserver(() => {
+                this.updateArrowVisibility();
+            });
+            this.resizeObserver.observe(this.tableContainer);
+        }
+
+        // Initial check
+        this.updateArrowVisibility();
+    },
+
+    updateArrowVisibility() {
+        if (!this.tableContainer || !this.leftArrow || !this.rightArrow) {
+            return;
+        }
+
+        const { scrollLeft, scrollWidth, clientWidth } = this.tableContainer;
         
-        console.log('🎉 Arrows added to DOM!');
+        // If the table is not scrollable (or barely scrollable), hide both arrows
+        const isScrollable = scrollWidth > clientWidth + 3;
+        
+        if (!isScrollable) {
+            this.leftArrow.classList.remove('visible');
+            this.rightArrow.classList.remove('visible');
+            return;
+        }
+
+        // Show/hide left arrow based on scroll position
+        if (scrollLeft <= 5) {
+            this.leftArrow.classList.remove('visible');
+        } else {
+            this.leftArrow.classList.add('visible');
+        }
+
+        // Show/hide right arrow based on scroll position
+        if (scrollLeft + clientWidth >= scrollWidth - 5) {
+            this.rightArrow.classList.remove('visible');
+        } else {
+            this.rightArrow.classList.add('visible');
+        }
     },
 
     cleanupScrollArrows() {
-        console.log("🧹 Cleaning up arrows");
-        if (this.leftArrow) this.leftArrow.remove();
-        if (this.rightArrow) this.rightArrow.remove();
+        if (this.tableContainer && this.onTableScroll) {
+            this.tableContainer.removeEventListener('scroll', this.onTableScroll);
+        }
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
+        if (this.leftArrow) {
+            this.leftArrow.remove();
+            this.leftArrow = null;
+        }
+        if (this.rightArrow) {
+            this.rightArrow.remove();
+            this.rightArrow = null;
+        }
     }
 });
 

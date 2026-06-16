@@ -11,10 +11,8 @@
         - Modern carousel-like navigation
     """,
     'author': 'Your Company',
-    'depends': ['inventory_requests'],
-    'data': [
-        # 'views/inventory_line_views.xml',
-    ],
+    'depends': ['web'],
+    'data': [],
     'assets': {
         'web.assets_backend': [
             'inventory_line_scroll_arrows/static/src/css/inventory_line_scroll.css',
