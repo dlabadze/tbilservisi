@@ -10,4 +10,54 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_employee_form_restrict_studio" model="ir.ui.view">
+        <field name="name">hr.employee.form.restrict.studio</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[label[@for='private_street']]" position="attributes">
+                <attribute name="groups">hr_employee_studio_restrict.group_hr_employee_studio_viewer</attribute>
+            </xpath>
+            <xpath expr="//field[@name='identification_id']" position="attributes">
+                <attribute name="groups">hr_employee_studio_restrict.group_hr_employee_studio_viewer</attribute>
+            </xpath>
+            <xpath expr="//field[@name='passport_id']" position="attributes">
+                <attribute name="groups">hr_employee_studio_restrict.group_hr_employee_studio_viewer</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_employee_form_restrict_links" model="ir.ui.view">
+        <field name="name">hr.employee.form.restrict.links</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//field[@name='department_id']" position="replace">
+                <field name="department_id" readonly="1" widget="char" options="{'no_open': True}" groups="!hr_employee_studio_restrict.group_hr_employee_power_editor"/>
+                <field name="department_id" groups="hr_employee_studio_restrict.group_hr_employee_power_editor"/>
+            </xpath>
+            
+            <xpath expr="//field[@name='job_id']" position="replace">
+                <field name="job_id" readonly="1" widget="char" options="{'no_open': True}" groups="!hr_employee_studio_restrict.group_hr_employee_power_editor"/>
+                <field name="job_id" groups="hr_employee_studio_restrict.group_hr_employee_power_editor"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_employee_form_restrict_custom_links" model="ir.ui.view">
+        <field name="name">hr.employee.form.restrict.custom.links</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="studio_customization.odoo_studio_hr_emplo_349c8e0b-fbb7-4eb0-8496-5c1a1925d8ed"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='x_studio_depname']" position="replace">
+                <field name="x_studio_depname" readonly="1" widget="char" options="{'no_open': True}" groups="!hr_employee_studio_restrict.group_hr_employee_power_editor"/>
+                <field name="x_studio_depname" groups="hr_employee_studio_restrict.group_hr_employee_power_editor"/>
+            </xpath>
+
+        </field>
+    </record>
 </odoo>
