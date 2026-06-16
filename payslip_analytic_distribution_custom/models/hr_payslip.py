@@ -5,7 +5,6 @@ _logger = logging.getLogger(__name__)
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
-
     def _action_create_account_move(self):
         res = super(HrPayslip, self)._action_create_account_move()
         for slip in self:
@@ -51,37 +50,57 @@ class HrPayslip(models.Model):
                     move.action_post()
         return res
 
-
 class HrPayslipWorkedDays(models.Model):
     _inherit = 'hr.payslip.worked_days'
-    x_worked_days_attendance = fields.Float(string="ნამუშევარი დღეების რაოდენობა", compute='_compute_x_attendance_rate', store=True)
-    x_worked_days_rate = fields.Float(string="Rate", compute='_compute_x_attendance_rate', store=True)
 
-    @api.depends('payslip_id.employee_id', 'payslip_id.date_from', 'payslip_id.date_to', 'payslip_id.contract_id.wage',
-                 'payslip_id.worked_days_line_ids.number_of_days')
+    x_worked_days_attendance = fields.Float(string="ნამუშევარი დღეები", compute='_compute_x_attendance_rate', store=True)
+    x_worked_days_rate = fields.Float(string="დღიური ხელფასი", compute='_compute_x_attendance_rate', store=True)
+
+    @api.depends('payslip_id.employee_id', 'payslip_id.date_from', 'payslip_id.date_to', 'payslip_id.contract_id.wage')
     def _compute_x_attendance_rate(self):
         for wd in self:
-            slip = wd.payslip_id
-            if not slip or not slip.employee_id or not slip.date_from or not slip.date_to:
+            payslip = wd.payslip_id
+            if not payslip or not payslip.employee_id or not payslip.date_from or not payslip.date_to:
                 wd.x_worked_days_attendance = 0.0
                 wd.x_worked_days_rate = 0.0
                 continue
+                
+            date_from = payslip.date_from
+            date_to = payslip.date_to
+            employee = payslip.employee_id
+            contract = payslip.contract_id
+
+            if date_from.month == 12:
+                next_month = date_from.replace(year=date_from.year + 1, month=1, day=1)
+            else:
+                next_month = date_from.replace(month=date_from.month + 1, day=1)
+
+            days_in_month = (next_month - date_from.replace(day=1)).days
 
             attendances = self.env['hr.attendance'].search([
-                ('employee_id', '=', slip.employee_id.id),
-                ('check_in', '>=', slip.date_from),
-                ('check_out', '<=', slip.date_to),
-                ('x_studio_selection_field_99n_1j76jab36', '=', 'X')
+                ('employee_id', '=', employee.id),
+                ('check_in', '>=', date_from),
+                ('check_in', '<=', date_to)
             ])
-            num_x = len(attendances)
-            wd.x_worked_days_attendance = num_x
 
-            if num_x > 0 and slip.contract_id:
-                # Sum of number_of_days in worked_days_line_ids
-                total_days = sum(line.number_of_days for line in slip.worked_days_line_ids)
-                if total_days > 0:
-                    wd.x_worked_days_rate = (slip.contract_id.wage / total_days) * num_x
-                else:
-                    wd.x_worked_days_rate = 0.0
+            d_days = set() 
+            num_x = 0
+
+            for att in attendances:
+                if att.check_in:
+                    day = att.check_in.date()
+                    if att.x_studio_selection_field_99n_1j76jab36 == 'D':
+                        d_days.add(day)
+                    if att.x_studio_selection_field_99n_1j76jab36 == 'X':
+                        num_x += 1
+                        
+            wd.x_worked_days_attendance = num_x
+            
+            effective_days = days_in_month - len(d_days)
+
+            if effective_days > 0 and contract:
+                result = contract.wage / effective_days
             else:
-                wd.x_worked_days_rate = 0.0
+                result = 0.0 
+                
+            wd.x_worked_days_rate = result
