@@ -353,43 +353,27 @@ class SalaryImport(models.Model):
     def action_generate_journal_entries(self):
         for record in self:
             # Function to find account with fallback methods
-            def find_account(code, name=None):
-                # Try finding by code without company filter
+            def find_account(code):
                 account = self.env['account.account'].search([
                     ('code', '=', code)
                 ], limit=1)
-                
-                # If still not found and name is provided, create the account
-                if not account and name:
-                    try:
-                        account = self.env['account.account'].create({
-                            'name': name,
-                            'code': code,
-                            'account_type': 'liability_current',  # Adjust account type as needed
-                        })
-                    except Exception as e:
-                        _logger.error(f"Error creating account {code}: {e}")
-                        raise UserError(f"Could not create account {code}: {e}")
-                
+                if not account:
+                    raise UserError(f"Account not found: {code}")
                 return account
             
             # Find accounts 
             accounts = {
-                '7410': find_account('7410', 'Salary Expense Account'),
-                '3130': find_account('3130', 'Salary Payable Account'),
-                '3370': find_account('3370', 'General Liability Account'),
-                '7415': find_account('7415', 'Company Tax Expense Account'),
-                '3320': find_account('3320', 'Income Tax Liability Account')
+                '7410': find_account('7410'),
+                '3130': find_account('3130'),
+                '3370': find_account('3370'),
+                '7415': find_account('7415'),
+                '3320': find_account('3320'),
             }
             
             # Get general journal
             journal = self.env['account.journal'].search([('name', '=', 'Salaries')], limit=1)
-            
-            # Verify accounts and journal exist
-            missing_accounts = [code for code, account in accounts.items() if not account]
-            if missing_accounts or not journal:
-                missing = missing_accounts + (['General Journal'] if not journal else [])
-                raise UserError(f"Required accounts or journal not found: {', '.join(missing)}")
+            if not journal:
+                raise UserError("Journal 'Salaries' not found.")
             
             # Prepare journal entries
             journal_entries = self.env['account.move']
@@ -527,20 +511,11 @@ class SalaryImport(models.Model):
             raise UserError("General journal not found!")
         
         def find_account(code):
-            """Find account by code, create if doesn't exist"""
             if not code or not code.strip():
                 return False
             account = self.env['account.account'].search([('code', '=', code.strip())], limit=1)
             if not account:
-                try:
-                    account = self.env['account.account'].create({
-                        'name': f'Account {code.strip()}',
-                        'code': code.strip(),
-                        'account_type': 'liability_current',
-                    })
-                except Exception as e:
-                    _logger.error(f"Error creating account {code}: {e}")
-                    return False
+                raise UserError(f"Account not found: {code.strip()}")
             return account
         
         def parse_debit_credit(debit_credit_str):
