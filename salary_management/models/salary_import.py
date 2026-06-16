@@ -499,6 +499,11 @@ class SalaryImport(models.Model):
             'domain': [('id', 'in', self.journal_entry_ids.ids)]
         }
     
+    def _combine_analytic_distributions(self, *distributions):
+        keys = [key for distribution in distributions if distribution for key in distribution.keys()]
+        _logger.info(f"Keeeeeeeeys: {keys}")
+        return {','.join(keys): 100.0} if keys else False
+
     def action_generate_journal_entries_by_field(self):
         """
         Generate a single journal entry per record with all salary field lines.
@@ -519,25 +524,13 @@ class SalaryImport(models.Model):
             return account
         
         def parse_debit_credit(debit_credit_str):
-            """Parse debit-credit string (format: 'debit-credit' or 'debit/credit')"""
             if not debit_credit_str or not debit_credit_str.strip():
                 return None, None
-            
-            # Try different separators
-            for sep in ['-', '/', '–']:
-                if sep in debit_credit_str:
-                    parts = [p.strip() for p in debit_credit_str.split(sep)]
-                    if len(parts) >= 2:
-                        return parts[0], parts[1]
-            
-            # If no separator, check if it's just a single account code
-            # Check if it contains specific account codes
-            if '3133.28' in str(debit_credit_str):
-                return '3133.28', None
-            if '3139' in str(debit_credit_str):
-                return '3139', None
-            
-            return None, None
+            normalized = debit_credit_str.strip().replace('/', '.')
+            parts = [p.strip() for p in normalized.split('-')]
+            if len(parts) >= 2:
+                return parts[0], parts[1]
+            return parts[0] or None, None
         
         # Field mapping: salary_field -> debit_credit_field
         field_mapping = {
@@ -575,11 +568,42 @@ class SalaryImport(models.Model):
             all_move_lines = []
             successful_lines = 0
             
+            def get_analytic_distribution(partner):
+                employee = self.env['hr.employee'].search([('work_contact_id', '=', partner.id)], limit=1)
+                if not employee or not employee.department_id:
+                    return {}
+                own_dep = employee.department_id
+                root_dep = own_dep
+                while root_dep.parent_id:
+                    root_dep = root_dep.parent_id
+                samsaxuri = self.env['account.analytic.plan'].sudo().search([
+                    ('name', '=', 'სამსახური'),
+                ])
+                departamenti = self.env['account.analytic.plan'].sudo().search([
+                    ('name', '=', 'დეპარტამენტი'),
+                ])
+                AnalyticAccount = self.env['account.analytic.account']
+                root_analytic = AnalyticAccount.search([
+                    ('name', '=', root_dep.name),
+                    ('plan_id', '=', departamenti.id),
+                ], limit=1)
+                own_analytic = AnalyticAccount.search([
+                    ('name', '=', own_dep.name),
+                    ('plan_id', '=', samsaxuri.id),
+                    ], limit=1)
+
+                return self._combine_analytic_distributions(
+                    {str(root_analytic.id): 100.0} if root_analytic else {},
+                    {str(own_analytic.id): 100.0} if own_analytic else {},
+                )
+
             # Process each line
             for line in record.line_ids:
                 if not line.partner_id:
                     continue
-                
+
+                analytic_distribution = get_analytic_distribution(line.partner_id)
+
                 # Process each salary field
                 for salary_field, debit_credit_field in field_mapping.items():
                     salary_value = getattr(line, salary_field, 0.0)
@@ -597,13 +621,7 @@ class SalaryImport(models.Model):
                     
                     # Parse debit and credit accounts
                     debit_code, credit_code = parse_debit_credit(debit_credit_str)
-                    
-                    # If debit_credit contains specific account codes, use them as debit
-                    if '3133.28' in str(debit_credit_str) and not debit_code:
-                        debit_code = '3133.28'
-                    if '3139' in str(debit_credit_str) and not debit_code:
-                        debit_code = '3139'
-                    
+
                     if not debit_code:
                         _logger.warning(f"Skipping {salary_field} for {line.partner_id.name}: could not parse debit account")
                         continue
@@ -654,16 +672,18 @@ class SalaryImport(models.Model):
                             'partner_id': debit_partner_id,
                             'debit': salary_value,
                             'credit': 0.0,
-                            'name': f"{field_name} (Debit){name_suffix}"
+                            'name': f"{field_name} (Debit){name_suffix}",
+                            'analytic_distribution': analytic_distribution,
                         }))
-                        
+
                         # Credit line
                         all_move_lines.append((0, 0, {
                             'account_id': credit_account.id,
                             'partner_id': credit_partner_id,
                             'debit': 0.0,
                             'credit': salary_value,
-                            'name': f"{field_name} (Credit){name_suffix}"
+                            'name': f"{field_name} (Credit){name_suffix}",
+                            'analytic_distribution': analytic_distribution,
                         }))
                         
                         successful_lines += 2  # Count both debit and credit lines
