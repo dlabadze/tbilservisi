@@ -1,92 +1,123 @@
-/* Global List Scroll Arrows Styling */
+/* Inventory Line Scroll Arrows Styling */
 
-.o_list_renderer {
-    position: relative !important;
+.inventory-scroll-container {
+    position: relative;
+    width: 100%;
+    overflow: visible;
 }
 
 .inventory-scroll-arrow {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%) scale(0.9);
-    width: 44px;
-    height: 44px;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 100;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    opacity: 1 !important;  /* Force visible for testing */
+    visibility: visible !important;
+    pointer-events: auto !important;
 }
 
-.inventory-scroll-arrow-left {
-    left: 12px;
-}
-
-.inventory-scroll-arrow-right {
-    right: 12px;
-}
-
-.inventory-scroll-arrow i {
-    font-size: 16px;
-    color: #714B67; /* Odoo Theme Primary */
-    transition: color 0.3s ease;
-}
-
-/* Hover state for container - show active arrows */
-.o_list_renderer:hover .inventory-scroll-arrow.visible {
+.inventory-scroll-arrow.visible {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transform: translateY(-50%) scale(1);
 }
 
-/* Hover state for the arrows themselves */
 .inventory-scroll-arrow:hover {
-    background: #714B67;
-    border-color: #714B67;
-    transform: translateY(-50%) scale(1.1) !important;
-    box-shadow: 0 6px 16px rgba(113, 75, 103, 0.4);
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.inventory-scroll-arrow-left {
+    left: 10px;
+}
+
+.inventory-scroll-arrow-right {
+    right: 10px;
+}
+
+.inventory-scroll-arrow i {
+    font-size: 24px;
+    color: #714B67;
 }
 
 .inventory-scroll-arrow:hover i {
-    color: #ffffff;
+    color: #5a3a52;
 }
 
-/* Active state when clicking */
-.inventory-scroll-arrow:active {
-    transform: translateY(-50%) scale(0.95) !important;
+/* Hover effect - show arrows when hovering over the container */
+.inventory-scroll-container:hover .inventory-scroll-arrow {
+    opacity: 0.7;
 }
 
-/* Ensure smooth scrolling on table wrappers */
-.o_list_table_wrapper {
+.inventory-scroll-container:hover .inventory-scroll-arrow.visible {
+    opacity: 1;
+}
+
+/* Smooth scrolling for the table wrapper */
+.inventory-scroll-container .o_list_renderer {
+    overflow-x: auto;
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(113, 75, 103, 0.5) rgba(0, 0, 0, 0.1);
+}
+
+/* Custom scrollbar styling */
+.inventory-scroll-container .o_list_renderer::-webkit-scrollbar {
+    height: 8px;
+}
+
+.inventory-scroll-container .o_list_renderer::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+.inventory-scroll-container .o_list_renderer::-webkit-scrollbar-thumb {
+    background: rgba(113, 75, 103, 0.5);
+    border-radius: 4px;
+}
+
+.inventory-scroll-container .o_list_renderer::-webkit-scrollbar-thumb:hover {
+    background: rgba(113, 75, 103, 0.8);
+}
+
+/* Animation for arrow appearance */
+@keyframes fadeInArrow {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+.inventory-scroll-arrow.visible {
+    animation: fadeInArrow 0.3s ease;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .inventory-scroll-arrow {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
     }
     
     .inventory-scroll-arrow i {
-        font-size: 14px;
-    }
-    
-    .inventory-scroll-arrow-left {
-        left: 6px;
-    }
-    
-    .inventory-scroll-arrow-right {
-        right: 6px;
+        font-size: 18px;
     }
 }
