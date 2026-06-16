@@ -73,13 +73,9 @@ class PayslipExportColumn(models.TransientModel):
     )
     sequence = fields.Integer(default=10)
 
-    field_id = fields.Many2one(
-        'ir.model.fields',
+    field_name = fields.Selection(
+        selection='_get_payslip_fields',
         string='Field',
-        domain=[('model', '=', 'hr.payslip'), ('ttype', 'not in', [
-            'one2many', 'many2many', 'binary', 'html',
-        ])],
-        ondelete='cascade',
     )
     virtual_key = fields.Selection([
         (VIRTUAL_ATT_X, 'დასწრება (X)'),
@@ -94,12 +90,25 @@ class PayslipExportColumn(models.TransientModel):
     )
     col_width = fields.Integer(string='Width', default=16)
 
-    @api.onchange('field_id')
-    def _onchange_field_id(self):
-        if self.field_id:
-            self.label = self.field_id.field_description
-            ttype = self.field_id.ttype
-            self.col_width = 22 if ttype in ('many2one', 'char', 'text') else 14
+    @api.model
+    def _get_payslip_fields(self):
+        fields_records = self.env['ir.model.fields'].sudo().search([
+            ('model', '=', 'hr.payslip'),
+            ('ttype', 'not in', ['one2many', 'many2many', 'binary', 'html'])
+        ])
+        return [(f.name, f.field_description) for f in fields_records]
+
+    @api.onchange('field_name')
+    def _onchange_field_name(self):
+        if self.field_name:
+            field = self.env['ir.model.fields'].sudo().search([
+                ('model', '=', 'hr.payslip'),
+                ('name', '=', self.field_name)
+            ], limit=1)
+            if field:
+                self.label = field.field_description
+                ttype = field.ttype
+                self.col_width = 22 if ttype in ('many2one', 'char', 'text') else 14
 
     @api.onchange('virtual_key')
     def _onchange_virtual_key(self):
@@ -117,11 +126,14 @@ class PayslipExportColumn(models.TransientModel):
         if self.virtual_key == VIRTUAL_ATT_G:
             return att_counts[slip.employee_id.id][ATTENDANCE_G]
 
-        if not self.field_id:
+        if not self.field_name:
             return ''
 
-        fname = self.field_id.name
-        ttype = self.field_id.ttype
+        fname = self.field_name
+        if fname not in slip._fields:
+            return ''
+
+        ttype = slip._fields[fname].type
         val = slip[fname]
 
         if ttype == 'many2one':
@@ -143,10 +155,14 @@ class PayslipExportColumn(models.TransientModel):
     def _is_numeric(self):
         if self.virtual_key in (VIRTUAL_ATT_X, VIRTUAL_ATT_D, VIRTUAL_ATT_G):
             return True
-        return self.field_id and self.field_id.ttype in NUMERIC_TYPES
+        if self.field_name and self.field_name in self.env['hr.payslip']._fields:
+            return self.env['hr.payslip']._fields[self.field_name].type in NUMERIC_TYPES
+        return False
 
     def _is_money(self):
-        return self.field_id and self.field_id.ttype in MONEY_TYPES
+        if self.field_name and self.field_name in self.env['hr.payslip']._fields:
+            return self.env['hr.payslip']._fields[self.field_name].type in MONEY_TYPES
+        return False
 
 class PayslipExcelExportWizard(models.TransientModel):
     _name = 'payslip.excel.export.wizard'
@@ -180,33 +196,26 @@ class PayslipExcelExportWizard(models.TransientModel):
                 for saved in config.column_ids.sorted('sequence'):
                     col_lines.append((0, 0, {
                         'sequence':    saved.sequence,
-                        'field_id':    saved.field_id.id if saved.field_id else False,
+                        'field_name':  saved.field_name or False,
                         'virtual_key': saved.virtual_key or False,
                         'label':       saved.label,
                         'col_width':   saved.col_width,
                     }))
                 res['column_ids'] = col_lines
             else:
-                payslip_model = self.env['ir.model'].search(
-                    [('model', '=', 'hr.payslip')], limit=1
-                )
                 col_lines = []
                 for seq, (key, label, width) in enumerate(DEFAULT_COLUMNS, start=1):
                     line = {
                         'sequence':    seq * 10,
                         'label':       label,
                         'col_width':   width,
-                        'field_id':    False,
+                        'field_name':  False,
                         'virtual_key': False,
                     }
                     if key in (VIRTUAL_ATT_X, VIRTUAL_ATT_D, VIRTUAL_ATT_G):
                         line['virtual_key'] = key
                     else:
-                        field = self.env['ir.model.fields'].search([
-                            ('model_id', '=', payslip_model.id),
-                            ('name', '=', key),
-                        ], limit=1)
-                        line['field_id'] = field.id if field else False
+                        line['field_name'] = key
                     col_lines.append((0, 0, line))
                 res['column_ids'] = col_lines
         return res
@@ -365,7 +374,7 @@ class PayslipExcelExportWizard(models.TransientModel):
             'type': 'binary',
         })
 
-        config = self.env['payslip.export.config'].get_config()
+        config = self.env['payslip.export.config'].sudo().get_config()
         config.save_columns(self.column_ids)
 
         return {
