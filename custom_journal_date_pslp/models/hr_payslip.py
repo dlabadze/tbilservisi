@@ -27,3 +27,11 @@ class HrPayslip(models.Model):
                         move.write({'date': target_date})
 
         return res
+
+    def _get_payslip_lines(self):
+        lines = super()._get_payslip_lines()
+        for line in lines:
+            rule = self.env['hr.salary.rule'].browse(line.get('salary_rule_id'))
+            if rule:
+                line['name'] = rule.name
+        return lines
