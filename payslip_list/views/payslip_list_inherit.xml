@@ -9,29 +9,33 @@
                 <field name="line_contract_wage" optional="show"/>
                 <field name="line_salary" optional="show"/>
                 <field name="line_leave" optional="show"/>
-                <field name="line_bulletin" optional="show"/>
-                <field name="line_bonus" optional="show"/>
-                <field name="line_help" optional="show"/>
-                <field name="line_overtime" optional="show"/>
                 <field name="line_letter_plus" optional="show"/>
                 <field name="line_letter_minus" optional="show"/>
+                <field name="line_overtime_deduction" optional="show"/>
                 <field name="line_gross" optional="show"/>
                 <field name="line_pension" optional="show"/>
                 <field name="line_taxable" optional="show"/>
-                <field name="line_tax_exemption" optional="show"/>
                 <field name="line_income_tax" optional="show"/>
                 <field name="line_net" optional="show"/>
-                <field name="line_charity" optional="show"/>
-                <field name="line_execution" optional="show"/>
-                <field name="line_alimony" optional="show"/>
                 <field name="line_insurance" optional="show"/>
                 <field name="line_fitpass" optional="show"/>
                 <field name="line_solidarity" optional="show"/>
+                <field name="line_charity" optional="show"/>
+                <field name="line_execution" optional="show"/>
                 <field name="line_prof_union" optional="show"/>
                 <field name="line_prof_union_meria" optional="show"/>
+                <field name="line_disciplinary_fine" optional="show"/>
                 <field name="line_fine" optional="show"/>
+                <field name="line_alimony" optional="show"/>
                 <field name="line_other_deductions" optional="show"/>
                 <field name="line_transfer_salary" optional="show"/>
+                <field name="line_bulletin" optional="show"/>
+                <field name="line_overtime" optional="show"/>
+                <field name="line_bonus" optional="show"/>
+                <field name="line_supplement" optional="show"/>
+                <field name="line_illuminations" optional="show"/>
+                <field name="line_help" optional="show"/>
+                <field name="line_compensation" optional="show"/>
             </xpath>
         </field>
     </record>

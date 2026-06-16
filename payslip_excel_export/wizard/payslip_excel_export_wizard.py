@@ -134,6 +134,8 @@ class PayslipExportColumn(models.TransientModel):
             return sel_dict.get(val, val) if val else ''
         if ttype == 'boolean':
             return 'Yes' if val else 'No'
+        if ttype == 'date':
+            return val.strftime('%d.%m.%Y') if val else ''
         if val is False and ttype not in NUMERIC_TYPES:
             return ''
         return val
@@ -150,8 +152,8 @@ class PayslipExcelExportWizard(models.TransientModel):
     _name = 'payslip.excel.export.wizard'
     _description = 'Payslip Excel Export Wizard'
 
-    date_from     = fields.Date(string='From', required=True)
-    date_to       = fields.Date(string='To',   required=True)
+    date_from= fields.Date(string='From', required=True)
+    date_to= fields.Date(string='To',   required=True)
     department_id = fields.Many2one(
         'hr.department',
         string='Department',
@@ -278,8 +280,8 @@ class PayslipExcelExportWizard(models.TransientModel):
         total_cols = len(columns)
 
         title_text = 'სახელფასო ფურცლები  %s – %s' % (
-            fields.Date.to_string(self.date_from),
-            fields.Date.to_string(self.date_to),
+            self.date_from.strftime('%d.%m.%Y'),
+            self.date_to.strftime('%d.%m.%Y'),
         )
         if self.department_id:
             title_text += '  |  %s' % self.department_id.name
@@ -352,8 +354,8 @@ class PayslipExcelExportWizard(models.TransientModel):
         excel_data = base64.b64encode(stream.getvalue()).decode('utf-8')
 
         filename = 'payslips_%s_%s.xlsx' % (
-            fields.Date.to_string(self.date_from),
-            fields.Date.to_string(self.date_to),
+            self.date_from.strftime('%d.%m.%Y'),
+            self.date_to.strftime('%d.%m.%Y'),
         )
         attachment = self.env['ir.attachment'].sudo().create({
             'name': filename,

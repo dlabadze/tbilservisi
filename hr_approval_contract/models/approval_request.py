@@ -10,6 +10,7 @@ APPOINTMENT_CATEGORIES = [
     1,
     11,
     12,
+    44,
 ]
 
 TRANSFER_CATEGORIES = [
@@ -138,7 +139,7 @@ class ApprovalRequest(models.Model):
         if not self.brdzaneba_start_date:
             raise UserError(_("brdzaneba_start_date is required for a Transfer operation."))
 
-        cancel_end_date = self.brdzaneba_start_date
+        cancel_end_date = self.brdzaneba_start_date - timedelta(days=1)
         self._cancel_running_contracts(self.brdzaneba_employee_id, cancel_end_date)
 
         vals = self._get_contract_vals()
