@@ -1,7 +1,7 @@
 {
     'name': 'Supplied Amount Agreement',
     'version': '18.0.1.0.0',
-    'depends': ['base', 'purchase', 'purchase_requisition', 'tbili_budget'],
+    'depends': ['base', 'purchase', 'purchase_requisition', 'tbili_budget', 'purchase_requisition_po_link'],
     'data': [],
     'installable': True,
     'application': False,
