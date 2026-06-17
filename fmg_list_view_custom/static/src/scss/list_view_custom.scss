@@ -1,0 +1,260 @@
+// ─── SHARED: Sticky headers ───────────────────────────────────────────────────
+.o_list_table {
+
+    thead,
+    thead tr,
+    thead th {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+    }
+}
+
+// ─── 2. Form View inner lists ─────────────────────────────────────────────────
+.o_form_view {
+
+    .o_field_one2many,
+    .o_field_many2many {
+        .o_list_renderer {
+            max-height: 65vh !important;
+            overflow: auto !important;
+
+            .o_list_table {
+                table-layout: auto;
+                width: max-content;
+                min-width: 100%;
+                display: table;
+
+                thead,
+                thead tr,
+                thead th {
+                    position: sticky !important;
+                    top: 0 !important;
+                    z-index: 10 !important;
+                }
+
+                // Headers: always full title width
+                thead th,
+                thead th * {
+                    white-space: nowrap !important;
+                    word-break: normal !important;
+                    overflow-wrap: normal !important;
+                }
+
+                // Data cells: full content width by default
+                tbody tr td.o_data_cell {
+                    white-space: nowrap !important;
+                    word-break: normal !important;
+                    overflow-wrap: normal !important;
+                    // No max-width here — table width:max-content handles sizing
+                }
+
+                // Only clip when Odoo has written an inline width (manual resize)
+                tbody tr td.o_data_cell[style*="width"] {
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+
+                    >* {
+                        display: block;
+                        overflow: hidden !important;
+                        text-overflow: ellipsis !important;
+                        white-space: nowrap !important;
+                        max-width: 100%;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ─── 3. Standalone (outer) List Views ────────────────────────────────────────
+.o_list_view:not(.o_form_view .o_list_view) {
+    .o_list_renderer {
+        overflow-x: auto !important;
+
+        .o_list_table {
+            table-layout: auto;
+            width: max-content;
+            min-width: 100%;
+            display: table;
+
+            // Headers: always full title width
+            thead th,
+            thead th * {
+                white-space: nowrap !important;
+                word-break: normal !important;
+                overflow-wrap: normal !important;
+            }
+
+            // Data cells: clip by default (outer lists can be very wide)
+            tbody tr td.o_data_cell {
+                white-space: nowrap !important;
+                word-break: normal !important;
+                overflow-wrap: normal !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                max-width: 300px;
+                position: relative;
+            }
+
+            tbody tr td.o_data_cell>* {
+                display: block;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+                max-width: 100%;
+            }
+
+            // When manually resized, respect the exact inline width
+            tbody tr td.o_data_cell[style*="width"] {
+                max-width: none; // Let inline width take full control
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // ─── SHARED: Sticky headers ───────────────────────────────────────────────────
+// .o_list_table {
+
+//     thead,
+//     thead tr,
+//     thead th {
+//         position: sticky !important;
+//         top: 0 !important;
+//         z-index: 10 !important;
+//     }
+// }
+
+// // ─── 2. Form View inner lists ─────────────────────────────────────────────────
+// .o_form_view {
+
+//     .o_field_one2many,
+//     .o_field_many2many {
+//         .o_list_renderer {
+//             max-height: 65vh !important;
+//             overflow: auto !important;
+
+//             .o_list_table {
+//                 table-layout: auto;
+//                 width: max-content;
+//                 min-width: 100%;
+//                 display: table;
+
+//                 thead,
+//                 thead tr,
+//                 thead th {
+//                     position: sticky !important;
+//                     top: 0 !important;
+//                     z-index: 10 !important;
+//                 }
+
+//                 // Headers: size to full title, never truncate
+//                 thead th {
+//                     white-space: nowrap !important;
+//                     word-break: normal !important;
+//                     overflow-wrap: normal !important;
+//                     width: min-content;
+//                     min-width: min-content;
+//                     // No overflow:hidden here — let title breathe
+//                 }
+
+//                 thead th * {
+//                     white-space: nowrap !important;
+//                     word-break: normal !important;
+//                     overflow-wrap: normal !important;
+//                 }
+
+//                 // Data cells: clip at boundary, never bleed
+//                 tbody tr td.o_data_cell {
+//                     white-space: nowrap !important;
+//                     word-break: normal !important;
+//                     overflow-wrap: normal !important;
+//                     overflow: hidden !important;
+//                     text-overflow: ellipsis !important;
+//                     max-width: 300px;
+//                     // Create a block formatting context so children can't escape
+//                     position: relative;
+//                 }
+
+//                 tbody tr td.o_data_cell>* {
+//                     display: block;
+//                     overflow: hidden !important;
+//                     text-overflow: ellipsis !important;
+//                     white-space: nowrap !important;
+//                     max-width: 100%;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// // ─── 3. Standalone (outer) List Views ────────────────────────────────────────
+// .o_list_view:not(.o_form_view .o_list_view) {
+//     .o_list_renderer {
+//         overflow-x: auto !important;
+
+//         .o_list_table {
+//             table-layout: auto;
+//             width: max-content;
+//             min-width: 100%;
+//             display: table;
+
+//             // Headers: size to full title, never truncate
+//             thead th {
+//                 white-space: nowrap !important;
+//                 word-break: normal !important;
+//                 overflow-wrap: normal !important;
+//                 width: min-content;
+//                 min-width: min-content;
+//             }
+
+//             thead th * {
+//                 white-space: nowrap !important;
+//                 word-break: normal !important;
+//                 overflow-wrap: normal !important;
+//             }
+
+//             // Data cells: clip at boundary, never bleed
+//             tbody tr td.o_data_cell {
+//                 white-space: nowrap !important;
+//                 word-break: normal !important;
+//                 overflow-wrap: normal !important;
+//                 overflow: hidden !important;
+//                 text-overflow: ellipsis !important;
+//                 max-width: 300px;
+//                 position: relative;
+//             }
+
+//             tbody tr td.o_data_cell>* {
+//                 display: block;
+//                 overflow: hidden !important;
+//                 text-overflow: ellipsis !important;
+//                 white-space: nowrap !important;
+//                 max-width: 100%;
+//             }
+//         }
+//     }
+// }
