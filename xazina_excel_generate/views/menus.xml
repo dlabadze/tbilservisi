@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_xazina_root"
+              name="ხაზინაში ასატვირთი ფაილები"
+              parent="account.menu_finance_reports"
+              sequence="100"/>
+
+    <menuitem id="menu_salary_and_bulletin"
+              name="ხელფასის და ბიულეტენი"
+              parent="menu_xazina_root"
+              action="action_salary_and_bulletin_excel"
+              sequence="10"/>
+
+</odoo>
