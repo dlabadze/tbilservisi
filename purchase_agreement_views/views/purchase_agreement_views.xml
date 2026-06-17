@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_requisition_tree_inherit" model="ir.ui.view">
+        <field name="name">purchase.requisition.tree.inherit</field>
+        <field name="model">purchase.requisition</field>
+        <field name="inherit_id" ref="purchase_requisition.view_purchase_requisition_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='requisition_type']" position="before">
+                <field name="contract_number"/>
+                <field name="spa_or_cmr_number"/>
+                <field name="contract_amount"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -47,17 +47,21 @@ class PurchaseRequisition(models.Model):
     date_1 = fields.Char(string='თარიღი')
     date_2 = fields.Char(string='თარიღი')
     date_3 = fields.Char(string='თარიღი')
+    date_4 = fields.Char(string='თარიღი')
+    date_5 = fields.Char(string='თარიღი')
 
     percentage_1 = fields.Float(string='პროცენტი', digits=(5, 2))
     percentage_2 = fields.Float(string='პროცენტი', digits=(5, 2))
     percentage_3 = fields.Float(string='პროცენტი', digits=(5, 2))
+    percentage_4 = fields.Float(string='პროცენტი', digits=(5, 2))
+    percentage_5 = fields.Float(string='პროცენტი', digits=(5, 2))
     department_id = fields.Many2one('hr.department', string='სამსახური')
     spa_or_cmr_number = fields.Char(string='SPA ან CMR ნომერი')
 
     @api.constrains('percentage_1', 'percentage_2', 'percentage_3')
     def _check_percentages_sum(self):
         for rec in self:
-            total = rec.percentage_1 + rec.percentage_2 + rec.percentage_3
+            total = rec.percentage_1 + rec.percentage_2 + rec.percentage_3 + rec.percentage_4 + rec.percentage_5
             if total > 1:
                 total = total * 100
                 raise ValidationError(
@@ -69,8 +73,8 @@ class PurchaseRequisition(models.Model):
         res = super().write(vals)
         header_keys = (
             'delivery_type',
-            'date_1', 'date_2', 'date_3',
-            'percentage_1', 'percentage_2', 'percentage_3',
+            'date_1', 'date_2', 'date_3', 'date_4', 'date_5'
+            'percentage_1', 'percentage_2', 'percentage_3', 'percentage_4', 'percentage_5'
         )
         if any(k in vals for k in header_keys):
             lines = self.env['purchase.requisition.line'].search(
@@ -105,7 +109,7 @@ class PurchaseRequisitionLine(models.Model):
         return None
 
     def _long_term_fraction_for_current_year(self, requisition):
-        """Match context year to date_1 / date_2 / date_3 and return the paired percentage as fraction."""
+        """Match context year to date_1 / date_2 / date_3/ date_4/ date_5 and return the paired percentage as fraction."""
         if not requisition:
             return None
         year = fields.Date.context_today(self).year
@@ -113,6 +117,8 @@ class PurchaseRequisitionLine(models.Model):
             (requisition.date_1, requisition.percentage_1),
             (requisition.date_2, requisition.percentage_2),
             (requisition.date_3, requisition.percentage_3),
+            (requisition.date_4, requisition.percentage_4),
+            (requisition.date_5, requisition.percentage_5),
         )
         for date_val, pct_val in slots:
             slot_year = self._parse_year_from_char(date_val)

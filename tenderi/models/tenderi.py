@@ -103,7 +103,7 @@ class Tenderi(models.Model):
             if new_status in add_statuses and not rec.amount_in_plan_line:
                 plan_line.tender_amount = (plan_line.tender_amount or 0.0) + final_price
                 rec.amount_in_plan_line = True
-            elif new_status in subtract_statuses and rec.amount_in_plan_line:
+            elif new_status == False and rec.amount_in_plan_line:
                 plan_line.tender_amount = (plan_line.tender_amount or 0.0) - final_price
                 rec.amount_in_plan_line = False
 

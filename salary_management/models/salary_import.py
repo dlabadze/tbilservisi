@@ -224,7 +224,10 @@ class SalaryImport(models.Model):
                     })
                     continue
                 
-                employee = self.env['hr.employee'].search([('identification_id', '=', personal_number)], limit=1)
+                employee = self.env['hr.employee'].search([
+                    ('identification_id', '=', personal_number),
+                    ('active', 'in', [True, False]),
+                ], limit=1)
                 partner = employee.work_contact_id if employee else False
                 if not partner:
                     missed_rows.append({
@@ -569,7 +572,11 @@ class SalaryImport(models.Model):
             successful_lines = 0
             
             def get_analytic_distribution(partner):
-                employee = self.env['hr.employee'].search([('work_contact_id', '=', partner.id)], limit=1)
+                employee = self.env['hr.employee'].search([
+                    ('work_contact_id', '=', partner.id),
+                    ('active', 'in', [True, False]),
+                ], 
+                limit=1)
                 if not employee or not employee.department_id:
                     return {}
                 own_dep = employee.department_id

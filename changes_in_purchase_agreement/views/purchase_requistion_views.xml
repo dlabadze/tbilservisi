@@ -80,6 +80,18 @@
                     <span class="mx-2">-</span>
                     <field name="percentage_3" widget="percentage" class="oe_inline"/>
                 </div>
+                <label for="date_4" string="Date 4 - Percentage 4" invisible="delivery_type != 'გრძელვადიანი'"/>
+                <div class="o_row" invisible="delivery_type != 'გრძელვადიანი'">
+                    <field name="date_4" class="oe_inline"/>
+                    <span class="mx-2">-</span>
+                    <field name="percentage_4" widget="percentage" class="oe_inline"/>
+                </div>
+                <label for="date_5" string="Date 5 - Percentage 5" invisible="delivery_type != 'გრძელვადიანი'"/>
+                <div class="o_row" invisible="delivery_type != 'გრძელვადიანი'">
+                    <field name="date_5" class="oe_inline"/>
+                    <span class="mx-2">-</span>
+                    <field name="percentage_5" widget="percentage" class="oe_inline"/>
+                </div>
             </xpath>
         </field>
     </record>
