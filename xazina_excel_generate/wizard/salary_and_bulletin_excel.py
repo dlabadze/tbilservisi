@@ -40,31 +40,34 @@ class SalaryAndBulletinExcel(models.TransientModel):
             sheet.write(0, col, h, header_fmt)
             sheet.set_column(col, col, w)
 
-        # Aggregate per partner across all matching moves
-        partners = {}  # partner_id -> {'name': ..., 'vat': ..., 'salary': ..., 'bulletin': ...}
+        # Aggregate per partner across all matching moves.
+        # Partner identity comes from the 3139 line; salary/bulletin are summed
+        # from all lines in the same move regardless of their own partner_id.
+        partners = {}  # partner_id -> {'name', 'vat', 'salary', 'bulletin'}
 
         for move in moves:
+            pid = None
+            name = ''
+            vat = ''
+            salary = 0.0
+            bulletin = 0.0
+
             for line in move.line_ids:
                 code = line.account_id.code
-                pid = line.partner_id.id if line.partner_id else None
+                if code == '3139' and line.partner_id:
+                    pid = line.partner_id.id
+                    name = line.partner_id.name or ''
+                    vat = line.partner_id.vat or ''
+                elif code == '7410.01':
+                    salary += line.debit
+                elif code == '7410.03':
+                    bulletin += line.debit
 
-                if code == '3139' and pid and pid not in partners:
-                    partners[pid] = {
-                        'name': line.partner_id.name or '',
-                        'vat': line.partner_id.vat or '',
-                        'salary': 0.0,
-                        'bulletin': 0.0,
-                    }
-
-                if code == '7410.01' and pid:
-                    if pid not in partners:
-                        partners[pid] = {'name': '', 'vat': '', 'salary': 0.0, 'bulletin': 0.0}
-                    partners[pid]['salary'] += line.debit
-
-                if code == '7410.03' and pid:
-                    if pid not in partners:
-                        partners[pid] = {'name': '', 'vat': '', 'salary': 0.0, 'bulletin': 0.0}
-                    partners[pid]['bulletin'] += line.debit
+            if pid:
+                if pid not in partners:
+                    partners[pid] = {'name': name, 'vat': vat, 'salary': 0.0, 'bulletin': 0.0}
+                partners[pid]['salary'] += salary
+                partners[pid]['bulletin'] += bulletin
 
         row = 1
         for data in partners.values():
