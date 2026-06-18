@@ -96,6 +96,10 @@ class HrPayslipEmployees(models.TransientModel):
     def get_employees_domain(self):
         # Rebuild standard domain (do not call super) so onchange never passes NewId into SQL.
         domain = self._get_available_contracts_domain()
+        domain = expression.AND([
+            domain,
+            ['|', ('active', '=', False), ('active', '=', True)]
+        ])
         if self.structure_type_id and not isinstance(self.structure_type_id.id, NewId):
             domain = expression.AND([
                 domain,
