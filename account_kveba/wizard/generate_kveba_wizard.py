@@ -325,20 +325,14 @@ class GenerateKvebaWizard(models.TransientModel):
             if has_pension:
                 # With Pension - based on provided formulas
                 # 451.5306122 / 300 = 1.505102041
-                # amount_7411 = base_amount * 1.505102041
-                # # 88.5 / 300 = 0.295
-                # amount_3322 = base_amount * 0.295
-                # # 54 / 300 = 0.18
-                # amount_3330 = base_amount * 0.18
-                # # 9.030612245 / 300 = 0.030102041
-                # amount_pension = base_amount * 0.030102041
-
-                # --- --- --- --- ---
-                amount_7411 = (base_amount + (base_amount * 0.18))/0.98/0.8
-                amount_3322 = amount_7411 * 0.98 * 0.2
+                amount_7411 = base_amount * 1.505102041
+                # 88.5 / 300 = 0.295
+                amount_3322 = base_amount * 0.295
+                # 54 / 300 = 0.18
                 amount_3330 = base_amount * 0.18
-                amount_pension = amount_7411 * 0.02
-
+                # 9.030612245 / 300 = 0.030102041
+                amount_pension = base_amount * 0.030102041
+                
                 # Line 2: 7411 - 3132
                 invoice_lines.append((0, 0, {
                     'account_id': account_7411.id,
@@ -429,14 +423,12 @@ class GenerateKvebaWizard(models.TransientModel):
             else:
                 # Without Pension - based on provided formulas
                 # 442.5 / 300 = 1.475
-                # amount_7411 = base_amount * 1.475
-                # # 88.5 / 300 = 0.295
-                # amount_3322 = base_amount * 0.295
-                # # 54 / 300 = 0.18
-                # amount_3330 = base_amount * 0.18
-                amount_7411 =  (base_amount + (base_amount * 0.18))/0.8
-                amount_3322 = amount_7411 * 0.2
+                amount_7411 = base_amount * 1.475
+                # 88.5 / 300 = 0.295
+                amount_3322 = base_amount * 0.295
+                # 54 / 300 = 0.18
                 amount_3330 = base_amount * 0.18
+                
                 # Line 2: 7411 - 3132
                 invoice_lines.append((0, 0, {
                     'account_id': account_7411.id,
