@@ -21,7 +21,7 @@
     </record>
 
     <record id="action_salary_and_bulletin_excel" model="ir.actions.act_window">
-        <field name="name">ხელფასის და ბიულეტენი</field>
+        <field name="name">ხელფასი და ბიულეტენი</field>
         <field name="res_model">salary.and.bulletin.excel</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

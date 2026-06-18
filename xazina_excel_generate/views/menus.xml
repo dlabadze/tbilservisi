@@ -7,7 +7,7 @@
               sequence="100"/>
 
     <menuitem id="menu_salary_and_bulletin"
-              name="ხელფასის და ბიულეტენი"
+              name="ხელფასი და ბიულეტენი"
               parent="menu_xazina_root"
               action="action_salary_and_bulletin_excel"
               sequence="10"/>
