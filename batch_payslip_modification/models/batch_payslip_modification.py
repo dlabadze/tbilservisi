@@ -4,7 +4,7 @@ import logging
 
 from odoo import models, fields, api
 from odoo.osv import expression
-
+from odoo.exceptions import ValidationError
 _logger = logging.getLogger(__name__)
 
 
@@ -82,7 +82,7 @@ class HrPayslipEmployees(models.TransientModel):
         # payslips). The blank-rule filtering happens separately (onchange /
         # compute_sheet), never here, to avoid recursive recomputation.
         for wizard in self:
-            wizard.employee_ids = self.env['hr.employee'].search(wizard._get_employees_domain())
+            wizard.employee_ids = self.env['hr.employee'].with_context(active_test=False).search(wizard._get_employees_domain())
 
     # ------------------------------------------------------------------
     # Blank-payslip pre-filter: read the structure's rule conditions in
@@ -111,7 +111,10 @@ class HrPayslipEmployees(models.TransientModel):
         the generated payslip would have no lines. Conservative: any
         uncertainty (missing method, un-evaluable condition) returns False so
         the employee is kept."""
-        localdict = self._get_probe_localdict(employee, employee.contract_id)
+        contract = employee.with_context(active_test=False).contract_id
+        if not contract:
+            return False
+        localdict = self._get_probe_localdict(employee, contract)
         for rule in rules:
             satisfy = getattr(rule, '_satisfy_condition', None)
             if satisfy is None:
