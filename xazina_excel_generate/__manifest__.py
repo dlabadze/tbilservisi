@@ -5,6 +5,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/salary_and_bulletin_excel_view.xml',
+        'views/xazina_dakavebebi_excel_view.xml',
         'views/menus.xml',
     ],
     'installable': True,

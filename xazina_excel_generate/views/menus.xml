@@ -12,4 +12,10 @@
               action="action_salary_and_bulletin_excel"
               sequence="10"/>
 
+    <menuitem id="menu_xazina_dakavebebi"
+              name="ხაზინა-დაკავებები"
+              parent="menu_xazina_root"
+              action="action_xazina_dakavebebi_excel"
+              sequence="20"/>
+
 </odoo>
