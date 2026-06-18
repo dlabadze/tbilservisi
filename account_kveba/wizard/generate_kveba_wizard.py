@@ -350,7 +350,7 @@ class GenerateKvebaWizard(models.TransientModel):
                 invoice_lines.append((0, 0, {
                     'account_id': account_3132.id,
                     'partner_id': partner.id,
-                    'name': f'7411 - {partner.name}',
+                    'name': f'{partner.name}',
                     'debit': 0.0,
                     'credit': amount_7411,
                 }))
@@ -359,14 +359,14 @@ class GenerateKvebaWizard(models.TransientModel):
                 invoice_lines.append((0, 0, {
                     'account_id': account_3132.id,
                     'partner_id': partner.id,
-                    'name': f'3322 - {partner.name}',
+                    'name': f'{partner.name}',
                     'debit': amount_3322,
                     'credit': 0.0,
                 }))
                 
                 invoice_lines.append((0, 0, {
                     'account_id': account_3322.id,
-                    'name': f'3322 - {partner.name}',
+                    'name': f'{partner.name}',
                     'debit': 0.0,
                     'credit': amount_3322,
                     'analytic_distribution': {str(self.analytic_account.id): 100.0},
@@ -440,7 +440,7 @@ class GenerateKvebaWizard(models.TransientModel):
                 # Line 2: 7411 - 3132
                 invoice_lines.append((0, 0, {
                     'account_id': account_7411.id,
-                    'name': f'7411 - {partner.name}',
+                    'name': f'{partner.name}',
                     'debit': amount_7411,
                     'credit': 0.0,
                     'analytic_distribution': {str(self.analytic_account.id): 100.0},
@@ -449,7 +449,7 @@ class GenerateKvebaWizard(models.TransientModel):
                 invoice_lines.append((0, 0, {
                     'account_id': account_3132.id,
                     'partner_id': partner.id,
-                    'name': f'7411 - {partner.name}',
+                    'name': f'{partner.name}',
                     'debit': 0.0,
                     'credit': amount_7411,
                 }))
@@ -458,14 +458,14 @@ class GenerateKvebaWizard(models.TransientModel):
                 invoice_lines.append((0, 0, {
                     'account_id': account_3132.id,
                     'partner_id': partner.id,
-                    'name': f'3322 - {partner.name}',
+                    'name': f'{partner.name}',
                     'debit': amount_3322,
                     'credit': 0.0,
                 }))
                 
                 invoice_lines.append((0, 0, {
                     'account_id': account_3322.id,
-                    'name': f'3322 - {partner.name}',
+                    'name': f'{partner.name}',
                     'debit': 0.0,
                     'credit': amount_3322,
                     'analytic_distribution': {str(self.analytic_account.id): 100.0},
