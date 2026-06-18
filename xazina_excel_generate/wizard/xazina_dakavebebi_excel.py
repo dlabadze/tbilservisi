@@ -11,14 +11,37 @@ class XazinaDakavebebiExcel(models.TransientModel):
     _description = 'Xazina Dakavebebi Excel'
 
     date = fields.Date(string='თარიღი', required=True)
+    struct_type = fields.Selection([
+        ('salary', 'ხელფასის დარიცხვა'),
+        ('bulletin', 'ბიულეტენი'),
+    ], string='ტიპი', required=True)
+
+    def _get_employee_info(self, partner_id):
+        employee = self.env['hr.employee'].sudo().search(
+            [('work_contact_id', '=', partner_id)], limit=1
+        )
+        if not employee:
+            return '', '', ''
+        dept = employee.department_id
+        while dept.parent_id:
+            dept = dept.parent_id
+        return (
+            dept.name or '',
+            employee.department_id.name or '',
+            employee.job_id.name or '',
+        )
 
     def action_generate_excel(self):
         self.ensure_one()
+
+        struct_name = 'ხელფასის დარიცხვა' if self.struct_type == 'salary' else 'ბიულეტენი'
+        is_salary = self.struct_type == 'salary'
 
         moves = self.env['account.move'].sudo().search([
             ('state', '=', 'posted'),
             ('date', '=', self.date),
             ('journal_id.name', '=', 'Salaries'),
+            ('payslip_ids.struct_id.name', '=', struct_name),
         ])
 
         output = io.BytesIO()
@@ -36,23 +59,25 @@ class XazinaDakavebebiExcel(models.TransientModel):
         cell_fmt = workbook.add_format({'border': 1})
         num_fmt = workbook.add_format({'border': 1, 'num_format': '#,##0.00'})
 
-        headers = [
-            'თანამშრომელი',
-            'პირადი ნომერი',
-            'სოლიდარობა',
-            'პროფკავშირი მერია (ხელფასი)',
-            'პროფკავშირი მერია (ბიულეტენი)',
-            'პროფკავშირი (ხელფასი)',
-            'პროფკავშირი (ბიულეტენი)',
-            'ფიტპასი',
-            'ალიმენტი',
-            'აღსრულება',
-            'ჯარიმა',
-            'სხვა დაკავება',
-            'დაზღვევა',
-            'ფონდი',
-        ]
-        col_widths = [40, 20, 14, 22, 24, 20, 22, 12, 12, 14, 12, 16, 14, 12]
+        if is_salary:
+            profk_col_headers = [
+                'პროფკავშირი მერია (ხელფასი)',
+                'პროფკავშირი (ხელფასი)',
+            ]
+            profk_keys = ['profk_meria_salary', 'profk_salary']
+        else:
+            profk_col_headers = [
+                'პროფკავშირი მერია (ბიულეტენი)',
+                'პროფკავშირი (ბიულეტენი)',
+            ]
+            profk_keys = ['profk_meria_bulletin', 'profk_bulletin']
+
+        headers = (
+            ['თანამშრომელი', 'პირადი ნომერი', 'დეპარტამენი', 'სამსახური', 'თანამდებობა', 'სოლიდარობა']
+            + profk_col_headers
+            + ['ფიტპასი', 'ალიმენტი', 'აღსრულება', 'ჯარიმა', 'სხვა დაკავება', 'დაზღვევა', 'ფონდი']
+        )
+        col_widths = [40, 20, 25, 25, 25, 14, 22, 20, 12, 12, 14, 12, 16, 14, 12]
 
         sheet.set_row(0, 30)
         for col, (h, w) in enumerate(zip(headers, col_widths)):
@@ -62,10 +87,6 @@ class XazinaDakavebebiExcel(models.TransientModel):
         partners = {}
 
         for move in moves:
-            structs = move.payslip_ids.mapped('struct_id.name')
-            is_salary = 'ხელფასის დარიცხვა' in structs
-            is_bulletin = 'ბიულეტენი' in structs
-
             pid = None
             name = ''
             vat = ''
@@ -94,12 +115,12 @@ class XazinaDakavebebiExcel(models.TransientModel):
                 elif code == '3133.10':
                     if is_salary:
                         ded['profk_meria_salary'] += line.credit
-                    elif is_bulletin:
+                    else:
                         ded['profk_meria_bulletin'] += line.credit
                 elif code == '3133.09':
                     if is_salary:
                         ded['profk_salary'] += line.credit
-                    elif is_bulletin:
+                    else:
                         ded['profk_bulletin'] += line.credit
                 elif code == '3133.11':
                     ded['fitpasi'] += line.credit
@@ -116,8 +137,12 @@ class XazinaDakavebebiExcel(models.TransientModel):
 
             if pid:
                 if pid not in partners:
-                    partners[pid] = {'name': name, 'vat': vat,
-                                     **{k: 0.0 for k in ded}}
+                    dept_root, dept, job = self._get_employee_info(pid)
+                    partners[pid] = {
+                        'name': name, 'vat': vat,
+                        'dept_root': dept_root, 'dept': dept, 'job': job,
+                        **{k: 0.0 for k in ded},
+                    }
                 for k in ded:
                     partners[pid][k] += ded[k]
 
@@ -125,18 +150,19 @@ class XazinaDakavebebiExcel(models.TransientModel):
         for data in partners.values():
             sheet.write(row, 0, data['name'], cell_fmt)
             sheet.write(row, 1, data['vat'], cell_fmt)
-            sheet.write(row, 2, data['solidarity'], num_fmt)
-            sheet.write(row, 3, data['profk_meria_salary'], num_fmt)
-            sheet.write(row, 4, data['profk_meria_bulletin'], num_fmt)
-            sheet.write(row, 5, data['profk_salary'], num_fmt)
-            sheet.write(row, 6, data['profk_bulletin'], num_fmt)
-            sheet.write(row, 7, data['fitpasi'], num_fmt)
-            sheet.write(row, 8, data['alimenti'], num_fmt)
-            sheet.write(row, 9, data['agsruleba'], num_fmt)
-            sheet.write(row, 10, data['jarima'], num_fmt)
-            sheet.write(row, 11, data['sxva_dakaveba'], num_fmt)
-            sheet.write(row, 12, data['dazghveva'], num_fmt)
-            sheet.write(row, 13, '', cell_fmt)
+            sheet.write(row, 2, data['dept_root'], cell_fmt)
+            sheet.write(row, 3, data['dept'], cell_fmt)
+            sheet.write(row, 4, data['job'], cell_fmt)
+            sheet.write(row, 5, data['solidarity'], num_fmt)
+            sheet.write(row, 6, data[profk_keys[0]], num_fmt)
+            sheet.write(row, 7, data[profk_keys[1]], num_fmt)
+            sheet.write(row, 8, data['fitpasi'], num_fmt)
+            sheet.write(row, 9, data['alimenti'], num_fmt)
+            sheet.write(row, 10, data['agsruleba'], num_fmt)
+            sheet.write(row, 11, data['jarima'], num_fmt)
+            sheet.write(row, 12, data['sxva_dakaveba'], num_fmt)
+            sheet.write(row, 13, data['dazghveva'], num_fmt)
+            sheet.write(row, 14, '', cell_fmt)
             row += 1
 
         workbook.close()
@@ -144,7 +170,7 @@ class XazinaDakavebebiExcel(models.TransientModel):
         file_data = base64.b64encode(output.read())
 
         attachment = self.env['ir.attachment'].create({
-            'name': f'dakavebebi_{self.date}.xlsx',
+            'name': f'dakavebebi_{self.struct_type}_{self.date}.xlsx',
             'type': 'binary',
             'datas': file_data,
             'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

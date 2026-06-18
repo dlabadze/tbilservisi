@@ -12,6 +12,21 @@ class SalaryAndBulletinExcel(models.TransientModel):
 
     date = fields.Date(string='თარიღი', required=True)
 
+    def _get_employee_info(self, partner_id):
+        employee = self.env['hr.employee'].sudo().search(
+            [('work_contact_id', '=', partner_id)], limit=1
+        )
+        if not employee:
+            return '', '', ''
+        dept = employee.department_id
+        while dept.parent_id:
+            dept = dept.parent_id
+        return (
+            dept.name or '',
+            employee.department_id.name or '',
+            employee.job_id.name or '',
+        )
+
     def action_generate_excel(self):
         self.ensure_one()
 
@@ -28,22 +43,31 @@ class SalaryAndBulletinExcel(models.TransientModel):
         header_fmt = workbook.add_format({
             'bold': True,
             'align': 'center',
+            'valign': 'vcenter',
             'border': 1,
             'bg_color': '#D7E4BC',
+            'text_wrap': True,
         })
         cell_fmt = workbook.add_format({'border': 1})
         num_fmt = workbook.add_format({'border': 1, 'num_format': '#,##0.00'})
 
-        headers = ['თანამშრომლის დასახელება', 'პირადი ნომერი', 'ხელფასი', 'ბიულეტენი']
-        col_widths = [40, 20, 15, 15]
+        headers = [
+            'თანამშრომლის დასახელება',
+            'პირადი ნომერი',
+            'დეპარტამენი',
+            'სამსახური',
+            'თანამდებობა',
+            'ხელფასი',
+            'ბიულეტენი',
+        ]
+        col_widths = [40, 20, 25, 25, 25, 15, 15]
+
+        sheet.set_row(0, 30)
         for col, (h, w) in enumerate(zip(headers, col_widths)):
             sheet.write(0, col, h, header_fmt)
             sheet.set_column(col, col, w)
 
-        # Aggregate per partner across all matching moves.
-        # Partner identity comes from the 3139 line; salary/bulletin are summed
-        # from all lines in the same move regardless of their own partner_id.
-        partners = {}  # partner_id -> {'name', 'vat', 'salary', 'bulletin'}
+        partners = {}
 
         for move in moves:
             pid = None
@@ -65,7 +89,12 @@ class SalaryAndBulletinExcel(models.TransientModel):
 
             if pid:
                 if pid not in partners:
-                    partners[pid] = {'name': name, 'vat': vat, 'salary': 0.0, 'bulletin': 0.0}
+                    dept_root, dept, job = self._get_employee_info(pid)
+                    partners[pid] = {
+                        'name': name, 'vat': vat,
+                        'dept_root': dept_root, 'dept': dept, 'job': job,
+                        'salary': 0.0, 'bulletin': 0.0,
+                    }
                 partners[pid]['salary'] += salary
                 partners[pid]['bulletin'] += bulletin
 
@@ -73,8 +102,11 @@ class SalaryAndBulletinExcel(models.TransientModel):
         for data in partners.values():
             sheet.write(row, 0, data['name'], cell_fmt)
             sheet.write(row, 1, data['vat'], cell_fmt)
-            sheet.write(row, 2, data['salary'], num_fmt)
-            sheet.write(row, 3, data['bulletin'], num_fmt)
+            sheet.write(row, 2, data['dept_root'], cell_fmt)
+            sheet.write(row, 3, data['dept'], cell_fmt)
+            sheet.write(row, 4, data['job'], cell_fmt)
+            sheet.write(row, 5, data['salary'], num_fmt)
+            sheet.write(row, 6, data['bulletin'], num_fmt)
             row += 1
 
         workbook.close()

@@ -8,6 +8,7 @@
             <form string="ხაზინა-დაკავებები">
                 <group>
                     <field name="date"/>
+                    <field name="struct_type"/>
                 </group>
                 <footer>
                     <button name="action_generate_excel"
