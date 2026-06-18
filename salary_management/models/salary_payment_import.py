@@ -284,7 +284,10 @@ class SalaryPaymentImport(models.Model):
     def _get_partner_from_personal_number(self, personal_number):
         if not personal_number:
             return False
-        employee = self.env['hr.employee'].search([('identification_id', '=', personal_number)], limit=1)
+        employee = self.env['hr.employee'].sudo().search([
+            ('identification_id', '=', personal_number),
+             ('active', 'in', [True, False]),
+        ], limit=1)
         return employee.work_contact_id if employee and employee.work_contact_id else False
     
     def _column_letter(self, index):
@@ -300,7 +303,7 @@ class SalaryPaymentImport(models.Model):
     def _account_exists(self, code):
         if not code:
             return False
-        return bool(self.env['account.account'].search([('code', '=', code)], limit=1))
+        return bool(self.env['account.account'].sudo().search([('code', '=', code)], limit=1))
     
     def _find_partner_by_id(self, partner_id_str):
         """Find partner by VAT/ID number"""
@@ -311,12 +314,12 @@ class SalaryPaymentImport(models.Model):
         clean_id = partner_id_str.split('.')[0].zfill(11)
         
         # Search by VAT
-        partner = self.env['res.partner'].search([('vat', '=', clean_id)], limit=1)
+        partner = self.env['res.partner'].sudo().search([('vat', '=', clean_id)], limit=1)
         if partner:
             return partner
         
         # Fallback search with original string
-        partner = self.env['res.partner'].search([('vat', '=', partner_id_str)], limit=1)
+        partner = self.env['res.partner'].sudo().search([('vat', '=', partner_id_str)], limit=1)
         return partner
     
     def _find_partner_by_name(self, partner_name):
@@ -334,13 +337,13 @@ class SalaryPaymentImport(models.Model):
         ]
         
         for domain in search_strategies:
-            partners = self.env['res.partner'].search(domain, limit=1)
+            partners = self.env['res.partner'].sudo().search(domain, limit=1)
             if partners:
                 return partners
         
         # Create new partner if not found
         try:
-            new_partner = self.env['res.partner'].create({
+            new_partner = self.env['res.partner'].sudo().create({
                 'name': clean_name,
                 'is_company': False,
                 'supplier_rank': 1,
@@ -360,7 +363,7 @@ class SalaryPaymentImport(models.Model):
             raise UserError(_("No lines to process!"))
         
         # Get general journal
-        journal = self.env['account.journal'].search([('name', '=', 'Salaries')], limit=1)
+        journal = self.env['account.journal'].sudo().search([('name', '=', 'Salaries')], limit=1)
         if not journal:
             raise UserError(_("General journal not found!"))
         
@@ -386,7 +389,7 @@ class SalaryPaymentImport(models.Model):
                 # GET DEBIT ACCOUNT FROM COLUMN C
                 debit_account = None
                 if line.debit and line.debit.strip():
-                    debit_account = self.env['account.account'].search([('code', '=', line.debit.strip())], limit=1)
+                    debit_account = self.env['account.account'].sudo().search([('code', '=', line.debit.strip())], limit=1)
                     if not debit_account:
                         # Create account if doesn't exist
                         try:
@@ -412,7 +415,7 @@ class SalaryPaymentImport(models.Model):
                 
                 # Priority 2: If Column D has account code, use that account
                 elif line.credit and line.credit.strip():
-                    credit_account = self.env['account.account'].search([('code', '=', line.credit.strip())], limit=1)
+                    credit_account = self.env['account.account'].sudo().search([('code', '=', line.credit.strip())], limit=1)
                     if not credit_account:
                         # Create account if doesn't exist
                         try:
@@ -547,7 +550,7 @@ class SalaryPaymentImport(models.Model):
         Returns action to view the created journal entries.
         """
         # Get general journal
-        journal = self.env['account.journal'].search([('name', '=', 'Salaries')], limit=1)
+        journal = self.env['account.journal'].sudo().search([('name', '=', 'Salaries')], limit=1)
         if not journal:
             raise UserError(_("General journal not found!"))
         
@@ -585,7 +588,7 @@ class SalaryPaymentImport(models.Model):
                     # Get debit account from line's debit field
                     debit_account = None
                     if line.debit and line.debit.strip():
-                        debit_account = self.env['account.account'].search([('code', '=', line.debit.strip())], limit=1)
+                        debit_account = self.env['account.account'].sudo().search([('code', '=', line.debit.strip())], limit=1)
                         if not debit_account:
                             # Create account if doesn't exist
                             try:
@@ -614,7 +617,7 @@ class SalaryPaymentImport(models.Model):
                     
                     # Priority 2: If Column D has account code, use that account
                     elif line.credit and line.credit.strip():
-                        credit_account = self.env['account.account'].search([('code', '=', line.credit.strip())], limit=1)
+                        credit_account = self.env['account.account'].sudo().search([('code', '=', line.credit.strip())], limit=1)
                         if not credit_account:
                             # Create account if doesn't exist
                             try:
