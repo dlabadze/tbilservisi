@@ -21,6 +21,9 @@
             <xpath expr="//field[@name='currency_type']" position="attributes">
                 <attribute name="invisible">True</attribute>
             </xpath>
+            <xpath expr="//field[@name='delivery_date']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
             <xpath expr="//field[@name='currency_rate']" position="attributes">
                 <attribute name="invisible">True</attribute>
             </xpath>

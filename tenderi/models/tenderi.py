@@ -1,5 +1,6 @@
 from odoo import models, fields, api
-
+import logging
+_logger = logging.getLogger(__name__)
 
 class Tenderi(models.Model):
     _name = 'tenderi'
@@ -21,7 +22,7 @@ class Tenderi(models.Model):
         ('შეწყვეტილია', 'შეწყვეტილია'),
         ('ხელშეკრულება დადებულია', 'ხელშეკრულება დადებულია')], string='ტენდერის სტატუსი')
     tenderer = fields.Many2one('res.partner', string='პრეტენდენტი')
-    final_price = fields.Float(string='საბოლოო ღირებულება')
+    final_price = fields.Float(string='საბოლოო ღირებულება', compute="_compute_final_price_for_plan", store=True)
     funding_year = fields.Char(string='დაფინანსების წელი')
     shesyidvis_safudzveli = fields.Selection([
         ('geo_tender', 'GEO ტენდერი'),
@@ -36,23 +37,37 @@ class Tenderi(models.Model):
     year_1 = fields.Char(string='წელი 1')
     year_2 = fields.Char(string='წელი 2')
     year_3 = fields.Char(string='წელი 3')
+    year_4 = fields.Char(string='წელი 4')
+    year_5 = fields.Char(string='წელი 5')
     percent_1 = fields.Float(string='პროცენტი 1')
     percent_2 = fields.Float(string='პროცენტი 2')
     percent_3 = fields.Float(string='პროცენტი 3')
+    percent_4 = fields.Float(string='პროცენტი 4')
+    percent_5 = fields.Float(string='პროცენტი 5')
 
+    @api.depends(
+    "tender_type",
+    "percent_1", "percent_2",
+    "percent_3", "percent_4", "percent_5", "estimated_cost",
+    "year_1", "year_2", "year_3", "year_4", "year_5")
     def _compute_final_price_for_plan(self):
         today_year = str(fields.Date.today().year)
-        if self.tender_type == 'მრავალ_წლიანი':
-            if today_year == self.year_1:
-                percent = self.percent_1
-            elif today_year == self.year_2:
-                percent = self.percent_2
-            elif today_year == self.year_3:
-                percent = self.percent_3
-            else:
-                percent = 0.0
-            return self.final_price * percent
-        return self.final_price or 0.0
+        for rec in self:
+            if rec.tender_type == 'მრავალ_წლიანი':
+                if today_year == rec.year_1:
+                    percent = rec.percent_1
+                elif today_year == rec.year_2:
+                    percent = rec.percent_2
+                elif today_year == rec.year_3:
+                    percent = rec.percent_3
+                elif today_year == rec.year_4:
+                    percent = rec.percent_4
+                elif today_year == rec.year_5:
+                    percent = rec.percent_5
+                else:
+                    percent = 0.0
+                rec.final_price = rec.estimated_cost * percent
+            else: rec.final_price = rec.estimated_cost or 0.0
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -63,11 +78,11 @@ class Tenderi(models.Model):
         }
         records = super().create(vals_list)
         for rec in records:
+            final_price = rec.final_price
             if rec.tender_status not in add_statuses:
                 continue
             if not rec.purchase_plan_line_id:
                 continue
-            final_price = rec._compute_final_price_for_plan()
             rec.purchase_plan_line_id.tender_amount = (rec.purchase_plan_line_id.tender_amount or 0.0) + final_price
             rec.amount_in_plan_line = True
         return records
@@ -79,17 +94,17 @@ class Tenderi(models.Model):
             'მიმდინარეობს ხელშეკრულების მომზადება',
         }
         subtract_statuses = {'ხელშეკრულება დადებულია'}
-
         old_status_by_id = {}
         if 'tender_status' in vals:
             old_status_by_id = {rec.id: rec.tender_status for rec in self}
 
         res = super().write(vals)
-
-        if 'tender_status' not in vals:
-            return res
+        # if 'tender_status' not in vals:
+        #     return res
 
         for rec in self:
+            final_price = rec.final_price
+            _logger.info(f"{final_price}!!!!!!!!!")
             old_status = old_status_by_id.get(rec.id)
             new_status = rec.tender_status
             if old_status == new_status:
@@ -97,13 +112,12 @@ class Tenderi(models.Model):
             if not rec.purchase_plan_line_id:
                 continue
             
-            final_price = rec._compute_final_price_for_plan()
             plan_line = rec.purchase_plan_line_id
 
             if new_status in add_statuses and not rec.amount_in_plan_line:
                 plan_line.tender_amount = (plan_line.tender_amount or 0.0) + final_price
                 rec.amount_in_plan_line = True
-            elif new_status == False and rec.amount_in_plan_line:
+            elif new_status in subtract_statuses and rec.amount_in_plan_line:
                 plan_line.tender_amount = (plan_line.tender_amount or 0.0) - final_price
                 rec.amount_in_plan_line = False
 

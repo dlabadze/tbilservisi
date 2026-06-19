@@ -17,7 +17,7 @@ class PurchaseRequisition(models.Model):
         selection=[
             ('1', 'კონსოლიდირებული შესყიდვა'),
             ('2', 'გამარტივებული შესყიდვა'),
-            ('3', 'ელექტრონული'),
+            ('3', 'ელექტრონული ტენდერი'),
             ('4', 'კონკურსი'),
             ('5', 'სპეც. წესი (გამარტივებული)'),
             ('6', 'სპეც. წესი (GEO ტენდერი)'),
@@ -57,6 +57,8 @@ class PurchaseRequisition(models.Model):
     percentage_5 = fields.Float(string='პროცენტი', digits=(5, 2))
     department_id = fields.Many2one('hr.department', string='სამსახური')
     spa_or_cmr_number = fields.Char(string='SPA ან CMR ნომერი')
+    basis = fields.Char(string='CPV კოდი')
+
 
     @api.constrains('percentage_1', 'percentage_2', 'percentage_3')
     def _check_percentages_sum(self):
@@ -68,6 +70,80 @@ class PurchaseRequisition(models.Model):
                     _('პროცენტების ჯამი არუნდა აღემატებოდეს 100%-ს! '
                       f'მიმდინარე ჯამი: {total:.2f}%')
                 )
+
+    @api.model
+    def default_get(self, fields_list):
+        defaults = super().default_get(fields_list)
+        if 'vat_included' in fields_list:
+            defaults.setdefault('vat_included', 'კი')
+        if 'contract_status' in fields_list:
+            defaults.setdefault('contract_status', 'მიმდინარე')
+        return defaults
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for rec in records:
+            if not rec.line_ids:
+                continue
+            line_vals = {}
+            if rec.purchase_plan_id:
+                line_vals['purchase_plan_id'] = rec.purchase_plan_id.id
+            if rec.purchase_plan_line_id:
+                line_vals['purchase_plan_line_id'] = rec.purchase_plan_line_id.id
+            if rec.delivery_type == 'მოკლევადიანი':
+                line_vals['total_amount'] = rec.contract_amount or 0.0
+                line_vals['price_unit'] = rec.contract_amount or 0.0
+            elif rec.delivery_type == 'გრძელვადიანი':
+                computed = (rec.contract_amount or 0.0) * rec._current_year_fraction()
+                line_vals['total_amount'] = computed
+                line_vals['price_unit'] = computed
+            if line_vals:
+                rec.line_ids.write(line_vals)
+        return records
+
+    def _current_year_fraction(self):
+        year = fields.Date.context_today(self).year
+        slots = (
+            (self.date_1, self.percentage_1),
+            (self.date_2, self.percentage_2),
+            (self.date_3, self.percentage_3),
+            (self.date_4, self.percentage_4),
+            (self.date_5, self.percentage_5),
+        )
+        for date_val, pct_val in slots:
+            if not date_val:
+                continue
+            m = re.search(r'\b(19|20)\d{2}\b', str(date_val))
+            if m and int(m.group(0)) == year:
+                p = float(pct_val or 0.0)
+                return p / 100.0 if p > 1.0 else p
+        return 0.0
+
+    @api.onchange(
+        'contract_amount', 'delivery_type',
+        'date_1', 'date_2', 'date_3', 'date_4', 'date_5',
+        'percentage_1', 'percentage_2', 'percentage_3', 'percentage_4', 'percentage_5',
+    )
+    def _onchange_contract_amount_to_lines(self):
+        for rec in self:
+            if rec.delivery_type == 'მოკლევადიანი':
+                total = rec.contract_amount or 0.0
+            elif rec.delivery_type == 'გრძელვადიანი':
+                total = (rec.contract_amount or 0.0) * rec._current_year_fraction()
+            else:
+                total = 0.0
+            for line in rec.line_ids:
+                line.total_amount = total
+                line.price_unit = total
+
+    @api.onchange('purchase_plan_id', 'purchase_plan_line_id')
+    def _onchange_purchase_plan_propagate(self):
+        
+        for rec in self:
+            for line in rec.line_ids:
+                line.purchase_plan_id = rec.purchase_plan_id
+                line.purchase_plan_line_id = rec.purchase_plan_line_id
 
     def write(self, vals):
         res = super().write(vals)
@@ -129,19 +205,7 @@ class PurchaseRequisitionLine(models.Model):
     def _pcon_line_contribution(self):
         """Amount that rolls into purchase.plan.line pcon_am for this requisition line."""
         self.ensure_one()
-        req = self.requisition_id
-        line_total = self.line_total or 0.0
-        if not req or req.delivery_type != 'გრძელვადიანი':
-            return line_total
-        base = line_total
-        if not base and self.total_amount:
-            base = float(self.total_amount)
-        if not base:
-            return 0.0
-        fraction = self._long_term_fraction_for_current_year(req)
-        if fraction is None:
-            return 0.0
-        return base * fraction
+        return float(self.total_amount or 0.0)
 
     @api.model
     def _recompute_plan_line_pcon_am(self, plan_line_id):

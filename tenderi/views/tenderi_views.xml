@@ -63,6 +63,18 @@
                                 <span class="mx-2">-</span>
                                 <field name="percent_3" widget="percentage" class="oe_inline"/>
                             </div>
+                            <label for="year_4" string="წელი 4 - პროცენტი 4" invisible="tender_type != 'მრავალ_წლიანი'"/>
+                            <div class="o_row" invisible="tender_type != 'მრავალ_წლიანი'">
+                                <field name="year_4" class="oe_inline"/>
+                                <span class="mx-2">-</span>
+                                <field name="percent_4" widget="percentage" class="oe_inline"/>
+                            </div>
+                            <label for="year_5" string="წელი 5 - პროცენტი 5" invisible="tender_type != 'მრავალ_წლიანი'"/>
+                            <div class="o_row" invisible="tender_type != 'მრავალ_წლიანი'">
+                                <field name="year_5" class="oe_inline"/>
+                                <span class="mx-2">-</span>
+                                <field name="percent_5" widget="percentage" class="oe_inline"/>
+                            </div>
                             <field name="tender_notice_number"/>
                             <field name="publicaiton_date"/>
                             <field name="open_date"/>

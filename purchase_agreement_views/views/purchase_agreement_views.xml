@@ -9,6 +9,7 @@
                 <field name="contract_number"/>
                 <field name="spa_or_cmr_number"/>
                 <field name="contract_amount"/>
+                <field name="basis"/>
             </xpath>
         </field>
     </record>

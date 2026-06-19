@@ -6,8 +6,10 @@ import pandas as pd
 from odoo import models, fields, _
 from odoo.exceptions import UserError
 
+_DEPT_COL = '__dept_col__'  # sentinel for position-based column Y (index 24)
+
 # (ექსელის სათაური, purchase.requisition ველი, ტიპი)
-# char | float | date | bool | selection | text
+# char | float | date | bool | selection | text | department
 # supplier_id_code: ექსელიდან VAT → res.partner ძებნა → vendor_id (არ იწერება supplier_id_code, relatedა)
 PURCHASE_REQUISITION_IMPORT_MAP = (
     ('Start Date', 'date_start', 'date'),
@@ -29,6 +31,8 @@ PURCHASE_REQUISITION_IMPORT_MAP = (
     ('დღგს ჩათვლით?', 'vat_included', 'selection'),
     ('ხელშეკრულების სტატუსი', 'contract_status', 'selection'),
     ('შენიშვნა', 'notes', 'text'),
+    ('CPV კოდი', 'basis', 'char'),
+    (_DEPT_COL, 'department_id', 'department'),
 )
 
 
@@ -78,6 +82,15 @@ class ImportPurchaseRequisitionWizard(models.TransientModel):
                 'vat': vat,
             })
         return partner.id
+
+    def _resolve_department_id(self, raw):
+        name = self._cell_str(raw)
+        if not name:
+            return False
+        dept = self.env['hr.department'].search([('name', '=', name)], limit=1)
+        if not dept:
+            dept = self.env['hr.department'].search([('name', 'ilike', name)], limit=1)
+        return dept.id if dept else False
 
     def _resolve_selection_value(self, field_name, raw):
         """ექსელის ტექსტი ან გასაღები → Selection key."""
@@ -144,6 +157,10 @@ class ImportPurchaseRequisitionWizard(models.TransientModel):
                     vals[fname] = sel
             elif ftype == 'text':
                 vals[fname] = str(raw).strip() if str(raw).strip() else False
+            elif ftype == 'department':
+                dept_id = self._resolve_department_id(raw)
+                if dept_id:
+                    vals[fname] = dept_id
         vals.pop('supplier_id_code', None)
         return vals
 
@@ -169,7 +186,11 @@ class ImportPurchaseRequisitionWizard(models.TransientModel):
             raise UserError(_('ექსელი ცარიელია.'))
 
         df.columns = [str(c).strip() if c is not None else '' for c in df.columns]
-        excel_headers = [h for h, _f, _t in PURCHASE_REQUISITION_IMPORT_MAP]
+        if len(df.columns) > 24:
+            cols = list(df.columns)
+            cols[24] = _DEPT_COL
+            df.columns = cols
+        excel_headers = [h for h, _f, _t in PURCHASE_REQUISITION_IMPORT_MAP if h != _DEPT_COL]
         missing = [h for h in excel_headers if h not in df.columns]
         if missing:
             raise UserError(
@@ -177,14 +198,37 @@ class ImportPurchaseRequisitionWizard(models.TransientModel):
             )
 
         Requisition = self.env['purchase.requisition']
+        RequisitionLine = self.env['purchase.requisition.line']
         company = self.env.company
+        default_product = self.env['product.product'].search(
+            [('default_code', '=', '04923')], limit=1
+        )
         created = 0
         for _idx, row in df.iterrows():
             vals = self._row_to_vals(row, df.columns)
             if not vals:
                 continue
             vals.setdefault('company_id', company.id)
-            Requisition.create(vals)
+            requisition = Requisition.create(vals)
+            if default_product:
+                if requisition.delivery_type == 'მოკლევადიანი':
+                    total_amount = requisition.contract_amount or 0.0
+                elif requisition.delivery_type == 'გრძელვადიანი':
+                    total_amount = (requisition.contract_amount or 0.0) * requisition._current_year_fraction()
+                else:
+                    total_amount = 0.0
+                line_vals = {
+                    'requisition_id': requisition.id,
+                    'product_id': default_product.id,
+                    'product_qty': 1,
+                    'total_amount': total_amount,
+                    'price_unit': total_amount,
+                }
+                if requisition.purchase_plan_id:
+                    line_vals['purchase_plan_id'] = requisition.purchase_plan_id.id
+                if requisition.purchase_plan_line_id:
+                    line_vals['purchase_plan_line_id'] = requisition.purchase_plan_line_id.id
+                RequisitionLine.create(line_vals)
             created += 1
 
         if not created:
