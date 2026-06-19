@@ -52,9 +52,12 @@ class StockMove(models.Model):
 
     def _get_debit_correction_analytic_distribution(self):
         self.ensure_one()
-        if self.move_account_corr_id:
-            return self.analytic_distribution_corr or self.picking_id.analytic_distribution_corr
-        return self.picking_id.analytic_distribution_corr
+        merged = {}
+        if self.picking_id and self.picking_id.analytic_distribution_corr:
+            merged.update(self.picking_id.analytic_distribution_corr)
+        if self.analytic_distribution_corr:
+            merged.update(self.analytic_distribution_corr)
+        return merged or False
 
     def _get_debit_correction_basis_vals(self):
         self.ensure_one()

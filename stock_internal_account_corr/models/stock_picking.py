@@ -81,13 +81,16 @@ class StockPicking(models.Model):
                 moves_without_lines |= move
                 continue
 
-            analytic_distribution = move._get_debit_correction_analytic_distribution()
-            vals = {'account_id': correction_account.id}
-            if analytic_distribution:
-                vals['analytic_distribution'] = analytic_distribution
-
-            move_lines.with_context(check_move_validity=False).write(vals)
-            corrected_lines |= move_lines
+            base_distribution = move._get_debit_correction_analytic_distribution() or {}
+            for line in move_lines:
+                line_vals = {'account_id': correction_account.id}
+                merged = {**base_distribution}
+                if line.analytic_distribution:
+                    merged.update(line.analytic_distribution)
+                if merged:
+                    line_vals['analytic_distribution'] = merged
+                line.with_context(check_move_validity=False).write(line_vals)
+                corrected_lines |= line
 
         basis_vals = self._get_account_move_basis_vals_corr()
         if basis_vals and corrected_lines:
