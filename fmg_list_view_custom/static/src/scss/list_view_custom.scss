@@ -1,3 +1,36 @@
+// ─── SHARED: Sticky first 2 columns (opt-in via "o_sticky_cols_2" on <list>) ───
+// Freezes column 1 ("Open" button) and column 2 (e.g. CPV code) while the
+// table scrolls horizontally. Column 2's left offset is computed at runtime
+// by sticky_columns.js (column 1's width isn't fixed) and stored in the
+// --o-sticky-col1-w custom property on the table.
+.o_sticky_cols_2 .o_list_table {
+
+    thead th:nth-child(1),
+    thead th:nth-child(2),
+    tbody td:nth-child(1),
+    tbody td:nth-child(2) {
+        position: sticky !important;
+        background-color: #fff;
+        z-index: 2;
+    }
+
+    thead th:nth-child(1),
+    tbody td:nth-child(1) {
+        left: 0 !important;
+    }
+
+    thead th:nth-child(2),
+    tbody td:nth-child(2) {
+        left: var(--o-sticky-col1-w, 90px) !important;
+    }
+
+    // Corner cells (sticky row + sticky column) must stay above everything else
+    thead th:nth-child(1),
+    thead th:nth-child(2) {
+        z-index: 11 !important;
+    }
+}
+
 // ─── SHARED: Sticky headers ───────────────────────────────────────────────────
 .o_list_table {
 

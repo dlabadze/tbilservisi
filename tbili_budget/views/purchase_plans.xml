@@ -30,7 +30,7 @@
                     <notebook>
                         <page string="Purchase Plan Lines">
                             <field name="line_ids">
-                                <list editable="bottom">
+                                <list editable="bottom" class="o_sticky_cols_2">
                                     <button name="action_view_purchase_plan_line_new"
                                         type="object"
                                         string="Open"
