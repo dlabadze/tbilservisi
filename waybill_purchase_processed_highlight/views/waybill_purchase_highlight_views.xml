@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_waybill_list_filtered_4_purchase_processed_highlight" model="ir.ui.view">
+        <field name="name">waybill.list.filtered.4.purchase.processed.highlight</field>
+        <field name="model">waybill</field>
+        <field name="inherit_id" ref="waybill_management_custom.view_waybill_list_filtered_4"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-warning">(mdgomareoba == 'gadatanili') or is_purchase_processed</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='mdgomareoba']" position="after">
+                <field name="is_purchase_processed" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_waybill_list_sale_processed_highlight" model="ir.ui.view">
+        <field name="name">waybill.list.sale.processed.highlight</field>
+        <field name="model">waybill</field>
+        <field name="inherit_id" ref="waybill_management_custom.view_waybill_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-warning">(mdgomareoba == 'gadatanili') or is_sale_processed</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='mdgomareoba']" position="after">
+                <field name="is_sale_processed" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
