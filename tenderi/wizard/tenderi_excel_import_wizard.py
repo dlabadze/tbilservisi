@@ -132,14 +132,6 @@ class TenderiExcelImportWizard(models.TransientModel):
                 purchase_object = purchase_object.strip()
             cpv_code = self._cell(row, COL_E)
             cpv_code = str(cpv_code).strip() if cpv_code is not None else ''
-            purchase_plan_line_id = False
-            if cpv_code:
-                purchase_plan_line = self.env['purchase.plan.line'].search(
-                    [('cpv_id.code', '=', cpv_code)],
-                    limit=1,
-                )
-                if purchase_plan_line:
-                    purchase_plan_line_id = purchase_plan_line.id
             estimated_cost = self._cell_float(row, COL_F)
             tender_notice_number = self._cell(row, COL_H)
             tender_notice_number = str(tender_notice_number).strip() if tender_notice_number is not None else ''
@@ -181,7 +173,6 @@ class TenderiExcelImportWizard(models.TransientModel):
                 'final_price': final_price,
                 'funding_year': funding_year,
                 'shesyidvis_safudzveli': shesyidvis_safudzvelis_value,
-                'purchase_plan_line_id': purchase_plan_line_id,
             }
             rec = self.env['tenderi'].create(vals)
             created.append(rec)

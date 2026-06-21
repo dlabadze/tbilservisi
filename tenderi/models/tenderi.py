@@ -27,7 +27,8 @@ class Tenderi(models.Model):
     shesyidvis_safudzveli = fields.Selection([
         ('geo_tender', 'GEO ტენდერი'),
         ('el_tender', 'ელ. ტენდერი')], string='შესყიდვის საფუძველი')
-    purchase_plan_line_id = fields.Many2one('purchase.plan.line', string='შესყიდვის გეგმის ხაზი')
+    purchase_plan_id = fields.Many2one('purchase.plan', string='შესყიდვის გეგმა')
+    purchase_plan_line_id = fields.Many2one('purchase.plan.line', string='შესყიდვის გეგმის ხაზი', domain="[('plan_id', '=', purchase_plan_id)]")
     amount_in_plan_line = fields.Boolean(string='თანხა გეგმის ხაზზე', default=False, copy=False)
     tender_type = fields.Selection([
         ('ერთ_წლიანი', 'ერთ წლიანი'),

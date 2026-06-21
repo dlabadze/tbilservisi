@@ -16,6 +16,7 @@
                 <field name="department_id"/>
                 <field name="purchase_object"/>
                 <field name="cpv_code"/>
+                <field name="purchase_plan_id"/>
                 <field name="purchase_plan_line_id"/>
                 <field name="estimated_cost"/>
                 <field name="tender_notice_number"/>
@@ -42,6 +43,7 @@
                             <field name="department_id"/>
                             <field name="purchase_object"/>
                             <field name="cpv_code"/>
+                            <field name="purchase_plan_id"/>
                             <field name="purchase_plan_line_id"/>
                             <field name="estimated_cost"/>
                             <field name="tender_type"/>

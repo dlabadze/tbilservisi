@@ -94,7 +94,7 @@ class SalaryPaymentImport(models.Model):
             if len(parts) < 2:
                 _logger.warning(f"Skipping column {self._column_letter(col_idx)} - invalid debit-credit format: {header_value}")
                 continue
-            debit_code, credit_code = parts[0], parts[1]
+            debit_code, credit_code = parts[0].replace('/', '.'), parts[1].replace('/', '.')
             # Ensure accounts exist (at least inform user if not)
             if not self._account_exists(debit_code):
                 raise UserError(_("Debit account with code %s was not found for column %s.") % (debit_code, self._column_letter(col_idx)))
@@ -300,6 +300,29 @@ class SalaryPaymentImport(models.Model):
         except Exception:
             return ''
     
+    def _get_analytic_distribution_for_partner(self, partner):
+        if not partner:
+            return False
+        employee = self.env['hr.employee'].sudo().search([
+            ('work_contact_id', '=', partner.id),
+            ('active', 'in', [True, False]),
+        ], limit=1)
+        if not employee or not employee.department_id:
+            return False
+        dept = employee.department_id
+        top_dept = dept
+        while top_dept.parent_id:
+            top_dept = top_dept.parent_id
+
+        distribution = {}
+        for name in dict.fromkeys([dept.name, top_dept.name]):  # preserves order, deduplicates
+            analytic = self.env['account.analytic.account'].sudo().search([
+                ('name', '=', name),
+            ], limit=1)
+            if analytic:
+                distribution[str(analytic.id)] = 100.0
+        return distribution or False
+
     def _account_exists(self, code):
         if not code:
             return False
@@ -391,22 +414,14 @@ class SalaryPaymentImport(models.Model):
                 if line.debit and line.debit.strip():
                     debit_account = self.env['account.account'].sudo().search([('code', '=', line.debit.strip())], limit=1)
                     if not debit_account:
-                        # Create account if doesn't exist
-                        try:
-                            debit_account = self.env['account.account'].create({
-                                'name': 'Account %s' % line.debit.strip(),
-                                'code': line.debit.strip(),
-                                'account_type': 'liability_current',
-                            })
-                        except Exception as e:
-                            _logger.error("Cannot create debit account %s: %s" % (line.debit.strip(), str(e)))
-                            counter += 1
-                            continue
-                
+                        _logger.error("Debit account %s not found" % line.debit.strip())
+                        counter += 1
+                        continue
+
                 # GET CREDIT ACCOUNT FROM COLUMN D OR E
                 credit_account = None
                 credit_partner_for_entry = None
-                
+
                 # Priority 1: If Column E has partner, use their payable account
                 if line.credit_partner_id:
                     credit_account = line.credit_partner_id.property_account_payable_id
@@ -417,47 +432,26 @@ class SalaryPaymentImport(models.Model):
                 elif line.credit and line.credit.strip():
                     credit_account = self.env['account.account'].sudo().search([('code', '=', line.credit.strip())], limit=1)
                     if not credit_account:
-                        # Create account if doesn't exist
-                        try:
-                            credit_account = self.env['account.account'].create({
-                                'name': 'Account %s' % line.credit.strip(),
-                                'code': line.credit.strip(),
-                                'account_type': 'liability_current',
-                            })
-                        except Exception as e:
-                            _logger.error("Cannot create credit account %s: %s" % (line.credit.strip(), str(e)))
-                            counter += 1
-                            continue
+                        _logger.error("Credit account %s not found" % line.credit.strip())
+                        counter += 1
+                        continue
                     credit_partner_for_entry = None
                     _logger.info("Using credit account %s without partner" % credit_account.code)
-                
+
                 # Priority 3: Fallback to debit partner's payable account
                 else:
                     credit_account = line.partner_id.property_account_payable_id
                     credit_partner_for_entry = line.partner_id
                     _logger.info("Using debit partner %s payable account as fallback" % line.partner_id.name)
-                
+
                 # Must have both accounts
                 if not debit_account or not credit_account:
                     _logger.warning("Missing accounts - Debit: %s, Credit: %s" % (debit_account, credit_account))
                     counter += 1
                     continue
-                
-                # Prepare analytic distribution for project (ONLY for debit line)
-                analytic_distribution = {}
-                if line.analytic_account_id:
-                    analytic_distribution[str(line.analytic_account_id.id)] = 100.0
-                    _logger.info(f"Analytic distribution created: {analytic_distribution}")
-                else:
-                    _logger.info("No analytic account found for line")
-                
-                # Ensure analytic distribution is properly formatted for both lines
-                if analytic_distribution:
-                    analytic_distribution_debit = analytic_distribution.copy()
-                    analytic_distribution_credit = analytic_distribution.copy()
-                else:
-                    analytic_distribution_debit = False
-                    analytic_distribution_credit = False
+
+                # Analytic from partner's employee → top-level department → analytic_account_id
+                analytic_distribution_debit = self._get_analytic_distribution_for_partner(line.partner_id)
                 
                 # Check if debit partner is a company
                 is_company_partner = line.partner_id.is_company if line.partner_id else False
@@ -492,7 +486,7 @@ class SalaryPaymentImport(models.Model):
                         (0, 0, {
                             'account_id': credit_account.id,
                             'partner_id': None if is_company_partner else (credit_partner_for_entry.id if credit_partner_for_entry else None),
-                            'analytic_distribution': False,  # NO analytic on credit line
+                            'analytic_distribution': analytic_distribution_debit,
                             'debit': 0.0,
                             'credit': amount,
                             'name': _('Payment Credit - %s%s') % (
@@ -508,7 +502,7 @@ class SalaryPaymentImport(models.Model):
                 journal_entries += move
                 successful_entries += 1
                 
-                _logger.info("Created journal entry %s: Debit %s / Credit %s for %s - Project: %s - Company Partner: %s - Analytic: %s" % (counter, debit_account.code, credit_account.code, amount, line.project_name or 'N/A', is_company_partner, analytic_distribution))
+                _logger.info("Created journal entry %s: Debit %s / Credit %s for %s - Project: %s - Company Partner: %s - Analytic: %s" % (counter, debit_account.code, credit_account.code, amount, line.project_name or 'N/A', is_company_partner, analytic_distribution_debit))
                 
             except Exception as e:
                 _logger.error("Error creating journal entry for line %s: %s" % (counter, str(e)))
@@ -590,16 +584,8 @@ class SalaryPaymentImport(models.Model):
                     if line.debit and line.debit.strip():
                         debit_account = self.env['account.account'].sudo().search([('code', '=', line.debit.strip())], limit=1)
                         if not debit_account:
-                            # Create account if doesn't exist
-                            try:
-                                debit_account = self.env['account.account'].create({
-                                    'name': 'Account %s' % line.debit.strip(),
-                                    'code': line.debit.strip(),
-                                    'account_type': 'liability_current',
-                                })
-                            except Exception as e:
-                                _logger.error("Cannot create debit account %s: %s" % (line.debit.strip(), str(e)))
-                                continue
+                            _logger.error("Debit account %s not found" % line.debit.strip())
+                            continue
                     
                     if not debit_account:
                         _logger.warning("Missing debit account for line %s" % line.id)
@@ -619,16 +605,8 @@ class SalaryPaymentImport(models.Model):
                     elif line.credit and line.credit.strip():
                         credit_account = self.env['account.account'].sudo().search([('code', '=', line.credit.strip())], limit=1)
                         if not credit_account:
-                            # Create account if doesn't exist
-                            try:
-                                credit_account = self.env['account.account'].create({
-                                    'name': 'Account %s' % line.credit.strip(),
-                                    'code': line.credit.strip(),
-                                    'account_type': 'liability_current',
-                                })
-                            except Exception as e:
-                                _logger.error("Cannot create credit account %s: %s" % (line.credit.strip(), str(e)))
-                                continue
+                            _logger.error("Credit account %s not found" % line.credit.strip())
+                            continue
                         credit_partner_for_entry = None
                         _logger.info("Using credit account %s without partner" % credit_account.code)
                     
@@ -643,19 +621,8 @@ class SalaryPaymentImport(models.Model):
                         _logger.warning("Missing accounts - Debit: %s, Credit: %s" % (debit_account, credit_account))
                         continue
                     
-                    # Prepare analytic distribution for project (ONLY for debit line)
-                    analytic_distribution = {}
-                    if line.analytic_account_id:
-                        analytic_distribution[str(line.analytic_account_id.id)] = 100.0
-                        _logger.info(f"Analytic distribution created: {analytic_distribution}")
-                    
-                    # Ensure analytic distribution is properly formatted
-                    if analytic_distribution:
-                        analytic_distribution_debit = analytic_distribution.copy()
-                        analytic_distribution_credit = False
-                    else:
-                        analytic_distribution_debit = False
-                        analytic_distribution_credit = False
+                    # Analytic from partner's employee → top-level department → analytic_account_id
+                    analytic_distribution_debit = self._get_analytic_distribution_for_partner(line.partner_id)
                     
                     # Set partner_id based on account code: only if account code is "3139" or "3323"
                     # For debit line
@@ -695,7 +662,7 @@ class SalaryPaymentImport(models.Model):
                     all_move_lines.append((0, 0, {
                         'account_id': credit_account.id,
                         'partner_id': credit_partner_id,
-                        'analytic_distribution': False,
+                        'analytic_distribution': analytic_distribution_debit,
                         'debit': 0.0,
                         'credit': amount,
                         'name': _('Payment Credit - %s%s') % (

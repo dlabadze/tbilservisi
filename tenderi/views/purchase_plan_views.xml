@@ -15,4 +15,16 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_purchase_plan_line_list_inherit_tenderi" model="ir.ui.view">
+        <field name="name">purchase.plan.line.list.inherit.tenderi</field>
+        <field name="model">purchase.plan.line</field>
+        <field name="inherit_id" ref="tbili_budget.view_purchase_plan_line_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="purchase_plan_type"/>
+                <field name="with_preiskuranti"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
