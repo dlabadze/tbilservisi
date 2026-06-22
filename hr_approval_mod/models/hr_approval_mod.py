@@ -1,6 +1,7 @@
 from odoo import models, fields, api, Command
 from odoo.exceptions import UserError
 from datetime import datetime, time, timedelta
+from lxml import etree
 
 
 class ApprovalCategory(models.Model):
@@ -15,6 +16,32 @@ class ApprovalCategory(models.Model):
 
 class ApprovalRequest(models.Model):
     _inherit = 'approval.request'
+
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        res = super().fields_view_get(view_id=view_id, view_type=view_type, toolbar=toolbar, submenu=submenu)
+        arch = res.get('arch')
+        if not arch:
+            return res
+
+        try:
+            doc = etree.fromstring(arch)
+        except Exception:
+            return res
+
+        removed = False
+        for field_node in doc.xpath("//field[@name]"):
+            field_name = field_node.get('name')
+            if field_name and field_name.startswith('x_studio_') and field_name not in self._fields:
+                parent = field_node.getparent()
+                if parent is not None:
+                    parent.remove(field_node)
+                    removed = True
+
+        if removed:
+            res['arch'] = etree.tostring(doc, encoding='unicode')
+
+        return res
 
     def init(self):
         # Ensure required columns exist before FK checks in mixed install/upgrade flows.
