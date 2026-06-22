@@ -17,7 +17,7 @@
         <field name="model">collective.change.position</field>
         <field name="inherit_id" ref="collective_leave.collective_change_position_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@string='მიმდინარე მდგომარეობა']//field[@name='job_id']" position="after">
+            <xpath expr="//field[@name='parent_department_id']/ancestor::group[1]/field[@name='job_id']" position="after">
                 <field name="brdzaneba_safudzveli"/>
             </xpath>
         </field>
@@ -28,7 +28,7 @@
         <field name="model">collective.danishvna</field>
         <field name="inherit_id" ref="collective_leave.collective_danishvna_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@string='მიმდინარე მდგომარეობა']//field[@name='job_id']" position="after">
+            <xpath expr="//field[@name='parent_department_id']/ancestor::group[1]/field[@name='job_id']" position="after">
                 <field name="brdzaneba_safudzveli"/>
             </xpath>
         </field>
