@@ -10,15 +10,23 @@ class ApprovalRequest(models.Model):
         category_model = self.env['approval.category'].sudo()
 
         temporary = category_model.search([
-            '|',
-            ('name', 'ilike', 'დროებით'),
-            ('name', 'ilike', 'დროებითი'),
+            ('name', 'in', ['დანიშვნა დროებით', 'დანიშვნა დროებითი'])
         ], limit=1)
+        if not temporary:
+            temporary = category_model.search([
+                '|',
+                ('name', 'ilike', 'დროებით'),
+                ('name', 'ilike', 'დროებითი'),
+            ], limit=1)
 
         appointment = category_model.search([
-            ('name', 'ilike', 'დანიშვნა'),
-            ('id', '!=', temporary.id if temporary else 0),
+            ('name', '=', 'დანიშვნა'),
         ], limit=1)
+        if not appointment:
+            appointment = category_model.search([
+                ('name', 'ilike', 'დანიშვნა'),
+                ('id', '!=', temporary.id if temporary else 0),
+            ], limit=1)
 
         return appointment.id if appointment else False, temporary.id if temporary else False
 
@@ -39,6 +47,9 @@ class ApprovalRequest(models.Model):
                 new_expr = f"category_id != {appointment_id}"
                 if button.get('invisible') != new_expr:
                     button.set('invisible', new_expr)
+                    changed = True
+                if button.get('string') != 'დანიშვნა':
+                    button.set('string', 'დანიშვნა')
                     changed = True
             elif button_name == '1403':
                 new_expr = f"category_id != {temporary_id}"
