@@ -17,6 +17,10 @@ class ApprovalRequest(models.Model):
     _inherit = 'approval.request'
 
     has_brdzaneba = fields.Selection(related="category_id.has_brdzaneba")
+    brdzaneba_kind = fields.Selection([
+        ('appointment', 'დანიშვნა'),
+        ('temporary_appointment', 'დანიშვნა დროებით'),
+    ], string="ბრძანების ტიპი", compute='_compute_brdzaneba_kind', store=False)
 
     brdzaneba_date = fields.Date(string="ბრძანების თარიღი")
     brdzaneba_employee_id = fields.Many2one('hr.employee', string="თანამშრომელი")
@@ -40,6 +44,17 @@ class ApprovalRequest(models.Model):
         store=True,
         readonly=False,
     )
+
+    @api.depends('category_id')
+    def _compute_brdzaneba_kind(self):
+        for rec in self:
+            category_name = (rec.category_id.name or '').strip() if rec.category_id else ''
+            if category_name == 'დანიშვნა':
+                rec.brdzaneba_kind = 'appointment'
+            elif category_name == 'დანიშვნა დროებით':
+                rec.brdzaneba_kind = 'temporary_appointment'
+            else:
+                rec.brdzaneba_kind = False
 
     @api.onchange('release_date', 'category_id')
     def _onchange_end_date(self):
