@@ -111,12 +111,13 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
         if not date_chunks:
             raise UserError("არჩეული პერიოდი არასწორია.")
 
+        session = requests.Session()
         for op_start, op_end in date_chunks:
             _logger.info("Processing date chunk: %s to %s", op_start, op_end)
             
-            # Widen registration dates to ensure we catch invoices registered slightly outside the month
+            # Widen registration dates; +2 months on end catches May-op invoices declared in June
             reg_start = op_start - relativedelta(months=1)
-            reg_end = op_end + relativedelta(months=1)
+            reg_end = op_end + relativedelta(months=2)
 
             # Prepare your SOAP request
             url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
@@ -147,10 +148,10 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
 
             _logger.info("Sending SOAP request to %s for period %s - %s", url, op_start, op_end)
             try:
-                response = requests.post(url, headers=headers, data=body, timeout=60)
+                response = session.post(url, headers=headers, data=body, timeout=60)
                 if response.status_code == 200:
                     _logger.info("SOAP request successful for period %s - %s", op_start, op_end)
-                    self._process_response(response.text)  # Process the response
+                    self._process_response(response.text, session)  # Process the response
                 else:
                     _logger.error("SOAP request failed with status %s for period %s - %s: %s", response.status_code, op_start, op_end, response.text)
                     raise UserError(f"RS.GE-დან მონაცემების წამოღება ვერ მოხერხდა პერიოდისთვის {op_start} - {op_end}. სტატუსი: {response.status_code}")
@@ -158,7 +159,10 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
                 _logger.error("Request error for period %s - %s: %s", op_start, op_end, e)
                 raise UserError(f"RS.GE-სთან კავშირი გაწყდა პერიოდისთვის {op_start} - {op_end}. შეცდომა: {e}")
 
-    def _process_response(self, response_text):
+    def _process_response(self, response_text, session=None):
+        if session is None:
+            session = requests.Session()
+
         root = ET.fromstring(response_text)
         namespaces = {
             'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
@@ -200,24 +204,31 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
                 'status': invoice.find('STATUS').text if invoice.find('STATUS') is not None else '',
             }
             
-            _logger.info("Processing Invoice: %s", invoice_info)
             invoice_data.append(invoice_info)
         
+        if not invoice_data:
+            return
+
         df_invoices = pd.DataFrame(invoice_data)
+
+        # Pre-fetch all existing invoice IDs for this batch in a single query
+        all_invoice_ids = df_invoices['Invoice ID'].tolist()
+        existing_ids = set(
+            self.env['faqturi'].search([('invoice_id', 'in', all_invoice_ids)]).mapped('invoice_id')
+        )
 
         # Authenticate once for all invoices instead of once per invoice
         user_id = self.chek(self.rs_acc, self.rs_pass)
-        
+
+        commit_counter = 0
+
         for index, row in df_invoices.iterrows():
-            waybill_type = 'seller'  # Adjust this based on your logic
-        
-            # Check if the invoice already exists in the system
-            existing_invoice = self.env['faqturi'].search([('invoice_id', '=', row['Invoice ID'])], limit=1)
-        
-            if existing_invoice:
+            waybill_type = 'seller'
+
+            if row['Invoice ID'] in existing_ids:
                 _logger.info("Invoice ID %s already exists. Skipping creation.", row['Invoice ID'])
-                continue  # Skip to the next invoice
-        
+                continue
+
             # Create a new invoice if it doesn't exist
             faqturi_record = self.env['faqturi'].create({
                 'invoice_id': row['Invoice ID'],
@@ -236,16 +247,12 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
         
             _logger.info("Created new Invoice ID: %s", faqturi_record.invoice_id)
 
-    # Fetch and process invoice lines...
-    # (Rest of your existing logic for fetching and processing invoice lines)
-
             url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
             headers = {
                 "Content-Type": "text/xml; charset=utf-8",
                 "SOAPAction": "http://tempuri.org/get_invoice_desc"
             }
-            
-    
+
             body = f"""<?xml version="1.0" encoding="utf-8"?>
                 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
                                xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
@@ -259,51 +266,53 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
                     </get_invoice_desc>
                   </soap:Body>
                 </soap:Envelope>"""
-    
-            response = requests.post(url, headers=headers, data=body)
+
+            response = session.post(url, headers=headers, data=body)
             line_root = ET.fromstring(response.text)
             line_namespaces = {
                 'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
                 'diffgr': 'urn:schemas-microsoft-com:xml-diffgram-v1',
                 'xmlns': '',
             }
-    
+
             line_paths = [
                 './/diffgr:diffgram//DocumentElement/invoices_descs',
                 './/diffgr:diffgram//invoices_descs',
                 './/DocumentElement/invoices_descs',
                 './/invoices_descs'
             ]
-    
+
             lines = []
             for path in line_paths:
                 lines = line_root.findall(path, line_namespaces)
                 if lines:
                     break
-    
+
             if not lines:
                 _logger.error(f"No invoice lines found for Invoice ID: {faqturi_record.invoice_id}")
                 continue
-    
+
+            lines_to_create = []
             for line in lines:
+                lines_to_create.append({
+                    'faqturi_id': faqturi_record.id,
+                    'GOODS': line.find('GOODS').text if line.find('GOODS') is not None else '',
+                    'G_UNIT': line.find('G_UNIT').text if line.find('G_UNIT') is not None else '',
+                    'G_NUMBER': float(line.find('G_NUMBER').text) if line.find('G_NUMBER') is not None else 0.0,
+                    'FULL_AMOUNT': float(line.find('FULL_AMOUNT').text) if line.find('FULL_AMOUNT') is not None else 0.0,
+                    'DRG_AMOUNT': float(line.find('DRG_AMOUNT').text) if line.find('DRG_AMOUNT') is not None else 0.0,
+                    'AKCIS_ID': int(line.find('AKCIS_ID').text) if line.find('AKCIS_ID') is not None else 0,
+                    'VAT_TYPE': int(line.find('VAT_TYPE').text) if line.find('VAT_TYPE') is not None else 0,
+                    'SDRG_AMOUNT': float(line.find('SDRG_AMOUNT').text) if line.find('SDRG_AMOUNT') is not None else 0.0,
+                })
+            if lines_to_create:
                 try:
-                    self.env['faqtura.line'].create({
-                        'faqturi_id': faqturi_record.id,
-                        'GOODS': line.find('GOODS').text if line.find('GOODS') is not None else '',
-                        'G_UNIT': line.find('G_UNIT').text if line.find('G_UNIT') is not None else '',
-                        'G_NUMBER': float(line.find('G_NUMBER').text) if line.find('G_NUMBER') is not None else 0.0,
-                        'FULL_AMOUNT': float(line.find('FULL_AMOUNT').text) if line.find('FULL_AMOUNT') is not None else 0.0,
-                        'DRG_AMOUNT': float(line.find('DRG_AMOUNT').text) if line.find('DRG_AMOUNT') is not None else 0.0,
-                        'AKCIS_ID': int(line.find('AKCIS_ID').text) if line.find('AKCIS_ID') is not None else 0,
-                        'VAT_TYPE': int(line.find('VAT_TYPE').text) if line.find('VAT_TYPE') is not None else 0,
-                        'SDRG_AMOUNT': float(line.find('SDRG_AMOUNT').text) if line.find('SDRG_AMOUNT') is not None else 0.0,
-                    })
+                    self.env['faqtura.line'].create(lines_to_create)
                 except Exception as e:
-                    _logger.error(f"Error creating faqtura.line: {e}")
-                    continue
-    
+                    _logger.error(f"Error creating faqtura.line batch for seller Invoice ID {faqturi_record.invoice_id}: {e}")
+
             _logger.info("Processed invoice lines for Invoice ID: %s", faqturi_record.invoice_id)
-    
+
             soap_body = f"""<?xml version="1.0" encoding="utf-8"?>
             <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -317,63 +326,49 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
                 </get_ntos_invoices_inv_nos>
               </soap:Body>
             </soap:Envelope>"""
-            
-            # Request headers
+
             headers = {
                 "Content-Type": "text/xml; charset=utf-8",
                 "SOAPAction": "http://tempuri.org/get_ntos_invoices_inv_nos",
             }
-            
-            # Send SOAP request
-            response = requests.post(
+
+            response = session.post(
                 "https://www.revenue.mof.ge/ntosservice/ntosservice.asmx",
                 data=soap_body,
                 headers=headers
             )
             response_content = response.content.decode('utf-8')
-            
-            
-            # Parse the XML string
+
             root = ET.fromstring(response_content)
-            
-            # Find the OVERHEAD_NO and OVERHEAD_DT_STR elements
+
             namespaces = {
                 'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
                 'diffgr': 'urn:schemas-microsoft-com:xml-diffgram-v1'
             }
-            
-            
+
             overhead_no_elem = root.find('.//ntos_invoices_inv_nos/OVERHEAD_NO', namespaces)
             overhead_dt_str_elem = root.find('.//ntos_invoices_inv_nos/OVERHEAD_DT_STR', namespaces)
-            
+
             overhead_no = overhead_no_elem.text if overhead_no_elem is not None else None
             overhead_dt_str = overhead_dt_str_elem.text if overhead_dt_str_elem is not None else None
-            
-            # Create a pandas DataFrame
+
             df = pd.DataFrame({
                 'OVERHEAD_NO': [overhead_no],
                 'OVERHEAD_DT_STR': [overhead_dt_str]
             })
-            
-            # Convert the 'OVERHEAD_DT_STR' column from DD.MM.YYYY to Odoo datetime format
+
             if 'OVERHEAD_DT_STR' in df and df['OVERHEAD_DT_STR'].notnull().any():
                 try:
-                    # Convert the date string to Odoo datetime format
                     df['OVERHEAD_DT_STR'] = pd.to_datetime(df['OVERHEAD_DT_STR'], format='%d.%m.%Y')
-                    # Format it to the required string format for Odoo datetime
-                    df['OVERHEAD_DT_STR'] = df['OVERHEAD_DT_STR'].dt.strftime('%Y-%m-%d 00:00:00')  # Set time to 00:00:00
-                    _logger.info("Converted date format in DataFrame: %s", df)
+                    df['OVERHEAD_DT_STR'] = df['OVERHEAD_DT_STR'].dt.strftime('%Y-%m-%d 00:00:00')
                 except Exception as e:
                     _logger.error("Date conversion error for Invoice ID %s: %s", faqturi_record.invoice_id, e)
-            
-            # Extract the converted values
+
             overhead_no = df['OVERHEAD_NO'].iloc[0] if not df['OVERHEAD_NO'].isnull().all() else None
             overhead_dt_str = df['OVERHEAD_DT_STR'].iloc[0] if not df['OVERHEAD_DT_STR'].isnull().all() else None
-            
-            # Check if we have both overhead_no and overhead_dt_str before creating the document record
+
             if overhead_no and overhead_dt_str:
                 try:
-                    # Create the document record
                     self.env['faqtura.document'].create({
                         'faqtura_line_id': faqturi_record.id,
                         'document_number': overhead_no,
@@ -385,7 +380,14 @@ class FaqturisGadmoweraRealizacia(models.TransientModel):
             else:
                 _logger.info("No waybill document for Invoice ID %s (invoice has no overhead number)", faqturi_record.invoice_id)
 
-    
+            # Commit every 10 invoices to save progress while minimizing overhead
+            commit_counter += 1
+            if commit_counter % 10 == 0:
+                self.env.cr.commit()
+                _logger.info("Committed seller progress, invoices processed: %s", commit_counter)
+
+        # Final commit for any remaining records
+        self.env.cr.commit()
 
 
 
@@ -562,12 +564,13 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
         if not date_chunks:
             raise UserError("არჩეული პერიოდი არასწორია.")
 
+        session = requests.Session()
         for op_start, op_end in date_chunks:
             _logger.info("Processing buyer date chunk: %s to %s", op_start, op_end)
             
-            # Widen registration dates to ensure we catch invoices registered slightly outside the month
+            # Widen registration dates; +2 months on end catches May-op invoices declared in June
             reg_start = op_start - relativedelta(months=1)
-            reg_end = op_end + relativedelta(months=1)
+            reg_end = op_end + relativedelta(months=2)
 
             # Prepare your SOAP request for buyer invoices
             url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
@@ -598,10 +601,10 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
 
             _logger.info("Sending SOAP request to %s for buyer period %s - %s", url, op_start, op_end)
             try:
-                response = requests.post(url, headers=headers, data=body, timeout=60)
+                response = session.post(url, headers=headers, data=body, timeout=60)
                 if response.status_code == 200:
                     _logger.info("SOAP request successful for buyer period %s - %s", op_start, op_end)
-                    self._process_response(response.text)  # Process the response
+                    self._process_response(response.text, session)  # Process the response
                 else:
                     _logger.error("SOAP request failed with status %s for buyer period %s - %s: %s", response.status_code, op_start, op_end, response.text)
                     raise UserError(f"RS.GE-დან მონაცემების წამოღება ვერ მოხერხდა პერიოდისთვის {op_start} - {op_end}. სტატუსი: {response.status_code}")
@@ -609,7 +612,10 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
                 _logger.error("Request error for buyer period %s - %s: %s", op_start, op_end, e)
                 raise UserError(f"RS.GE-სთან კავშირი გაწყდა პერიოდისთვის {op_start} - {op_end}. შეცდომა: {e}")
 
-    def _process_response(self, response_text):
+    def _process_response(self, response_text, session=None):
+        if session is None:
+            session = requests.Session()
+
         root = ET.fromstring(response_text)
         namespaces = {
             'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
@@ -651,23 +657,30 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
                 'status': invoice.find('STATUS').text if invoice.find('STATUS') is not None else '',
             }
             
-            _logger.info("Processing Invoice: %s", invoice_info)
             invoice_data.append(invoice_info)
         
+        if not invoice_data:
+            return
+
         df_invoices = pd.DataFrame(invoice_data)
 
-        # Authenticate once for all invoices instead of once per invoice
+        # Pre-fetch all existing invoice IDs for this batch in a single query
+        all_invoice_ids = df_invoices['Invoice ID'].tolist()
+        existing_ids = set(
+            self.env['faqturi'].search([('invoice_id', 'in', all_invoice_ids)]).mapped('invoice_id')
+        )
+
+        # Authenticate once for all invoices
         user_id = self.chek(self.rs_acc, self.rs_pass)
-        
+
+        commit_counter = 0
+
         for index, row in df_invoices.iterrows():
-            waybill_type = 'buyer'  # Adjust this based on your logic
-        
-            # Check if the invoice already exists in the system
-            existing_invoice = self.env['faqturi'].search([('invoice_id', '=', row['Invoice ID'])], limit=1)
-        
-            if existing_invoice:
+            waybill_type = 'buyer'
+
+            if row['Invoice ID'] in existing_ids:
                 _logger.info("Invoice ID %s already exists. Skipping creation.", row['Invoice ID'])
-                continue  # Skip to the next invoice
+                continue
         
             # Create a new invoice if it doesn't exist
             faqturi_record = self.env['faqturi'].create({
@@ -687,18 +700,12 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
         
             _logger.info("Created new Invoice ID: %s", faqturi_record.invoice_id)
 
-    # Fetch and process invoice lines...
-    # (Rest of your existing logic for fetching and processing invoice lines)
-
-    
-            _logger.info("Fetching line details for Invoice ID: %s", faqturi_record.invoice_id)
             url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
             headers = {
                 "Content-Type": "text/xml; charset=utf-8",
                 "SOAPAction": "http://tempuri.org/get_invoice_desc"
             }
-            
-    
+
             body = f"""<?xml version="1.0" encoding="utf-8"?>
                 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
                                xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
@@ -712,51 +719,53 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
                     </get_invoice_desc>
                   </soap:Body>
                 </soap:Envelope>"""
-    
-            response = requests.post(url, headers=headers, data=body)
+
+            response = session.post(url, headers=headers, data=body)
             line_root = ET.fromstring(response.text)
             line_namespaces = {
                 'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
                 'diffgr': 'urn:schemas-microsoft-com:xml-diffgram-v1',
                 'xmlns': '',
             }
-    
+
             line_paths = [
                 './/diffgr:diffgram//DocumentElement/invoices_descs',
                 './/diffgr:diffgram//invoices_descs',
                 './/DocumentElement/invoices_descs',
                 './/invoices_descs'
             ]
-    
+
             lines = []
             for path in line_paths:
                 lines = line_root.findall(path, line_namespaces)
                 if lines:
                     break
-    
+
             if not lines:
                 _logger.error(f"No invoice lines found for Invoice ID: {faqturi_record.invoice_id}")
                 continue
-    
+
+            lines_to_create = []
             for line in lines:
+                lines_to_create.append({
+                    'faqturi_id': faqturi_record.id,
+                    'GOODS': line.find('GOODS').text if line.find('GOODS') is not None else '',
+                    'G_UNIT': line.find('G_UNIT').text if line.find('G_UNIT') is not None else '',
+                    'G_NUMBER': float(line.find('G_NUMBER').text) if line.find('G_NUMBER') is not None else 0.0,
+                    'FULL_AMOUNT': float(line.find('FULL_AMOUNT').text) if line.find('FULL_AMOUNT') is not None else 0.0,
+                    'DRG_AMOUNT': float(line.find('DRG_AMOUNT').text) if line.find('DRG_AMOUNT') is not None else 0.0,
+                    'AKCIS_ID': int(line.find('AKCIS_ID').text) if line.find('AKCIS_ID') is not None else 0,
+                    'VAT_TYPE': int(line.find('VAT_TYPE').text) if line.find('VAT_TYPE') is not None else 0,
+                    'SDRG_AMOUNT': float(line.find('SDRG_AMOUNT').text) if line.find('SDRG_AMOUNT') is not None else 0.0,
+                })
+            if lines_to_create:
                 try:
-                    self.env['faqtura.line'].create({
-                        'faqturi_id': faqturi_record.id,
-                        'GOODS': line.find('GOODS').text if line.find('GOODS') is not None else '',
-                        'G_UNIT': line.find('G_UNIT').text if line.find('G_UNIT') is not None else '',
-                        'G_NUMBER': float(line.find('G_NUMBER').text) if line.find('G_NUMBER') is not None else 0.0,
-                        'FULL_AMOUNT': float(line.find('FULL_AMOUNT').text) if line.find('FULL_AMOUNT') is not None else 0.0,
-                        'DRG_AMOUNT': float(line.find('DRG_AMOUNT').text) if line.find('DRG_AMOUNT') is not None else 0.0,
-                        'AKCIS_ID': int(line.find('AKCIS_ID').text) if line.find('AKCIS_ID') is not None else 0,
-                        'VAT_TYPE': int(line.find('VAT_TYPE').text) if line.find('VAT_TYPE') is not None else 0,
-                        'SDRG_AMOUNT': float(line.find('SDRG_AMOUNT').text) if line.find('SDRG_AMOUNT') is not None else 0.0,
-                    })
+                    self.env['faqtura.line'].create(lines_to_create)
                 except Exception as e:
-                    _logger.error(f"Error creating faqtura.line: {e}")
-                    continue
-    
+                    _logger.error(f"Error creating faqtura.line batch for buyer Invoice ID {faqturi_record.invoice_id}: {e}")
+
             _logger.info("Processed invoice lines for Invoice ID: %s", faqturi_record.invoice_id)
-    
+
             soap_body = f"""<?xml version="1.0" encoding="utf-8"?>
             <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -770,63 +779,49 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
                 </get_ntos_invoices_inv_nos>
               </soap:Body>
             </soap:Envelope>"""
-            
-            # Request headers
+
             headers = {
                 "Content-Type": "text/xml; charset=utf-8",
                 "SOAPAction": "http://tempuri.org/get_ntos_invoices_inv_nos",
             }
-            
-            # Send SOAP request
-            response = requests.post(
+
+            response = session.post(
                 "https://www.revenue.mof.ge/ntosservice/ntosservice.asmx",
                 data=soap_body,
                 headers=headers
             )
             response_content = response.content.decode('utf-8')
-            
-            
-            # Parse the XML string
+
             root = ET.fromstring(response_content)
-            
-            # Find the OVERHEAD_NO and OVERHEAD_DT_STR elements
+
             namespaces = {
                 'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
                 'diffgr': 'urn:schemas-microsoft-com:xml-diffgram-v1'
             }
-            
-            
+
             overhead_no_elem = root.find('.//ntos_invoices_inv_nos/OVERHEAD_NO', namespaces)
             overhead_dt_str_elem = root.find('.//ntos_invoices_inv_nos/OVERHEAD_DT_STR', namespaces)
-            
+
             overhead_no = overhead_no_elem.text if overhead_no_elem is not None else None
             overhead_dt_str = overhead_dt_str_elem.text if overhead_dt_str_elem is not None else None
-            
-            # Create a pandas DataFrame
+
             df = pd.DataFrame({
                 'OVERHEAD_NO': [overhead_no],
                 'OVERHEAD_DT_STR': [overhead_dt_str]
             })
-            
-            # Convert the 'OVERHEAD_DT_STR' column from DD.MM.YYYY to Odoo datetime format
+
             if 'OVERHEAD_DT_STR' in df and df['OVERHEAD_DT_STR'].notnull().any():
                 try:
-                    # Convert the date string to Odoo datetime format
                     df['OVERHEAD_DT_STR'] = pd.to_datetime(df['OVERHEAD_DT_STR'], format='%d.%m.%Y')
-                    # Format it to the required string format for Odoo datetime
-                    df['OVERHEAD_DT_STR'] = df['OVERHEAD_DT_STR'].dt.strftime('%Y-%m-%d 00:00:00')  # Set time to 00:00:00
-                    _logger.info("Converted date format in DataFrame: %s", df)
+                    df['OVERHEAD_DT_STR'] = df['OVERHEAD_DT_STR'].dt.strftime('%Y-%m-%d 00:00:00')
                 except Exception as e:
                     _logger.error("Date conversion error for Invoice ID %s: %s", faqturi_record.invoice_id, e)
-            
-            # Extract the converted values
+
             overhead_no = df['OVERHEAD_NO'].iloc[0] if not df['OVERHEAD_NO'].isnull().all() else None
             overhead_dt_str = df['OVERHEAD_DT_STR'].iloc[0] if not df['OVERHEAD_DT_STR'].isnull().all() else None
-            
-            # Check if we have both overhead_no and overhead_dt_str before creating the document record
+
             if overhead_no and overhead_dt_str:
                 try:
-                    # Create the document record
                     self.env['faqtura.document'].create({
                         'faqtura_line_id': faqturi_record.id,
                         'document_number': overhead_no,
@@ -838,6 +833,14 @@ class FaqturisGadmoweraRealizaciaBuyer(models.TransientModel):
             else:
                 _logger.info("No waybill document for Invoice ID %s (invoice has no overhead number)", faqturi_record.invoice_id)
 
+            # Commit every 10 invoices to save progress while minimizing overhead
+            commit_counter += 1
+            if commit_counter % 10 == 0:
+                self.env.cr.commit()
+                _logger.info("Committed buyer progress, invoices processed: %s", commit_counter)
+
+        # Final commit for any remaining records
+        self.env.cr.commit()
 
 
 
