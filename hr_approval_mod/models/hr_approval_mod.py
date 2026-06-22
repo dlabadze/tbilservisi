@@ -52,6 +52,9 @@ class ApprovalRequest(models.Model):
     brdzaneba_safudzveli = fields.Text(string="საფუძველი")
     brdzaneba_salary = fields.Float(string="ხელფასი")
 
+    # Compatibility fallback for Studio-based views on replicated databases.
+    x_studio_wagecurr = fields.Many2one('res.currency', string="Wage Currency")
+
     release_date = fields.Date(
         string="გათავისუფლების თარიღი",
         store=True,
