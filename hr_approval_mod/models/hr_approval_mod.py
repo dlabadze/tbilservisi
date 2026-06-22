@@ -16,6 +16,13 @@ class ApprovalCategory(models.Model):
 class ApprovalRequest(models.Model):
     _inherit = 'approval.request'
 
+    def init(self):
+        # Ensure the column exists before FK checks in mixed install/upgrade flows.
+        self._cr.execute(
+            "ALTER TABLE approval_request "
+            "ADD COLUMN IF NOT EXISTS brdzaneba_employee_id integer"
+        )
+
     has_brdzaneba = fields.Selection(related="category_id.has_brdzaneba")
     brdzaneba_kind = fields.Selection([
         ('appointment', 'დანიშვნა'),
