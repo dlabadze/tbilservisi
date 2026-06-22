@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="collective_leave_view_form_inherit_brdzaneba_basis" model="ir.ui.view">
+        <field name="name">collective.leave.view.form.inherit.brdzaneba_basis</field>
+        <field name="model">collective.leave</field>
+        <field name="inherit_id" ref="collective_leave.collective_leave_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='leave_type_id']" position="after">
+                <field name="brdzaneba_safudzveli"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="collective_change_position_view_form_inherit_brdzaneba_basis" model="ir.ui.view">
+        <field name="name">collective.change.position.view.form.inherit.brdzaneba_basis</field>
+        <field name="model">collective.change.position</field>
+        <field name="inherit_id" ref="collective_leave.collective_change_position_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@string='მიმდინარე მდგომარეობა']//field[@name='job_id']" position="after">
+                <field name="brdzaneba_safudzveli"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="collective_danishvna_view_form_inherit_brdzaneba_basis" model="ir.ui.view">
+        <field name="name">collective.danishvna.view.form.inherit.brdzaneba_basis</field>
+        <field name="model">collective.danishvna</field>
+        <field name="inherit_id" ref="collective_leave.collective_danishvna_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@string='მიმდინარე მდგომარეობა']//field[@name='job_id']" position="after">
+                <field name="brdzaneba_safudzveli"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
