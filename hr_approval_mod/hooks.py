@@ -6,8 +6,19 @@ from odoo import SUPERUSER_ID, api
 _logger = logging.getLogger(__name__)
 
 
-def pre_init_hook(cr):
+def _extract_cr_env(first_arg):
+    if hasattr(first_arg, 'cr'):
+        # Odoo 18 passes Environment to hooks.
+        return first_arg.cr, first_arg
+    # Older hook style may pass cursor directly.
+    cr = first_arg
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    return cr, env
+
+
+def pre_init_hook(first_arg):
     """Ensure legacy DBs have the column before FK checks run on install."""
+    cr, _env = _extract_cr_env(first_arg)
     cr.execute(
         """
         SELECT 1
@@ -26,9 +37,9 @@ def _rewrite_button_invisible(arch, button_name, invisible_expr):
     return re.sub(pattern, rf'\1{invisible_expr}\3', arch)
 
 
-def post_init_hook(cr, registry):
+def post_init_hook(first_arg, registry=None):
     """Force Studio-created approval buttons to map to the correct category by name."""
-    env = api.Environment(cr, SUPERUSER_ID, {})
+    _cr, env = _extract_cr_env(first_arg)
 
     appointment_category = env['approval.category'].sudo().search([
         ('name', '=', 'დანიშვნა')
