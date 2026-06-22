@@ -732,6 +732,14 @@ class AccountMove(models.Model):
         _logger.info('Saved invoice with factura_num:', factura_num)
         return factura_num
 
+    def _is_faqtura_service_line(self, line):
+        if line.product_id:
+            return line.product_id.type == 'service'
+        return not line.unit_id and bool(line.name)
+
+    def _faqtura_service_line_amount(self, line):
+        return line.price_subtotal
+
     def save_invoice_desc_momsaxureba(self, rs_acc, rs_pass,factura_num):
         url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
         headers = {
@@ -759,18 +767,19 @@ class AccountMove(models.Model):
         }
         
         for index, line in enumerate(self.invoice_line_ids):
-            # Use header-level product_comment if available, otherwise fallback to line.name
-            product = self.product_comment if self.product_comment else line.name
-            unit_txt = line.unit_txt
-            quantity = line.quantity
-            if quantity == 0:
-                raise UserError("რაოდენობა ვერ იქნება ნულის ტოლი product: %s" % product)
-            price_unit = line.price_unit
-            amount = quantity * price_unit
+            if self._is_faqtura_service_line(line):
+                product = self.product_comment or (line.product_id.name if line.product_id else line.name)
+                quantity = 0
+                amount = self._faqtura_service_line_amount(line)
+                unit_id = 'მომსახურება'
+            else:
+                product = self.product_comment if self.product_comment else line.name
+                quantity = line.quantity
+                if quantity == 0:
+                    raise UserError("რაოდენობა ვერ იქნება ნულის ტოლი product: %s" % product)
+                amount = quantity * line.price_unit
+                unit_id = unit_id_dict.get(line.unit_id, 'მომსახურება')
             tax_id = line.tax_ids.name
-        
-            # Check if unit_id exists in the dictionary; if not, default to 'მომსახურება'
-            unit_id = unit_id_dict.get(line.unit_id, 'მომსახურება')
         
             body = f"""<?xml version="1.0" encoding="utf-8"?>
             <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -841,34 +850,25 @@ class AccountMove(models.Model):
         response = requests.post('http://www.revenue.mof.ge/ntosservice/ntosservice.asmx', data=soap_request, headers=headers)
         # Define the SOAP request
     def generate_goods_list_xml_1(self, line):
-        """Generate XML for a single line item, skipping lines with unit_id or product_id"""
-        # Skip if line has unit_id or product_id
-        if line.unit_id or line.product_id:
-            _logger.info(f'Skipping line with unit_id or product_id: {line.name}')
+        """Deprecated duplicate — kept for reference; active implementation is below."""
+        if line.product_id:
+            if line.product_id.type != 'service':
+                return None
+        elif line.unit_id:
             return None
-            
-        if not line.name:
+        if not line.name and not (line.product_id and line.product_id.name):
             return None
-                
-        quantity = line.quantity
-        if quantity == 0:
-            raise UserError("რაოდენობა ვერ იქნება ნულის ტოლი product: %s" % (line.product_id.name if line.product_id else line.name))
-            
-        price_unit = line.price_unit
-        amount = quantity * price_unit
-            
-        momsaxureba_xml = f"""
-            <goods>{line.name}</goods>
+        product_name = self.product_comment or (line.product_id.name if line.product_id else line.name)
+        amount = self._faqtura_service_line_amount(line)
+        return f"""
+            <goods>{product_name}</goods>
             <g_unit>მომსახურება</g_unit>
-            <g_number>{quantity}</g_number>
+            <g_number>0</g_number>
             <full_amount>{amount}</full_amount>
             <drg_amount>18</drg_amount>
             <aqcizi_amount>0</aqcizi_amount>
             <akciz_id>0</akciz_id>
         """
-            
-        _logger.info(f'Generated XML for line item: {line.name}')
-        return momsaxureba_xml
     def _get_error_text(self, rs_acc, rs_pass, error_code):
         """Helper method to get error text from error code"""
         soap_request = f"""
@@ -1329,22 +1329,13 @@ class AccountMove(models.Model):
         if not line.name and not (line.product_id and line.product_id.name):
             return None
 
-        quantity = line.quantity
-        if quantity == 0:
-            raise UserError("რაოდენობა ვერ იქნება ნულის ტოლი product: %s" % (line.product_id.name if line.product_id else line.name))
-
-        if self.product_comment:
-            product_name = self.product_comment
-        else:
-            product_name = line.product_id.name if line.product_id else line.name
-
-        price_unit = line.price_unit
-        amount = quantity * price_unit
+        product_name = self.product_comment or (line.product_id.name if line.product_id else line.name)
+        amount = self._faqtura_service_line_amount(line)
 
         momsaxureba_xml = f"""
             <goods>{product_name}</goods>
             <g_unit>მომსახურება</g_unit>
-            <g_number>{quantity}</g_number>
+            <g_number>0</g_number>
             <full_amount>{amount}</full_amount>
             <drg_amount>18</drg_amount>
             <aqcizi_amount>0</aqcizi_amount>
