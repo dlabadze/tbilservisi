@@ -6,6 +6,20 @@ from odoo import SUPERUSER_ID, api
 _logger = logging.getLogger(__name__)
 
 
+APPROVAL_REQUEST_COLUMN_DDL = [
+    ("brdzaneba_date", "date"),
+    ("brdzaneba_employee_id", "integer"),
+    ("brdzaneba_start_date", "date"),
+    ("brdzaneba_end_date", "date"),
+    ("brdzaneba_department_id", "integer"),
+    ("brdzaneba_job_id", "integer"),
+    ("brdzaneba_shtati", "varchar"),
+    ("brdzaneba_safudzveli", "text"),
+    ("brdzaneba_salary", "double precision"),
+    ("release_date", "date"),
+]
+
+
 def _extract_cr_env(first_arg):
     if hasattr(first_arg, 'cr'):
         # Odoo 18 passes Environment to hooks.
@@ -17,19 +31,13 @@ def _extract_cr_env(first_arg):
 
 
 def pre_init_hook(first_arg):
-    """Ensure legacy DBs have the column before FK checks run on install."""
+    """Ensure legacy DBs have required columns before FK checks run on install."""
     cr, _env = _extract_cr_env(first_arg)
-    cr.execute(
-        """
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_name = 'approval_request'
-          AND column_name = 'brdzaneba_employee_id'
-        """
-    )
-    if not cr.fetchone():
-        cr.execute("ALTER TABLE approval_request ADD COLUMN brdzaneba_employee_id integer")
-        _logger.info("Added missing column approval_request.brdzaneba_employee_id in pre_init_hook")
+    for column_name, column_type in APPROVAL_REQUEST_COLUMN_DDL:
+        cr.execute(
+            f"ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS {column_name} {column_type}"
+        )
+    _logger.info("Ensured approval_request hr_approval_mod columns exist in pre_init_hook")
 
 
 def _rewrite_button_invisible(arch, button_name, invisible_expr):

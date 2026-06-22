@@ -17,11 +17,17 @@ class ApprovalRequest(models.Model):
     _inherit = 'approval.request'
 
     def init(self):
-        # Ensure the column exists before FK checks in mixed install/upgrade flows.
-        self._cr.execute(
-            "ALTER TABLE approval_request "
-            "ADD COLUMN IF NOT EXISTS brdzaneba_employee_id integer"
-        )
+        # Ensure required columns exist before FK checks in mixed install/upgrade flows.
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_date date")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_employee_id integer")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_start_date date")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_end_date date")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_department_id integer")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_job_id integer")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_shtati varchar")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_safudzveli text")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_salary double precision")
+        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS release_date date")
 
     has_brdzaneba = fields.Selection(related="category_id.has_brdzaneba")
     brdzaneba_kind = fields.Selection([
