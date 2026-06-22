@@ -1,10 +1,19 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class CollectiveLeave(models.Model):
     _inherit = 'collective.leave'
 
     brdzaneba_safudzveli = fields.Text(string='საფუძველი')
+    marked_employee_count = fields.Integer(
+        string='მონიშნული თანამშრომლების რაოდენობა',
+        compute='_compute_marked_employee_count',
+    )
+
+    @api.depends('collective_leave_emp_ids.is_checked')
+    def _compute_marked_employee_count(self):
+        for record in self:
+            record.marked_employee_count = len(record.collective_leave_emp_ids.filtered('is_checked'))
 
     def create_approval_request(self):
         category = self.env['approval.category'].sudo().search([('name', '=', 'შვებულება პირადი')], limit=1)
@@ -27,3 +36,22 @@ class CollectiveLeave(models.Model):
                 })
                 request.sudo().action_confirm()
                 request.sudo().action_approve()
+
+
+class CollectiveLeaveEmployees(models.Model):
+    _inherit = 'collective.leave.employees'
+
+    line_number = fields.Integer(
+        string='N',
+        compute='_compute_line_number',
+    )
+
+    @api.depends('collective_leave_id', 'collective_leave_id.collective_leave_emp_ids')
+    def _compute_line_number(self):
+        for record in self:
+            record.line_number = 0
+            if not record.collective_leave_id or not record.id:
+                continue
+            ordered_lines = record.collective_leave_id.collective_leave_emp_ids.sorted(key=lambda line: line.id)
+            line_index = {line.id: idx + 1 for idx, line in enumerate(ordered_lines)}
+            record.line_number = line_index.get(record.id, 0)

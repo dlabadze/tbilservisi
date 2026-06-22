@@ -8,6 +8,10 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='leave_type_id']" position="after">
                 <field name="brdzaneba_safudzveli"/>
+                <field name="marked_employee_count" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='collective_leave_emp_ids']/list/field[@name='employee_id']" position="before">
+                <field name="line_number" readonly="1"/>
             </xpath>
         </field>
     </record>
@@ -19,6 +23,10 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_department_id']/ancestor::group[1]/field[@name='job_id']" position="after">
                 <field name="brdzaneba_safudzveli"/>
+                <field name="marked_employee_count" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='collective_ch_position_emp_ids']/list/field[@name='employee_id']" position="before">
+                <field name="line_number" readonly="1"/>
             </xpath>
         </field>
     </record>
@@ -30,6 +38,10 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_department_id']/ancestor::group[1]/field[@name='job_id']" position="after">
                 <field name="brdzaneba_safudzveli"/>
+                <field name="marked_employee_count" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='collective_danishvna_emp_ids']/list/field[@name='employee_id']" position="before">
+                <field name="line_number" readonly="1"/>
             </xpath>
         </field>
     </record>

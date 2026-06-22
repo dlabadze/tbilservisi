@@ -1,10 +1,19 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class CollectiveDanishvna(models.Model):
     _inherit = 'collective.danishvna'
 
     brdzaneba_safudzveli = fields.Text(string='საფუძველი')
+    marked_employee_count = fields.Integer(
+        string='მონიშნული თანამშრომლების რაოდენობა',
+        compute='_compute_marked_employee_count',
+    )
+
+    @api.depends('collective_danishvna_emp_ids.is_checked')
+    def _compute_marked_employee_count(self):
+        for record in self:
+            record.marked_employee_count = len(record.collective_danishvna_emp_ids.filtered('is_checked'))
 
     def create_approval_request(self):
         category = self.env['approval.category'].sudo().search([('name', '=', 'დანიშვნა')], limit=1)
@@ -28,3 +37,22 @@ class CollectiveDanishvna(models.Model):
                 })
                 request.sudo().action_confirm()
                 request.sudo().action_approve()
+
+
+class CollectiveDanishvnaEmps(models.Model):
+    _inherit = 'collective.danishvna.emps'
+
+    line_number = fields.Integer(
+        string='N',
+        compute='_compute_line_number',
+    )
+
+    @api.depends('collective_danishvna_id', 'collective_danishvna_id.collective_danishvna_emp_ids')
+    def _compute_line_number(self):
+        for record in self:
+            record.line_number = 0
+            if not record.collective_danishvna_id or not record.id:
+                continue
+            ordered_lines = record.collective_danishvna_id.collective_danishvna_emp_ids.sorted(key=lambda line: line.id)
+            line_index = {line.id: idx + 1 for idx, line in enumerate(ordered_lines)}
+            record.line_number = line_index.get(record.id, 0)
