@@ -58,8 +58,6 @@ class ApprovalRequest(models.Model):
     @api.onchange('category_id')
     def _onchange_x_studio_time_off_type(self):
         for rec in self:
-            if 'x_studio_time_off_type' not in rec._fields:
-                continue
             if rec.category_id and rec.category_id.id in VACAYS:
                 if rec.category_id.id == 45:
                     rec.x_studio_time_off_type = 1
@@ -75,8 +73,6 @@ class ApprovalRequest(models.Model):
     @api.onchange('category_id', 'brdzaneba_start_date', 'brdzaneba_end_date')
     def _onchange_x_studio_dgeebi_real(self):
         for rec in self:
-            if 'x_studio_dgeebi_real' not in rec._fields:
-                continue
             if rec.category_id and rec.category_id.id in VACATION_DAYS:
                 if rec.brdzaneba_start_date and rec.brdzaneba_end_date:
                     dgeebi_real = (rec.brdzaneba_end_date - rec.brdzaneba_start_date).days

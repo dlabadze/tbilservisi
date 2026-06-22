@@ -1,7 +1,6 @@
 from odoo import models, fields, api, Command
 from odoo.exceptions import UserError
 from datetime import datetime, time, timedelta
-from lxml import etree
 
 
 class ApprovalCategory(models.Model):
@@ -16,45 +15,6 @@ class ApprovalCategory(models.Model):
 
 class ApprovalRequest(models.Model):
     _inherit = 'approval.request'
-
-    @api.model
-    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
-        res = super().fields_view_get(view_id=view_id, view_type=view_type, toolbar=toolbar, submenu=submenu)
-        arch = res.get('arch')
-        if not arch:
-            return res
-
-        try:
-            doc = etree.fromstring(arch)
-        except Exception:
-            return res
-
-        removed = False
-        for field_node in doc.xpath("//field[@name]"):
-            field_name = field_node.get('name')
-            if field_name and field_name.startswith('x_studio_') and field_name not in self._fields:
-                parent = field_node.getparent()
-                if parent is not None:
-                    parent.remove(field_node)
-                    removed = True
-
-        if removed:
-            res['arch'] = etree.tostring(doc, encoding='unicode')
-
-        return res
-
-    def init(self):
-        # Ensure required columns exist before FK checks in mixed install/upgrade flows.
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_date date")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_employee_id integer")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_start_date date")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_end_date date")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_department_id integer")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_job_id integer")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_shtati varchar")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_safudzveli text")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS brdzaneba_salary double precision")
-        self._cr.execute("ALTER TABLE approval_request ADD COLUMN IF NOT EXISTS release_date date")
 
     has_brdzaneba = fields.Selection(related="category_id.has_brdzaneba")
     brdzaneba_kind = fields.Selection([
@@ -78,9 +38,6 @@ class ApprovalRequest(models.Model):
     ], string="შტატიანობა")
     brdzaneba_safudzveli = fields.Text(string="საფუძველი")
     brdzaneba_salary = fields.Float(string="ხელფასი")
-
-    # Compatibility fallback for Studio-based views on replicated databases.
-    x_studio_wagecurr = fields.Many2one('res.currency', string="Wage Currency")
 
     release_date = fields.Date(
         string="გათავისუფლების თარიღი",

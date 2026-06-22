@@ -12,8 +12,6 @@
         'security/ir.model.access.csv',
         'views/hr_approval_mod_view.xml',
     ],
-    'pre_init_hook': 'pre_init_hook',
-    'post_init_hook': 'post_init_hook',
     #'sequence': 999,
     'installable': True,
     'application': False,
