@@ -24,7 +24,7 @@
                 <field name="has_brdzaneba" invisible="1"/>
                 <field name="brdzaneba_kind" invisible="1"/>
 
-                <group string="დანიშვნა" invisible="has_brdzaneba == 'no' or brdzaneba_kind != 'appointment'">
+                <group string="დანიშვნა" invisible="has_brdzaneba == 'no' or brdzaneba_kind != 'temporary_appointment'">
                     <group>
                         <field name="brdzaneba_date" required="has_brdzaneba == 'required'"/>
                         <field name="brdzaneba_employee_id" required="has_brdzaneba == 'required'" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
@@ -42,7 +42,7 @@
                     </group>
                 </group>
 
-                <group string="დანიშვნა დროებით" invisible="has_brdzaneba == 'no' or brdzaneba_kind != 'temporary_appointment'">
+                <group string="დანიშვნა დროებით" invisible="has_brdzaneba == 'no' or brdzaneba_kind != 'appointment'">
                     <group>
                         <field name="brdzaneba_date" required="has_brdzaneba == 'required'"/>
                         <field name="brdzaneba_employee_id" required="has_brdzaneba == 'required'" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
