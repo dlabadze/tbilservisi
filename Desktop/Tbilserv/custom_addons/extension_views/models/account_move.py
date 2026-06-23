@@ -737,9 +737,6 @@ class AccountMove(models.Model):
             return line.product_id.type == 'service'
         return not line.unit_id and bool(line.name)
 
-    def _faqtura_service_line_amount(self, line):
-        return line.price_subtotal
-
     def save_invoice_desc_momsaxureba(self, rs_acc, rs_pass,factura_num):
         url = "http://www.revenue.mof.ge/ntosservice/ntosservice.asmx"
         headers = {
@@ -769,9 +766,10 @@ class AccountMove(models.Model):
         for index, line in enumerate(self.invoice_line_ids):
             if self._is_faqtura_service_line(line):
                 product = self.product_comment or (line.product_id.name if line.product_id else line.name)
-                quantity = 0
-                amount = self._faqtura_service_line_amount(line)
+                quantity = line.quantity
+                amount = quantity * line.price_unit
                 unit_id = 'მომსახურება'
+                faqtura_quantity = 0
             else:
                 product = self.product_comment if self.product_comment else line.name
                 quantity = line.quantity
@@ -779,6 +777,7 @@ class AccountMove(models.Model):
                     raise UserError("რაოდენობა ვერ იქნება ნულის ტოლი product: %s" % product)
                 amount = quantity * line.price_unit
                 unit_id = unit_id_dict.get(line.unit_id, 'მომსახურება')
+                faqtura_quantity = quantity
             tax_id = line.tax_ids.name
         
             body = f"""<?xml version="1.0" encoding="utf-8"?>
@@ -792,7 +791,7 @@ class AccountMove(models.Model):
                   <invois_id>{factura_num}</invois_id>
                   <goods>{product}</goods>
                   <g_unit>{unit_id}</g_unit>
-                  <g_number>{quantity}</g_number>
+                  <g_number>{faqtura_quantity}</g_number>
                   <full_amount>{amount}</full_amount>
                   <drg_amount>18</drg_amount>
                   <aqcizi_amount>0</aqcizi_amount>
@@ -859,7 +858,8 @@ class AccountMove(models.Model):
         if not line.name and not (line.product_id and line.product_id.name):
             return None
         product_name = self.product_comment or (line.product_id.name if line.product_id else line.name)
-        amount = self._faqtura_service_line_amount(line)
+        quantity = line.quantity
+        amount = quantity * line.price_unit
         return f"""
             <goods>{product_name}</goods>
             <g_unit>მომსახურება</g_unit>
@@ -1330,7 +1330,10 @@ class AccountMove(models.Model):
             return None
 
         product_name = self.product_comment or (line.product_id.name if line.product_id else line.name)
-        amount = self._faqtura_service_line_amount(line)
+        quantity = line.quantity
+        if quantity == 0:
+            raise UserError("რაოდენობა ვერ იქნება ნულის ტოლი product: %s" % (line.product_id.name if line.product_id else line.name))
+        amount = quantity * line.price_unit
 
         momsaxureba_xml = f"""
             <goods>{product_name}</goods>
