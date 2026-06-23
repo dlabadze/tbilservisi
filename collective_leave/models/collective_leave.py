@@ -210,6 +210,7 @@ class CollectiveLeave(models.Model):
             ('პირადი ნომერი', 18, cell_fmt),
             ('საწყისი თარიღი', 16, cell_fmt),
             ('დასრულების თარიღი', 18, cell_fmt),
+            ('დღეების რაოდენობა', 18, num_fmt),
         ]
 
         sheet.set_row(0, 30)
@@ -231,6 +232,7 @@ class CollectiveLeave(models.Model):
                 employee.identification_id or '',
                 start_day,
                 end_day,
+                self.days,
             ]
             for col_idx, value in enumerate(values):
                 sheet.write(row_idx, col_idx, value, COLUMNS[col_idx][2])
