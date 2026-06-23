@@ -212,10 +212,10 @@ class InvoiceImportWizard(models.TransientModel):
 
                     comment = row[10]
                     prefix = 'SM'
-                    invoice_name = self._get_next_invoice_name(prefix, invoice_year, Move, invoice_counters)
+                    # invoice_name = self._get_next_invoice_name(prefix, invoice_year, Move, invoice_counters)
 
                     move_vals = {
-                        'name': invoice_name,
+                        # 'name': invoice_name,
                         'move_type': 'out_invoice',
                         'partner_id': partner.id,
                         'product_comment': comment,
@@ -296,11 +296,11 @@ class InvoiceImportWizard(models.TransientModel):
                     basis_text = f"{basis or ''}".strip()
                     prefix = 'IJR'
 
-                    invoice_name = self._get_next_invoice_name(prefix, invoice_year, Move, invoice_counters)
+                    # invoice_name = self._get_next_invoice_name(prefix, invoice_year, Move, invoice_counters)
                     comment = row[6]
 
                     move = self.env['account.move'].create({
-                        'name': invoice_name,
+                        # 'name': invoice_name,
                         'move_type': 'out_invoice',
                         'partner_id': partner.id,
                         'invoice_date': self.invoice_date,
@@ -441,10 +441,10 @@ class InvoiceImportWizard(models.TransientModel):
 
                         invoice_counters[counter_key] += 1
                         new_index = invoice_counters[counter_key]
-                        invoice_name = f"{prefix}/{invoice_year}/{str(new_index).zfill(3)}"
+                        # invoice_name = f"{prefix}/{invoice_year}/{str(new_index).zfill(3)}"
 
                         move_vals = {
-                            'name': invoice_name,
+                            # 'name': invoice_name,
                             'move_type': 'out_invoice',
                             'partner_id': partner_id,
                             'journal_id': journal.id,
