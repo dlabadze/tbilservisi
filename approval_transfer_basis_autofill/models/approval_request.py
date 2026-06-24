@@ -12,8 +12,7 @@ class ApprovalRequest(models.Model):
 
             parts = []
             if rec.brdzaneba_employee_id and rec.brdzaneba_employee_id.name:
-                parts.append(rec.brdzaneba_employee_id.name)
-                parts.append('ს პირადი განცხადება')
+                parts.append(rec.brdzaneba_employee_id.name + 'ს პირადი განცხადება')
             if rec.brdzaneba_date:
                 parts.append(rec.brdzaneba_date.strftime('%d.%m.%Y'))
 
