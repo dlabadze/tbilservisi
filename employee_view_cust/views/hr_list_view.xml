@@ -45,6 +45,9 @@
                 <field name="x_studio_note"          optional="show"  string="შენიშვნა" widget="char"/>
                 <field name="x_studio_migdate"       optional="show"  string="მიგრაციის თარიღი"/>
             </xpath>
+            <xpath expr="//field[@name='work_email']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
 
         </field>
     </record>
