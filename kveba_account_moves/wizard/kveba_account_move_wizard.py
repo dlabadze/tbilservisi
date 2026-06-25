@@ -15,7 +15,8 @@ class KvebaAccountMoveWizard(models.TransientModel):
     def _get_analytic_distribution(self, employee):
         """Return analytic_distribution dict for an employee based on their department.
 
-        Tries employee's department name first, then the top-level parent department name.
+        Includes both the department's analytic account and the top-level parent's analytic
+        account (50/50 when both exist, 100% when only one is found).
         """
         if not employee or not employee.department_id:
             return {}
@@ -27,14 +28,16 @@ class KvebaAccountMoveWizard(models.TransientModel):
         while top.parent_id:
             top = top.parent_id
 
-        analytic = self.env['account.analytic.account'].sudo().search(
+        dept_analytic = self.env['account.analytic.account'].sudo().search(
             [('name', '=', dept.name)], limit=1
         )
-        if not analytic and top.name != dept.name:
-            analytic = self.env['account.analytic.account'].sudo().search(
-                [('name', '=', top.name)], limit=1
-            )
+        top_analytic = self.env['account.analytic.account'].sudo().search(
+            [('name', '=', top.name)], limit=1
+        ) if top.id != dept.id else dept_analytic
 
+        if dept_analytic and top_analytic and dept_analytic.id != top_analytic.id:
+            return {str(dept_analytic.id): 100.0, str(top_analytic.id): 100.0}
+        analytic = dept_analytic or top_analytic
         return {str(analytic.id): 100.0} if analytic else {}
 
     def _build_missed_partners_excel(self, missed_partners):
