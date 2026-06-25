@@ -22,22 +22,21 @@ class HrDepartment(models.Model):
         res = super().write(vals)
         if 'name' in vals or 'parent_id' in vals:
             for dept in self:
-                if dept.analytic_account_id:
-                    if 'name' in vals:
-                        existing = self.env['account.analytic.account'].sudo().search(
-                            [('name', '=', dept.name), ('id', '!=', dept.analytic_account_id.id)], limit=1
-                        )
-                        if existing:
-                            dept.sudo().analytic_account_id = existing
-                        else:
-                            dept.analytic_account_id.sudo().name = dept.name
-                    if 'parent_id' in vals:
-                        plan_name = 'სამსახური' if dept.parent_id else 'დეპარტამენტი'
-                        plan = self.env['account.analytic.plan'].sudo().search(
-                            [('name', '=', plan_name)], limit=1
-                        )
-                        if plan:
-                            dept.analytic_account_id.sudo().plan_id = plan
+                if 'name' in vals:
+                    existing = self.env['account.analytic.account'].sudo().search(
+                        [('name', '=', dept.name)], limit=1
+                    )
+                    if existing:
+                        dept.sudo().analytic_account_id = existing
+                    elif dept.analytic_account_id:
+                        dept.analytic_account_id.sudo().name = dept.name
+                if 'parent_id' in vals and dept.analytic_account_id:
+                    plan_name = 'სამსახური' if dept.parent_id else 'დეპარტამენტი'
+                    plan = self.env['account.analytic.plan'].sudo().search(
+                        [('name', '=', plan_name)], limit=1
+                    )
+                    if plan:
+                        dept.analytic_account_id.sudo().plan_id = plan
         return res
 
     def _sync_analytic_account(self):
@@ -58,3 +57,25 @@ class HrDepartment(models.Model):
             'plan_id': plan.id,
         })
         self.sudo().analytic_account_id = analytic
+
+    def action_sync_analytic_account(self):
+        for dept in self:
+            plan_name = 'სამსახური' if dept.parent_id else 'დეპარტამენტი'
+            plan = self.env['account.analytic.plan'].sudo().search(
+                [('name', '=', plan_name)], limit=1
+            )
+            existing = self.env['account.analytic.account'].sudo().search(
+                [('name', '=', dept.name)], limit=1
+            )
+            if existing:
+                if plan:
+                    existing.sudo().plan_id = plan
+                dept.sudo().analytic_account_id = existing
+            else:
+                if not plan:
+                    continue
+                analytic = self.env['account.analytic.account'].sudo().create({
+                    'name': dept.name,
+                    'plan_id': plan.id,
+                })
+                dept.sudo().analytic_account_id = analytic
