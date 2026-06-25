@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_waybill_list_sale_optional_columns" model="ir.ui.view">
+        <field name="name">waybill.list.sale.optional.columns</field>
+        <field name="model">waybill</field>
+        <field name="inherit_id" ref="waybill_management_custom.view_waybill_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='waybill_type'][1]" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='create_date']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='buyer_tin']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='buyer_name']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='seller_name']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='seller_tin']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='start_address']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='transport_cost']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='activate_date']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='full_amount']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='mdgomareoba']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_waybill_list_purchase_optional_columns" model="ir.ui.view">
+        <field name="name">waybill.list.purchase.optional.columns</field>
+        <field name="model">waybill</field>
+        <field name="inherit_id" ref="waybill_management_custom.view_waybill_list_filtered_4"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='waybill_type'][1]" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='create_date']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='buyer_tin']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='buyer_name']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='seller_name']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='seller_tin']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='start_address']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='transport_cost']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='activate_date']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='full_amount']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='waybill_type'][2]" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+            <xpath expr="//list/field[@name='mdgomareoba']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
