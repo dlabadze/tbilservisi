@@ -27,7 +27,7 @@ class CollectiveChangePosition(models.Model):
         domain="[('department_id', '=', department_id)]",
         )
 
-    new_department_id = fields.Many2one('hr.department', string='ახალი სამსახური', required=True)
+    new_department_id = fields.Many2one('hr.department', string='ახალი სამსახური', required=True, readonly=False)
     new_parent_department_id = fields.Many2one(
         'hr.department',
         string='ახალი დეპარტამენტი',
@@ -41,6 +41,7 @@ class CollectiveChangePosition(models.Model):
         string='ახალი თანამდებობა',
         required=True,
         domain="[('department_id', '=', new_department_id)]",
+        readonly=False,
     )
 
     collective_ch_position_emp_ids = fields.One2many(
@@ -66,6 +67,14 @@ class CollectiveChangePosition(models.Model):
     )
     salary = fields.Float(string='ხელფასი')
 
+
+    # @api.onchange('department_id')
+    # def _onchange_department_id(self):
+    #     self.new_department_id = self.department_id
+
+    # @api.onchange('job_id')
+    # def _onchange_job_id(self):
+    #     self.new_job_id = self.job_id
 
     @api.onchange('new_job_id')
     def _onchange_salary(self):
