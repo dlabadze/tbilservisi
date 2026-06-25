@@ -36,30 +36,31 @@
                                         string="Open"
                                         icon="fa-eye"
                                         className="btn-secondary"/>
-                                    <field name="cpv_id"/>
-                                    <field name="budget_cpv_id"/>
-                                    <field name="change_id"/>
-                                    <field name="cpv_name"/>
-                                    <field name="funding_source"/>
-                                    <field name="purchase_method_id"/>
+                                    <field name="cpv_id" optional="show"/>
+                                    <field name="budget_cpv_id" optional="hide"/>
+                                    <field name="change_id" optional="hide"/>
+                                    <field name="cpv_name" optional="hide"/>
+                                    <field name="funding_source" optional="hide"/>
+                                    <field name="purchase_method_id" optional="hide"/>
                                     <field name="purchase_reason_id"
-                                        domain="[('id', 'in', allowed_reason_ids)]"/>
+                                        domain="[('id', 'in', allowed_reason_ids)]"
+                                        optional="hide"/>
                                     <field name="allowed_reason_ids" column_invisible="1"/>
-                                    <field name="vadebi"/>
-                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                    <field name="vadebi" optional="hide"/>
+                                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="hide"/>
                                     <field name="purchase_method_code"/>
                                     <!-- <field name="pricekurant" invisible="purchase_method_code not in ['6', '7']"/> -->
                                     <field name="pricekurant" column_invisible="1"/>
-                                    <field name="pu_st_am" sum="Total Initial Value"/>
-                                    <field name="pu_ac_am" sum="Total Current Value"/>
-                                    <field name="pu_diff" sum="Total Difference"/>
-                                    <field name="pcon_am" sum="Total Contract Amount"/>
-                                    <field name="pc_re_am" sum="Total Remaining by Contract"/>
-                                    <field name="paim_am" sum="Total Paid Amount"/>
-                                    <field name="pa_re_am" sum="Total Remaining Resource"/>
-                                    <field name="currency_id"/>
-                                    <field name="budget_lines_allocated" sum="Total Allocated Amount"/>
-                                    <field name="remaining_to_allocate" sum="Total Remaining to Allocate"/>
+                                    <field name="pu_st_am" sum="Total Initial Value" optional="show"/>
+                                    <field name="pu_ac_am" sum="Total Current Value" optional="show"/>
+                                    <field name="pu_diff" sum="Total Difference" optional="show"/>
+                                    <field name="pcon_am" sum="Total Contract Amount" optional="show"/>
+                                    <field name="pc_re_am" sum="Total Remaining by Contract" optional="show"/>
+                                    <field name="paim_am" sum="Total Paid Amount" optional="show"/>
+                                    <field name="pa_re_am" sum="Total Remaining Resource" optional="show"/>
+                                    <field name="currency_id" optional="show"/>
+                                    <field name="budget_lines_allocated" sum="Total Allocated Amount" optional="show"/>
+                                    <field name="remaining_to_allocate" sum="Total Remaining to Allocate" optional="show"/>
                                 </list>
                             </field>
                         </page>
