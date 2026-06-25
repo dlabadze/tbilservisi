@@ -2,11 +2,9 @@
     'name': 'Global List View Customizations',
     'version': '1.0',
     'category': 'Hidden/Tools',
-    'summary': 'Wraps text in list views and makes headers/columns sticky',
+    'summary': 'Sticky columns in list views',
     'description': """
-This module globally tweaks Odoo list (tree) views:
-- Allows text to wrap into multiple lines (prevents truncation with ellipsis).
-- Keeps the table column headers sticky at the top when scrolling through many lines.
+This module adds opt-in sticky columns to Odoo list (tree) views:
 - Lets a list opt in (via class="o_sticky_cols_2" on the <list>) to freeze its
   first two columns while scrolling horizontally.
     """,
