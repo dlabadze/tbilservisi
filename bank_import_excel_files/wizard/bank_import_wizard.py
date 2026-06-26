@@ -18,9 +18,9 @@ class BankImportWizard(models.TransientModel):
         ('ge17', 'GE17TB7722636020100004GEL'),
         ('ge81', 'GE81BG0000000499211307GEL'),
         ('ge40', 'GE40BG0000000499210105GEL'),
-        ('ge22', 'GE22TB7722636020100011'),
+        ('ge22', 'GE22TB7722636020100011GEL'),
         ('ge56', 'GE56TB7722645067800007GEL'),
-        ('ge09', 'GE09LB0113150423521000'),
+        ('ge09', 'GE09LB0113150423521000GEL'),
         ('ge21', 'GE21LB0113122202198000GEL'),
         ('ge73', 'GE73BG0000000176620200GEL'),
     ], string="აირჩიეთ ჟურნალი", required=True)
@@ -42,9 +42,9 @@ class BankImportWizard(models.TransientModel):
             'ge90': 'GE90LB0113172770216000GEL',
             'ge81': 'GE81BG0000000499211307GEL',
             'ge40': 'GE40BG0000000499210105GEL',
-            'ge22': 'GE22TB7722636020100011',
+            'ge22': 'GE22TB7722636020100011GEL',
             'ge56': 'GE56TB7722645067800007GEL',
-            'ge09': 'GE09LB0113150423521000',
+            'ge09': 'GE09LB0113150423521000GEL',
             'ge21': 'GE21LB0113122202198000GEL',
             'ge73': 'GE73BG0000000176620200GEL',
         }
@@ -207,9 +207,10 @@ class BankImportWizard(models.TransientModel):
                 if not row or not row[col_index.get('დანიშნულება', -1)]:
                     continue
 
-                row_vat = str(row[col_index.get('პარტნიორის საგადასახადო კოდი')]).strip() if col_index.get(
-                    'პარტნიორის საგადასახადო კოდი') else ''
-                row_name = str(row[col_index.get('პარტნიორი')]).strip()
+                vat_idx = col_index.get('პარტნიორის საგადასახადო კოდი')
+                row_vat = str(row[vat_idx]).strip() if vat_idx is not None else ''
+                name_idx = col_index.get('პარტნიორი')
+                row_name = str(row[name_idx]).strip() if name_idx is not None else ''
 
                 if row_vat:
                     vat_to_name_map[row_vat] = row_name
@@ -235,17 +236,23 @@ class BankImportWizard(models.TransientModel):
 
             line_vals_list = []
             for row in rows:
-                row_vat = str(row[col_index.get('პარტნიორის საგადასახადო კოდი')]).strip() if col_index.get(
-                    'პარტნიორის საგადასახადო კოდი') else ''
+                vat_idx = col_index.get('პარტნიორის საგადასახადო კოდი')
+                row_vat = str(row[vat_idx]).strip() if vat_idx is not None else ''
                 pname_idx = col_index.get('პარტნიორი')
                 pname = str(row[pname_idx]).strip() if pname_idx is not None else ''
 
                 partner = partner_map.get(row_vat)
 
-                danishnuleba = f": {row[col_index.get('დანიშნულება')]} / {row[col_index.get('დამატებითი ინფორმაცია')]}"
+                dan_idx = col_index.get('დანიშნულება')
+                dam_idx = col_index.get('დამატებითი ინფორმაცია')
+                dan_val = row[dan_idx] if dan_idx is not None else ''
+                dam_val = row[dam_idx] if dam_idx is not None else ''
+                danishnuleba = f": {dan_val} / {dam_val}"
 
-                incoming = row[col_index.get('შემოსული თანხა')] if col_index.get('შემოსული თანხა') else 0
-                outgoing = row[col_index.get('გასული თანხა')] if col_index.get('გასული თანხა') else 0
+                inc_idx = col_index.get('შემოსული თანხა')
+                incoming = row[inc_idx] if inc_idx is not None else 0
+                out_idx = col_index.get('გასული თანხა')
+                outgoing = row[out_idx] if out_idx is not None else 0
 
                 # Ensure numbers are parsed correctly (assuming parse_number handles None/Empty)
                 amount_in = parse_number(incoming) if incoming else 0.0
