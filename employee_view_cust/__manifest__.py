@@ -3,7 +3,7 @@
     'version': '18.0.1.0.0',
     'category': 'Human Resources',
     'summary': 'Custom employee form view',
-    'depends': ['hr', 'custom_age_work_experience', 'web_studio', 'hr_attendance', 'hr_holidays'],
+    'depends': ['hr', 'custom_age_work_experience', 'web_studio', 'hr_attendance', 'hr_holidays','hr_employee_studio_restrict'],
     'data': [
         'views/employee_form_custom_view.xml',
         'views/list_view_first.xml',
