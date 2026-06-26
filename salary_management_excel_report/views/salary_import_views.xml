@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Account Move Form View Inheritance -->
+    <record id="view_salary_import_list_inherited" model="ir.ui.view">
+        <field name="name">salary.import.inherited</field>
+        <field name="model">salary.import</field>
+        <field name="inherit_id" ref="salary_management.view_salary_import_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="action_generate_excel" 
+                        string="დარიცხვის რეპორტი" 
+                        type="object" 
+                        class="btn-primary"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>
