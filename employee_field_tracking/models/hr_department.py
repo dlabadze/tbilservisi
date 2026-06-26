@@ -9,3 +9,4 @@ class HrDepartment(models.Model):
     parent_id = fields.Many2one('hr.department', tracking=True)
     manager_id = fields.Many2one('hr.employee', tracking=True)
     x_studio_location = fields.Many2one('stock.location', tracking=True)
+    dep_numbering = fields.Integer(string = 'Sequence')
