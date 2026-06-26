@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Account Move Form View Inheritance -->
     <record id="view_salary_import_list_inherited" model="ir.ui.view">
         <field name="name">salary.import.inherited</field>
         <field name="model">salary.import</field>
