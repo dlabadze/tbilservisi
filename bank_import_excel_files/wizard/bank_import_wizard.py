@@ -7,6 +7,15 @@ from datetime import datetime, date
 from openpyxl.utils.datetime import from_excel
 
 
+class SafeRow(tuple):
+    def __getitem__(self, item):
+        if item is None:
+            return None
+        try:
+            return super().__getitem__(item)
+        except (IndexError, TypeError):
+            return None
+
 class BankImportWizard(models.TransientModel):
     _name = "bank.import.wizard"
     _description = "Bank Import Excel Wizard"
@@ -82,6 +91,7 @@ class BankImportWizard(models.TransientModel):
         if self.journal_type == 'tbc':
             header_row_index = None
             for i, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                row = SafeRow(row)
                 if row and 'id' in [str(c).lower() if c else '' for c in row]:
                     header_row_index = i
                     break
@@ -97,6 +107,7 @@ class BankImportWizard(models.TransientModel):
 
             rows = []
             for row in sheet.iter_rows(min_row=min_row, max_row=max_row, values_only=True):
+                row = SafeRow(row)
                 if not row or not row[col_index.get('id', -1)]:
                     continue
                 rows.append(row)
@@ -127,6 +138,7 @@ class BankImportWizard(models.TransientModel):
 
             line_vals_list = []
             for row in rows:
+                row = SafeRow(row)
                 row_vat = str(row[col_index.get('მომხმარებლის იდენთიფიკატორი')]).strip()
                 partner = partner_map.get(row_vat)
 
@@ -187,6 +199,7 @@ class BankImportWizard(models.TransientModel):
             sheet = wb[wb.sheetnames[1]]
             header_row_index = None
             for i, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                row = SafeRow(row)
                 if row and 'პარტნიორი' in [str(c) for c in row if c]:
                     header_row_index = i
                     break
@@ -204,6 +217,7 @@ class BankImportWizard(models.TransientModel):
             vat_to_name_map = {}
 
             for row in sheet.iter_rows(min_row=min_row, max_row=max_row, values_only=True):
+                row = SafeRow(row)
                 if not row or not row[col_index.get('დანიშნულება', -1)]:
                     continue
 
@@ -236,6 +250,7 @@ class BankImportWizard(models.TransientModel):
 
             line_vals_list = []
             for row in rows:
+                row = SafeRow(row)
                 vat_idx = col_index.get('პარტნიორის საგადასახადო კოდი')
                 row_vat = str(row[vat_idx]).strip() if vat_idx is not None else ''
                 pname_idx = col_index.get('პარტნიორი')
@@ -294,6 +309,7 @@ class BankImportWizard(models.TransientModel):
             sheet = wb[wb.sheetnames[1]]
             header_row_index = None
             for i, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                row = SafeRow(row)
                 low_cells = [str(c).strip() if c else '' for c in row]
                 if 'თარიღი' in low_cells or 'Date' in low_cells:
                     header_row_index = i
@@ -310,6 +326,7 @@ class BankImportWizard(models.TransientModel):
 
             rows = []
             for row in sheet.iter_rows(min_row=min_row, max_row=max_row, values_only=True):
+                row = SafeRow(row)
                 if not any(row):
                     continue
                 rows.append(row)
@@ -318,6 +335,7 @@ class BankImportWizard(models.TransientModel):
             vat_to_name_map = {}
 
             for row in rows:
+                row = SafeRow(row)
                 row_vat = row[col_index.get('პარტნიორის საგადასახადო კოდი')]
                 row_name = row[col_index.get('პარტნიორი')]
 
@@ -350,6 +368,7 @@ class BankImportWizard(models.TransientModel):
 
             line_vals_list = []
             for row in rows:
+                row = SafeRow(row)
                 desc = row[col_index.get('დანიშნულება', '')] or ''
                 add_info = row[col_index.get('დამატებითი ინფორმაცია', '')] or ''
                 payment_ref = f"{desc} / {add_info}".strip(' / ')
@@ -410,6 +429,7 @@ class BankImportWizard(models.TransientModel):
 
             header_row = None
             for i, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                row = SafeRow(row)
                 low_cells = [str(c).strip() if c else '' for c in row]
                 if 'თარიღი' in low_cells or 'Date' in low_cells:
                     header_row = i
@@ -424,6 +444,7 @@ class BankImportWizard(models.TransientModel):
                 col_index = BG_COLUMNS
                 data_start = 1
                 for i, row in enumerate(sheet.iter_rows(values_only=True), start=1):
+                    row = SafeRow(row)
                     if any(row):
                         data_start = i
                         break
@@ -435,6 +456,7 @@ class BankImportWizard(models.TransientModel):
             vat_to_name_map = {}
 
             for row in rows:
+                row = SafeRow(row)
                 idx_debit = col_index.get('დებეტი')
                 debit = parse_number(row[idx_debit]) if idx_debit is not None else 0
 
@@ -465,6 +487,7 @@ class BankImportWizard(models.TransientModel):
 
             line_vals_list = []
             for row in rows:
+                row = SafeRow(row)
                 idx_debit = col_index.get('დებეტი')
                 idx_credit = col_index.get('კრედიტი')
                 debit = parse_number(row[idx_debit]) if idx_debit is not None else 0
