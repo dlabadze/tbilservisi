@@ -44,7 +44,7 @@ class BankImportWizard(models.TransientModel):
             'ge40': 'GE40BG0000000499210105GEL',
             'ge22': 'GE22TB7722636020100011',
             'ge56': 'GE56TB7722645067800007GEL',
-            'ge09': 'GE09LB0113150423521000GEL',
+            'ge09': 'GE09LB0113150423521000',
             'ge21': 'GE21LB0113122202198000GEL',
             'ge73': 'GE73BG0000000176620200GEL',
         }
