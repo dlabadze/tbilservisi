@@ -32,7 +32,7 @@
                 <field name="age"                     optional="show"  string="ასაკი"/>
                 <field name="work_experience_months"  optional="show"  string="სტაჟი (თვე)"/>
                 <field name="x_studio_location"      optional="show"  string="მდებარეობა"/>
-                <field name="x_studio_address"       optional="show"  string="მისამართი"/>
+                <field name="x_studio_address"       optional="show"  string="იურიდიული მისამართი"/>
                 <field name="x_studio_education"     optional="show"  string="განათლება"/>
                 <field name="x_studio_marital"       optional="show"  string="ოჯახური მდგომარეობა"/>
                 <field name="children"               optional="show"  string="შვილები"/>
