@@ -36,12 +36,18 @@ class SalaryImport(models.Model):
                     'vat': partner.vat or '',
                     'name': partner.name or '',
                     'total_salary': 0.0,
-                    'base_salary': 0.0
+                    'base_salary': 0.0,
+                    'pension': 0.0,
+                    'company_tax': 0.0,
+                    'net_amount': 0.0
                 }
             
-            # Sum up the salaries for duplicate partners
+            # Sum up all financial fields for duplicate partners
             grouped_data[partner_id]['total_salary'] += line.total_salary or 0.0
             grouped_data[partner_id]['base_salary'] += line.base_salary or 0.0
+            grouped_data[partner_id]['pension'] += line.pension or 0.0
+            grouped_data[partner_id]['company_tax'] += line.company_tax or 0.0
+            grouped_data[partner_id]['net_amount'] += line.net_amount or 0.0
 
         # 3. Setup Excel workbook
         output = io.BytesIO()
@@ -55,12 +61,15 @@ class SalaryImport(models.Model):
         data_format = workbook.add_format({'font_size': 10, 'border': 1})
         amount_format = workbook.add_format({'font_size': 10, 'border': 1, 'num_format': '#,##0.00'})
 
-        # Column Headers
+        # Column Headers (Updated with your new columns)
         headers = [
             'თანამშრომლის პირადი ნომერი', 
             'დასახელება',                  
             'Total Salary',               
-            'Base Salary'                 
+            'Base Salary',
+            'Pension',
+            'Company Tax',
+            'Net Amount'
         ]
         
         for col_num, header_title in enumerate(headers):
@@ -73,11 +82,14 @@ class SalaryImport(models.Model):
             worksheet.write(row_num, 1, partner_info['name'], data_format)
             worksheet.write(row_num, 2, partner_info['total_salary'], amount_format)
             worksheet.write(row_num, 3, partner_info['base_salary'], amount_format)
+            worksheet.write(row_num, 4, partner_info['pension'], amount_format)
+            worksheet.write(row_num, 5, partner_info['company_tax'], amount_format)
+            worksheet.write(row_num, 6, partner_info['net_amount'], amount_format)
             row_num += 1
 
-        # Adjust column widths
+        # Adjust column widths for clean visibility
         worksheet.set_column('A:B', 25)
-        worksheet.set_column('C:D', 15)
+        worksheet.set_column('C:G', 15)
 
         workbook.close()
         output.seek(0)
