@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_pension_gadaxurva_wizard_form" model="ir.ui.view">
+        <field name="name">pension.gadaxurva.wizard.form</field>
+        <field name="model">pension.gadaxurva.wizard</field>
+        <field name="arch" type="xml">
+            <form string="საპენსიო გადახურვა">
+                <group>
+                    <field name="date"/>
+                    <field name="excel_file" filename="excel_filename"/>
+                    <field name="excel_filename" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_generate" type="object" string="გატარება" class="btn-primary"/>
+                    <button string="გაუქმება" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_pension_gadaxurva_wizard" model="ir.actions.act_window">
+        <field name="name">საპენსიო გადახურვა</field>
+        <field name="res_model">pension.gadaxurva.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Inherit account_kveba tree view to add button -->
+    <record id="view_invoice_tree_inherit_pension_gadaxurva" model="ir.ui.view">
+        <field name="name">account.move.tree.inherit.pension.gadaxurva</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account_kveba.view_invoice_tree_inherit_kveba"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_pension_gadaxurva_wizard)d"
+                        string="საპენსიო გადახურვა"
+                        type="action"
+                        class="btn-primary"
+                        display="always"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
