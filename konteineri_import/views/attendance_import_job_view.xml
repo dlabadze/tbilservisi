@@ -21,7 +21,7 @@
         <field name="name">attendance.import.job.form</field>
         <field name="model">attendance.import.job</field>
         <field name="arch" type="xml">
-            <form string="Attendance Import Job">
+            <form string="დასწრების იმპორტის ამოცანა">
                 <sheet>
                     <group>
                         <field name="date_from"/>
@@ -40,19 +40,19 @@
 
     <!-- ACTION -->
     <record id="action_attendance_import_job" model="ir.actions.act_window">
-        <field name="name">Attendance Import Jobs</field>
+        <field name="name">დასწრების იმპორტის ამოცანები</field>
         <field name="res_model">attendance.import.job</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <!-- MENU -->
     <menuitem id="menu_attendance_import_root"
-              name="Attendance Imports"
+              name="დასწრების იმპორტები"
               parent="hr_attendance.menu_hr_attendance_root"
               sequence="90"/>
 
     <menuitem id="menu_attendance_import_job"
-              name="Import Jobs"
+              name="იმპორტის ამოცანები"
               parent="menu_attendance_import_root"
               action="action_attendance_import_job"
               sequence="10"/>

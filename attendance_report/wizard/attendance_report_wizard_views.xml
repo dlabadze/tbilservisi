@@ -4,7 +4,7 @@
         <field name="name">attendance.report.wizard.form</field>
         <field name="model">attendance.report.wizard</field>
         <field name="arch" type="xml">
-            <form string="Generate Attendance Report">
+            <form string="დასწრების რეპორტის გენერაცია">
                 <group>
                     <group>
                         <field name="department_id" options="{'no_create': True}"/>
@@ -16,8 +16,8 @@
                     </group>
                 </group>
                 <footer>
-                    <button name="action_print_report" string="Print PDF" type="object" class="btn-primary"/>
-                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    <button name="action_print_report" string="PDF-ის ბეჭდვა" type="object" class="btn-primary"/>
+                    <button string="გაუქმება" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>

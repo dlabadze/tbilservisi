@@ -1067,7 +1067,7 @@ msgstr ""
 #: code:addons/web/static/src/views/kanban/kanban_renderer.js:0
 #: code:addons/web/static/src/views/list/list_controller.js:0
 msgid "Archive"
-msgstr ""
+msgstr "დაარქივება"
 
 #. module: web
 #. odoo-javascript
@@ -2275,7 +2275,7 @@ msgstr ""
 #: code:addons/web/static/src/views/list/list_controller.js:0
 #: code:addons/web/static/src/views/view_dialogs/export_data_dialog.xml:0
 msgid "Delete"
-msgstr "წაშალე"
+msgstr "წაშლა"
 
 #. module: web
 #. odoo-javascript
@@ -15080,7 +15080,7 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/web/static/src/views/calendar/calendar_common/calendar_common_popover.js:0
 msgid "hours"
-msgstr ""
+msgstr "საათი"
 
 #. module: web
 #. odoo-javascript
@@ -27017,6 +27017,108 @@ msgstr "კონტაქტები და მისამართები"
 #: model_terms:ir.ui.view,arch_db:base.view_partner_form
 msgid "Sales & Purchase"
 msgstr "გაყიდვები და შესყიდვები"
+
+#. module: mail
+#. odoo-javascript
+msgid "Plan"
+msgstr "გეგმა"
+
+#. module: mail
+#. odoo-javascript
+msgid "To-Do"
+msgstr "შესასრულებელი"
+
+#. module: mail
+#. odoo-javascript
+msgid "Due Date"
+msgstr "ვადა"
+
+#. module: mail
+#. odoo-javascript
+msgid "Log a note..."
+msgstr "შეიტანეთ შენიშვნა..."
+
+#. module: mail
+#. odoo-javascript
+msgid "Attendance created"
+msgstr "დასწრება შექმნილია"
+
+#. module: hr_attendance
+#. odoo-javascript
+msgid "This Month"
+msgstr "ეს თვე"
+
+#. module: hr_attendance
+#. odoo-javascript
+msgid "Hours"
+msgstr "საათი"
+
+#. module: hr_attendance
+#. odoo-javascript
+msgid "Approved"
+msgstr "დამტკიცებული"
+
+#. module: hr_attendance
+#. odoo-javascript
+msgid "My Team"
+msgstr "ჩემი გუნდი"
+
+#. module: hr_attendance
+#. odoo-javascript
+msgid "Active Employees"
+msgstr "აქტიური თანამშრომლები"
+
+#. module: hr_attendance
+#. odoo-javascript
+msgid "Archived Employees"
+msgstr "არქივირებული თანამშრომლები"
+
+#. module: hr_recruitment
+#. odoo-javascript
+msgid "My Favorites"
+msgstr "ჩემი რჩეულები"
+
+#. module: hr_recruitment
+#. odoo-javascript
+msgid "My Job Positions"
+msgstr "ჩემი პოზიციები"
+
+#. module: hr_recruitment
+#. odoo-javascript
+msgid "Published"
+msgstr "გამოქვეყნებული"
+
+#. module: hr_holidays
+#. odoo-javascript
+msgid "Allocation Request"
+msgstr "შვებულების განაწილების მოთხოვნა"
+
+#. module: mail
+#. odoo-javascript
+msgid "Discuss"
+msgstr "ჩატი"
+
+#. module: calendar
+msgid "Calendar"
+msgstr "კალენდარი"
+
+#. module: hr_attendance
+msgid "Attendances"
+msgstr "დასწრებები"
+
+#. module: hr_recruitment
+msgid "Recruitment"
+msgstr "რეკრუტინგი"
+
+#. module: hr
+#. odoo-javascript
+msgid "Sync Emp and Contact"
+msgstr "თანამშრომლის და კონტაქტის სინქრონიზაცია"
+
+#. module: hr
+#. odoo-javascript
+msgid "Send HR Documents Access Link"
+msgstr "HR დოკუმენტებზე წვდომის ბმულის გაგზავნა"
 
 #. module: base
 #: model_terms:ir.ui.view,arch_db:base.view_partner_form
