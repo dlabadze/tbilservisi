@@ -21,3 +21,5 @@ class HrEmployeeTracking(models.Model):
     x_studio_start_date_1 = fields.Date(tracking=True)
     bank_account_id = fields.Many2one('res.partner.bank', tracking=True)
 
+
+
