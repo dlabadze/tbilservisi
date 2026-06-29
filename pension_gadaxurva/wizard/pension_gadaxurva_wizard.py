@@ -32,20 +32,18 @@ class PensionGadaxurvaWizard(models.TransientModel):
             raise UserError('ანგარიში 3133.27 ვერ მოიძებნა.')
 
         journal = self.env['account.journal'].search(
-            [('name', '=', 'general')], limit=1
+            [('name', '=', 'Miscellaneous Operations')], limit=1
         )
         if not journal:
             raise UserError('საერთო ჟურნალი ვერ მოიძებნა.')
 
         line_vals = []
-        missing_partners = []
+        missed_rows = []
 
         for row in rows:
             partner = self._find_partner(row['partner_name'], row['partner_vat'])
             if not partner:
-                missing_partners.append(
-                    '%s (%s)' % (row['partner_name'], row['partner_vat'])
-                )
+                missed_rows.append(row)
                 continue
 
             line_vals.append((0, 0, {
@@ -63,28 +61,71 @@ class PensionGadaxurvaWizard(models.TransientModel):
                 'name': row['partner_name'],
             }))
 
-        if missing_partners:
-            raise UserError(
-                'შემდეგი პარტნიორები ვერ მოიძებნა:\n' + '\n'.join(missing_partners)
-            )
+        move = False
+        if line_vals:
+            move = self.env['account.move'].create({
+                'date': self.date,
+                'journal_id': journal.id,
+                'line_ids': line_vals,
+            })
 
-        if not line_vals:
-            raise UserError('გასატარებელი ჩანაწერები ვერ მოიძებნა.')
+        if missed_rows:
+            return self._download_missed_excel(missed_rows)
 
-        self.env['account.move'].create({
-            'date': self.date,
-            'journal_id': journal.id,
-            'line_ids': line_vals,
+        if move:
+            return {
+                'type': 'ir.actions.act_window',
+                'res_model': 'account.move',
+                'res_id': move.id,
+                'view_mode': 'form',
+                'target': 'current',
+            }
+
+    def _download_missed_excel(self, missed_rows):
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill
+        except ImportError:
+            raise UserError('openpyxl ბიბლიოთეკა არ არის დაინსტალირებული.')
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'ვერ მოიძებნა'
+
+        headers = ['სახელი', 'საიდენტიფიკაციო კოდი', 'თანხა']
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
+
+        for row in missed_rows:
+            ws.append([row['partner_name'], row['partner_vat'], row['amount']])
+
+        stream = BytesIO()
+        wb.save(stream)
+        excel_b64 = base64.b64encode(stream.getvalue()).decode('utf-8')
+
+        attachment = self.env['ir.attachment'].create({
+            'name': 'pension_missed_%s.xlsx' % fields.Datetime.now().strftime('%Y%m%d_%H%M%S'),
+            'datas': excel_b64,
+            'res_model': self._name,
+            'res_id': 0,
+            'type': 'binary',
         })
 
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'წარმატება',
-                'message': 'საპენსიო გატარება შეიქმნა.',
-                'type': 'success',
-                'sticky': False,
+                'title': 'ნაწილობრივ შესრულდა',
+                'message': '%d პარტნიორი ვერ მოიძებნა. ჩამოტვირთეთ სია.' % len(missed_rows),
+                'type': 'warning',
+                'sticky': True,
+                'next': {
+                    'type': 'ir.actions.act_url',
+                    'url': '/web/content/%s?download=true' % attachment.id,
+                    'target': 'self',
+                },
             },
         }
 
@@ -103,7 +144,7 @@ class PensionGadaxurvaWizard(models.TransientModel):
                     continue
                 partner_name = row[1] if len(row) > 1 else None   # column B
                 partner_vat = row[2] if len(row) > 2 else None    # column C
-                amount_raw = row[3] if len(row) > 3 else None     # column D
+                amount_raw = row[4] if len(row) > 4 else None     # column E
 
                 if not partner_name and not partner_vat:
                     continue
