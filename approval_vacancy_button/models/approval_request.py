@@ -4,6 +4,7 @@ from datetime import timedelta
 PERSONAL_APPLICATION_CATEGORIES = [10, 11, 12,25,44,45,46,47,48,49]
 VACATION_DAYS = [46,47, 48, 49]
 VACAYS = [45,46,47,48,49]
+TIME_OFF_INVISIBLE = [61]
 
 
 class ApprovalRequest(models.Model):
@@ -15,10 +16,19 @@ class ApprovalRequest(models.Model):
         readonly=True,
         store=False,
     )
+    time_off_invisible = fields.Integer(string='time off invisible')
     safudzvelis_date = fields.Date(string="საფუძველის თარიღი")
     dasaqviti_amount = fields.Float(string="დასაქვითი თანხა")
     brdzanebis_nomeri = fields.Char(string="ბრძანების ნომერი")
     new_surname = fields.Char(string="ახალი გვარი")
+
+    @api.onchange('category_id')
+    def _compute_time_off_invisibility(self):
+        for brdzaneba in self:
+            if brdzaneba.category_id.id not in TIME_OFF_INVISIBLE:
+                brdzaneba.time_off_invisible = 1
+            else:
+                brdzaneba.time_off_invisible = 0
 
 
 

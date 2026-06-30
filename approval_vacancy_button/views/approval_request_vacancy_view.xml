@@ -12,7 +12,6 @@
                        invisible="not brdzaneba_job_id"/>
                 <field name="new_surname"/>
             </xpath>
-
         </field>
     </record>
 </odoo>
