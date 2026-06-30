@@ -23,7 +23,7 @@ class ApprovalRequest(models.Model):
         copy=True,
     )
     safudzvelis_date = fields.Date(string="საფუძველის თარიღი")
-    dasaqviti_amount = fields.Float(string="დასაქვითი თანხა")
+    dasaqviti_amount = fields.Float(string="თანხა")
     brdzanebis_nomeri = fields.Char(string="ბრძანების ნომერი")
     new_surname = fields.Char(string="ახალი გვარი")
 

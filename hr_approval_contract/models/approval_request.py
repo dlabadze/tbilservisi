@@ -50,7 +50,7 @@ class ApprovalRequest(models.Model):
 
         employee_name = self.brdzaneba_employee_id.name if self.brdzaneba_employee_id else _('Unknown')
         category_name = self.category_id.id if self.category_id else ''
-        vals['name'] = f"{employee_name} – ({self.brdzaneba_start_date})"
+        vals['name'] = f"{self.category_id.name}"
 
         return vals
 
