@@ -16,19 +16,56 @@ class ApprovalRequest(models.Model):
         readonly=True,
         store=False,
     )
-    time_off_invisible = fields.Integer(string='time off invisible')
+    time_off_id = fields.Many2one(
+        'hr.leave',
+        string="შვებულება",
+        ondelete='set null',
+        copy=True,
+    )
     safudzvelis_date = fields.Date(string="საფუძველის თარიღი")
     dasaqviti_amount = fields.Float(string="დასაქვითი თანხა")
     brdzanebis_nomeri = fields.Char(string="ბრძანების ნომერი")
     new_surname = fields.Char(string="ახალი გვარი")
 
     @api.onchange('category_id')
-    def _compute_time_off_invisibility(self):
-        for brdzaneba in self:
-            if brdzaneba.category_id.id not in TIME_OFF_INVISIBLE:
-                brdzaneba.time_off_invisible = 1
-            else:
-                brdzaneba.time_off_invisible = 0
+    def _onchange_category_id_reset_fields(self):
+        fields_to_reset = [
+            'brdzaneba_date',
+            'safudzvelis_date',
+            'dasaqviti_amount',
+            'brdzanebis_nomeri',
+            'brdzaneba_employee_id',
+            'brdzaneba_identification_id',
+            'brdzaneba_current_department_id',
+            'brdzaneba_current_job_id',
+            'x_studio_wagecurr',
+            'x_studio_currency_id',
+            'brdzaneba_start_date',
+            'brdzaneba_end_date',
+            'time_off_id',
+            'x_studio_biuletennum',
+            'x_studio_comment_safudzveli',
+            'release_date',
+            'x_studio_departm',
+            'x_studio_time_off_type',
+            'x_studio_dgeebi_real',
+            'brdzaneba_department_id',
+            'brdzaneba_job_id',
+            'brdzaneba_salary',
+            'brdzaneba_safudzveli',
+            'x_studio_file',
+            'x_studio_file_filename',
+        ]
+
+        for rec in self:
+            for fname in fields_to_reset:
+                if fname not in rec._fields:
+                    continue
+                field = rec._fields[fname]
+                if field.type in ('integer', 'float', 'monetary'):
+                    rec[fname] = 0
+                else:
+                    rec[fname] = False
 
 
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="approval_request_view_form_category_visibility" model="ir.ui.view">
+        <field name="name">approval.request.view.form.category.visibility</field>
+        <field name="model">approval.request</field>
+        <field name="inherit_id" ref="studio_customization.odoo_studio_approval_36e6e7eb-31b7-46de-a4b9-1421f704df24"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='category_id']" position="attributes">
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='time_off_id']" position="replace">
+                <field name="time_off_id" invisible="category_id not in [61]"/>
+            </xpath>
+            <xpath expr="//field[@name='safudzvelis_date']" position="replace">
+                <field name="safudzvelis_date" invisible="category_id in [10, 11, 12, 14, 44, 45, 46, 47, 48 ]"/>
+            </xpath>
+            <xpath expr="//field[@name='dasaqviti_amount']" position="replace">
+                <field name="dasaqviti_amount" invisible="category_id not in [20, 21, 22]"/>
+            </xpath>
+            <xpath expr="//field[@name='brdzanebis_nomeri']" position="replace">
+                <field name="brdzanebis_nomeri" invisible="category_id not in [33]"/>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_wagecurr']" position="replace">
+                <field name="x_studio_wagecurr" invisible="category_id not in [43]"/>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_currency_id']" position="replace">
+                <field name="x_studio_currency_id" invisible="True"/>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_biuletennum']" position="replace">
+                <field name="x_studio_biuletennum" invisible="category_id not in [41]"/>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_comment_safudzveli']" position="replace">
+                <field name="x_studio_comment_safudzveli" invisible="category_id not in [41]"/>
+            </xpath>
+            <xpath expr="//field[@name='release_date']" position="replace">
+                <field name="release_date" invisible="category_id not in [24, 25, 26, 27, 29, 30, 60]"/>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_departm']" position="replace">
+                <field name="x_studio_departm" options="{'create_name_field': 'complete_name'}" invisible="category_id not in [10, 11, 12, 13, 14, 15, 44]"/>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_time_off_type']" position="replace">
+                <field name="x_studio_time_off_type" string="შვებულების ტიპი" invisible="category_id not in [45, 46, 47, 48]" options="{'no_create': True, 'no_create_edit': True}"/>
+            </xpath>
+            <xpath expr="//field[@name='x_studio_dgeebi_real']" position="replace">
+                <field name="x_studio_dgeebi_real" string="გამოყენებული დღეები" invisible="category_id not in [45, 46, 47, 48, 23, 41]"/>
+            </xpath>
+
+            <!--<xpath expr="//field[@name='x_studio_file_filename']" position="replace">-->
+            <!--    <field name="x_studio_file_filename" invisible="True"/>-->
+            <!--</xpath>-->
+        </field>
+    </record>
+</odoo>

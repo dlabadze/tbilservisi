@@ -26,42 +26,42 @@
 
                 <group string="დანიშვნა" invisible="has_brdzaneba == 'no' or brdzaneba_kind != 'appointment'">
                     <group>
-                        <field name="brdzaneba_date" required="has_brdzaneba == 'required'"/>
+                        <field name="brdzaneba_date" required="has_brdzaneba == 'required'" invisible="category_id not in [10, 11, 12, 14, 15, 44, 45, 46, 47, 48 ]"/>
                         <field name="brdzaneba_employee_id" required="has_brdzaneba == 'required'" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
                         <field name="brdzaneba_identification_id"/>
                         <field name="brdzaneba_current_department_id" context="{'show_short_name': True}"/>
                         <field name="brdzaneba_current_job_id"/>
                     </group>
                     <group>
-                        <field name="brdzaneba_start_date"/>
-                        <field name="brdzaneba_end_date"/>
-                        <field name="brdzaneba_department_id" context="{'show_short_name': True}"/>
-                        <field name="brdzaneba_job_id"/>
-                        <field name="brdzaneba_shtati"/>
-                        <field name="brdzaneba_salary"/>
+                        <field name="brdzaneba_start_date" invisible="category_id not in [10, 11, 12, 13, 14, 15, 44, 45, 46, 47, 48, 39, 41, 23, 32]"/>
+                        <field name="brdzaneba_end_date" invisible="category_id not in [10, 11, 12, 13, 14, 15, 39, 44, 45, 46, 47, 48, 23, 41, 61]"/>
+                        <field name="brdzaneba_department_id" context="{'show_short_name': True}" invisible="category_id not in [10, 11, 12, 13, 14, 15, 44]" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
+                        <field name="brdzaneba_job_id" invisible="category_id not in [10, 11, 12, 13, 14, 15, 44]" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
+                        <field name="brdzaneba_shtati" invisible="category_id not in [10, 11, 12, 13, 44, 14]"/>
+                        <field name="brdzaneba_salary" invisible="category_id not in [10, 11, 12, 13, 44, 14]"/>
                     </group>
                 </group>
 
                 <group string="დანიშვნა დროებით" invisible="has_brdzaneba == 'no' or brdzaneba_kind != 'temporary_appointment'">
                     <group>
-                        <field name="brdzaneba_date" required="has_brdzaneba == 'required'"/>
+                        <field name="brdzaneba_date" required="has_brdzaneba == 'required'" invisible="category_id not in [10, 11, 12, 14, 15, 44, 45, 46, 47, 48 ]"/>
                         <field name="brdzaneba_employee_id" required="has_brdzaneba == 'required'" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
                         <field name="brdzaneba_identification_id"/>
                         <field name="brdzaneba_current_department_id" context="{'show_short_name': True}"/>
                         <field name="brdzaneba_current_job_id"/>
                     </group>
                     <group>
-                        <field name="brdzaneba_start_date"/>
-                        <field name="brdzaneba_end_date"/>
-                        <field name="brdzaneba_department_id" context="{'show_short_name': True}"/>
-                        <field name="brdzaneba_job_id"/>
-                        <field name="brdzaneba_shtati"/>
-                        <field name="brdzaneba_salary"/>
+                        <field name="brdzaneba_start_date" invisible="category_id not in [10, 11, 12, 13, 14, 15, 44, 45, 46, 47, 48, 39, 41, 23, 32]"/>
+                        <field name="brdzaneba_end_date" invisible="category_id not in [10, 11, 12, 13, 14, 15, 39, 44, 45, 46, 47, 48, 23, 41, 61]"/>
+                        <field name="brdzaneba_department_id" context="{'show_short_name': True}" invisible="category_id not in [10, 11, 12, 13, 14, 15, 44]" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
+                        <field name="brdzaneba_job_id" invisible="category_id not in [10, 11, 12, 13, 14, 15, 44]" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"/>
+                        <field name="brdzaneba_shtati" invisible="category_id not in [10, 11, 12, 13, 44, 14]"/>
+                        <field name="brdzaneba_salary" invisible="category_id not in [10, 11, 12, 13, 44, 14]"/>
                     </group>
                 </group>
 
                 <group invisible="has_brdzaneba == 'no'">
-                    <field name="brdzaneba_safudzveli"/>
+                    <field name="brdzaneba_safudzveli" invisible="category_id in [42, 43, 26, 27, 60]"/>
                 </group>
             </xpath>
         </field>

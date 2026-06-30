@@ -9,8 +9,8 @@
                 <field name="brdzaneba_job_vacancy_count"
                        string="ვაკანსიების რაოდენობა"
                        readonly="1"
-                       invisible="not brdzaneba_job_id"/>
-                <field name="new_surname"/>
+                       invisible="not brdzaneba_job_id or category_id not in [10, 11, 12, 44, 14]"/>
+                <field name="new_surname" invisible="category_id != 59"/>
             </xpath>
         </field>
     </record>
