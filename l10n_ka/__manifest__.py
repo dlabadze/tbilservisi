@@ -18,6 +18,11 @@
     'data': [
         'views/mail_activity_schedule_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'l10n_ka/static/src/js/l10n_ka_locale_patch.js',
+        ],
+    },
     'installable': True,
     'auto_install': False,
 }
