@@ -10,4 +10,4 @@ class HrEmployeeTracking(models.Model):
     def _compute_dep_numbering(self):
         for employee in self:
             if employee.department_id :
-                emplotee.dep_numbering = employee.department_id.dep_numbering or False
+                employee.dep_numbering = employee.department_id.dep_numbering or False
