@@ -27221,6 +27221,54 @@ msgstr "შემოსვლა"
 msgid "Check Out"
 msgstr "გასვლა"
 
+#. module: calendar
+msgid "January"
+msgstr "იანვარი"
+
+#. module: calendar
+msgid "February"
+msgstr "თებერვალი"
+
+#. module: calendar
+msgid "March"
+msgstr "მარტი"
+
+#. module: calendar
+msgid "April"
+msgstr "აპრილი"
+
+#. module: calendar
+msgid "May"
+msgstr "მაისი"
+
+#. module: calendar
+msgid "June"
+msgstr "ივნისი"
+
+#. module: calendar
+msgid "July"
+msgstr "ივლისი"
+
+#. module: calendar
+msgid "August"
+msgstr "აგვისტო"
+
+#. module: calendar
+msgid "September"
+msgstr "სექტემბერი"
+
+#. module: calendar
+msgid "October"
+msgstr "ოქტომბერი"
+
+#. module: calendar
+msgid "November"
+msgstr "ნოემბერი"
+
+#. module: calendar
+msgid "December"
+msgstr "დეკემბერი"
+
 #. module: hr_expense
 #: model:ir.model.fields,field_description:hr_expense.field_hr_employee__expense_manager_id
 #: model:ir.model.fields,field_description:hr_expense.field_hr_employee_public__expense_manager_id

@@ -15,6 +15,7 @@ class L10nKaBootstrap(models.AbstractModel):
         env = api.Environment(self._cr, SUPERUSER_ID, {})
 
         self._rename_server_actions(env)
+        self._force_field_labels_and_selections(env)
         self._translate_existing_onboarding_messages(env)
 
         return result
@@ -34,6 +35,40 @@ class L10nKaBootstrap(models.AbstractModel):
             new_name = label_map.get(action.name)
             if new_name and action.name != new_name:
                 action.name = new_name
+
+    @staticmethod
+    def _force_field_labels_and_selections(env):
+        fields_model = env["ir.model.fields"].sudo()
+
+        # Force wizard labels shown in "აქტივობის დაგეგმვა" popup.
+        field_labels = {
+            ("mail.activity.schedule", "plan_id"): "გეგმა",
+            ("mail.activity.schedule", "date_deadline"): "ვადა",
+        }
+        for (model_name, field_name), label in field_labels.items():
+            field_rec = fields_model.search([
+                ("model", "=", model_name),
+                ("name", "=", field_name),
+            ], limit=1)
+            if field_rec and field_rec.field_description != label:
+                field_rec.field_description = label
+
+        # Force hr.leave.allocation selection labels.
+        selection_model = env["ir.model.fields.selection"].sudo()
+        allocation_field = fields_model.search([
+            ("model", "=", "hr.leave.allocation"),
+            ("name", "=", "allocation_type"),
+        ], limit=1)
+        if allocation_field:
+            selection_map = {
+                "regular": "ჩვეულებრივი განაწილება",
+                "accrual": "დაგროვებითი განაწილება",
+            }
+            selections = selection_model.search([("field_id", "=", allocation_field.id)])
+            for selection in selections:
+                new_label = selection_map.get(selection.value)
+                if new_label and selection.name != new_label:
+                    selection.name = new_label
 
     @staticmethod
     def _translate_existing_onboarding_messages(env):
