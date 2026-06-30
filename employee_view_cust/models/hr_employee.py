@@ -9,5 +9,7 @@ class HrEmployeeTracking(models.Model):
     @api.depends('department_id')
     def _compute_dep_numbering(self):
         for employee in self:
-            if employee.department_id :
-                employee.dep_numbering = employee.department_id.dep_numbering or False
+            if employee.department_id:
+                employee.dep_numbering = employee.department_id.dep_numbering or 0
+            else:
+                employee.dep_numbering = 0
