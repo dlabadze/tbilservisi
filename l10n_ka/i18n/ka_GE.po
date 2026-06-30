@@ -27126,6 +27126,11 @@ msgid "Worked hours this month"
 msgstr "ამ თვეში ნამუშევარი საათები"
 
 #. module: hr
+#. odoo-python
+msgid "<b>Congratulations!</b> May I recommend you to setup an <a href=\"%s\">onboarding plan?</a>"
+msgstr "<b>გილოცავთ!</b> გირჩევთ, შექმნათ <a href=\"%s\">ადაპტაციის გეგმა</a>"
+
+#. module: hr
 msgid "Related User"
 msgstr "დაკავშირებული მომხმარებელი"
 
