@@ -22,6 +22,7 @@ class L10nKaBootstrap(models.AbstractModel):
     @staticmethod
     def _rename_server_actions(env):
         label_map = {
+            "Delete": "წაშლა",
             "Sync Emp and Contact": "თანამშრომლისა და კონტაქტის სინქრონიზაცია",
             "Send HR Documents Access Link": "HR დოკუმენტებზე წვდომის ბმულის გაგზავნა",
         }
@@ -43,6 +44,7 @@ class L10nKaBootstrap(models.AbstractModel):
             return
 
         old_prefix = '<b>Congratulations!</b> May I recommend you to setup an <a href="'
+        old_prefix_plain = 'Congratulations! May I recommend you to setup an <a href="'
         new_prefix = '<b>გილოცავთ!</b> გირჩევთ, შექმნათ <a href="'
         old_suffix = '">onboarding plan?</a>'
         new_suffix = '">ადაპტაციის გეგმა</a>'
@@ -50,7 +52,12 @@ class L10nKaBootstrap(models.AbstractModel):
         updated = 0
         for message in messages:
             body = message.body or ""
-            translated = body.replace(old_prefix, new_prefix).replace(old_suffix, new_suffix)
+            translated = (
+                body
+                .replace(old_prefix, new_prefix)
+                .replace(old_prefix_plain, new_prefix)
+                .replace(old_suffix, new_suffix)
+            )
             if translated != body:
                 message.body = translated
                 updated += 1

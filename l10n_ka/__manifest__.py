@@ -15,7 +15,9 @@
         'hr_work_entry_contract', 'hr_work_entry_contract_enterprise', 'hr_payroll_holidays',
         'web_gantt', 'contacts'
     ],
-    'data': [],
+    'data': [
+        'views/mail_activity_schedule_views.xml',
+    ],
     'installable': True,
     'auto_install': False,
 }
