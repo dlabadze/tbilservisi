@@ -7,7 +7,7 @@ import pandas as pd
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
-LEAVE_TYPE_NAME = "პირადი შვებულება"
+LEAVE_TYPE_NAME = "შვებულება პირადი"
 
 
 class LeaveAllocationImportWizard(models.TransientModel):
@@ -37,7 +37,10 @@ class LeaveAllocationImportWizard(models.TransientModel):
         required_columns = ["თარიღი", "პირადინომ", "თანამშრომელი", "დღეები"]
         missing_columns = [column for column in required_columns if column not in dataframe.columns]
         if missing_columns:
-            raise UserError(_("Missing required column(s): %s") % ", ".join(missing_columns))
+            raise UserError(
+                _("Missing required column(s): %s.\nColumns found in file: %s")
+                % (", ".join(missing_columns), ", ".join(dataframe.columns))
+            )
 
         employee_model = self.env["hr.employee"].sudo()
         allocation_model = self.env["hr.leave.allocation"].sudo()
