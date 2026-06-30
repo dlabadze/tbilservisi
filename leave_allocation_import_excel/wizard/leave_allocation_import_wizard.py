@@ -49,6 +49,10 @@ class LeaveAllocationImportWizard(models.TransientModel):
         if not holiday_status:
             raise UserError(_("Time Off Type '%s' not found.") % LEAVE_TYPE_NAME)
 
+        accrual_plan = self.env["hr.leave.accrual.plan"].sudo().search([("name", "=", LEAVE_TYPE_NAME)], limit=1)
+        if not accrual_plan:
+            raise UserError(_("Accrual Plan '%s' not found.") % LEAVE_TYPE_NAME)
+
         created_count = 0
         missing_rows = []
         created_allocations = allocation_model.browse()
@@ -79,6 +83,7 @@ class LeaveAllocationImportWizard(models.TransientModel):
                 "date_from": date_from,
                 "holiday_status_id": holiday_status.id,
                 "allocation_type": "accrual",
+                "accrual_plan_id": accrual_plan.id,
             })
             created_allocations |= allocation
             created_count += 1
