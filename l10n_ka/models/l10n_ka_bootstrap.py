@@ -16,6 +16,7 @@ class L10nKaBootstrap(models.AbstractModel):
 
         self._rename_server_actions(env)
         self._translate_module_names(env)
+        self._translate_app_menu_names(env)
         self._force_field_labels_and_selections(env)
         self._translate_existing_onboarding_messages(env)
 
@@ -123,6 +124,60 @@ class L10nKaBootstrap(models.AbstractModel):
 
         if updated:
             _logger.info("l10n_ka: translated %s module names", updated)
+
+    @staticmethod
+    def _translate_app_menu_names(env):
+        app_menu_names = {
+            "Accounting": "ბუღალტერია",
+            "Approvals": "დამტკიცებები",
+            "Apps": "აპლიკაციები",
+            "Attendances": "დასწრება",
+            "Barcode": "შტრიხკოდი",
+            "Calendar": "კალენდარი",
+            "Contacts": "კონტაქტები",
+            "Discuss": "დისკუსია",
+            "Documents": "დოკუმენტები",
+            "Employees": "თანამშრომლები",
+            "Expenses": "ხარჯები",
+            "Fleet": "ავტოპარკი",
+            "Inventory": "მარაგები",
+            "Maintenance": "მომსახურება",
+            "Manufacturing": "წარმოება",
+            "Planning": "გეგმვა",
+            "Project": "პროექტი",
+            "Purchase": "შესყიდვები",
+            "Recruitment": "რეკრუტმენტი",
+            "Sales": "გაყიდვები",
+            "Settings": "პარამეტრები",
+            "Shop Floor": "საწარმოო იატაკი",
+            "Sign": "ხელმოწერა",
+            "Time Off": "შვებულებები",
+            "Timesheets": "ტაბელი",
+            "To-do": "საქმეები",
+        }
+
+        root_menu = env.ref("base.menu_root", raise_if_not_found=False)
+        domain = [("name", "in", list(app_menu_names.keys()))]
+        if root_menu:
+            domain = [("parent_id", "=", root_menu.id)] + domain
+
+        menus = env["ir.ui.menu"].sudo().search(domain)
+
+        updated = 0
+        for menu in menus:
+            ge_name = app_menu_names.get(menu.name)
+            if not ge_name:
+                continue
+            if menu.with_context(lang="ka_GE").name == ge_name:
+                continue
+
+            # Writing with lang context stores a translation without changing the base source label.
+            menu.with_context(lang="ka_GE").write({"name": ge_name})
+            updated += 1
+
+        if updated:
+            env["ir.ui.menu"].clear_caches()
+            _logger.info("l10n_ka: translated %s app menu names for ka_GE", updated)
 
     @staticmethod
     def _translate_existing_onboarding_messages(env):
