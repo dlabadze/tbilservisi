@@ -257,12 +257,10 @@ class HrEmployeeExcelFieldUpdateWizard(models.TransientModel):
 
         normalized_input = value_str.lower()
         for key, label in selection_values or []:
-            label_text = label
-            if isinstance(label, dict):
-                label_text = label.get(self.env.lang) or next(iter(label.values()), '')
             if normalized_input == str(key).strip().lower():
                 return key
-            if normalized_input == str(label_text).strip().lower():
+            label_candidates = label.values() if isinstance(label, dict) else [label]
+            if any(normalized_input == str(candidate).strip().lower() for candidate in label_candidates):
                 return key
         raise UserError(_('Invalid selection value: %s') % value_str)
 
