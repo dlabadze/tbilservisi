@@ -14,17 +14,25 @@ class L10nKaBootstrap(models.AbstractModel):
         result = super()._register_hook()
         env = api.Environment(self._cr, SUPERUSER_ID, {})
 
-        self._rename_server_actions(env)
-        self._translate_module_names(env)
-        self._translate_app_menu_names(env)
-        self._translate_attendance_field_labels(env)
-        self._translate_attendance_selection_labels(env)
-        self._translate_attendance_menu_names(env)
-        self._translate_attendance_view_strings(env)
-        self._translate_accounting_menu_names(env)
-        self._translate_planned_activities_string(env)
-        self._force_field_labels_and_selections(env)
-        self._translate_existing_onboarding_messages(env)
+        # Never block registry load because of a localization patch.
+        bootstrap_steps = [
+            self._rename_server_actions,
+            self._translate_module_names,
+            self._translate_app_menu_names,
+            self._translate_attendance_field_labels,
+            self._translate_attendance_selection_labels,
+            self._translate_attendance_menu_names,
+            self._translate_attendance_view_strings,
+            self._translate_accounting_menu_names,
+            self._translate_planned_activities_string,
+            self._force_field_labels_and_selections,
+            self._translate_existing_onboarding_messages,
+        ]
+        for step in bootstrap_steps:
+            try:
+                step(env)
+            except Exception:
+                _logger.exception("l10n_ka bootstrap step failed: %s", step.__name__)
 
         return result
 
