@@ -71,7 +71,7 @@ class HrEmployeeExcelFieldUpdateWizard(models.TransientModel):
                 skipped_count += 1
                 continue
 
-            employee = employee_model.search(
+            employee = employee_model.with_context(active_test=False).search(
                 [('identification_id', '=', identification_id)],
                 limit=1,
             )
