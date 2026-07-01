@@ -249,19 +249,19 @@ class HrEmployeeExcelFieldUpdateWizard(models.TransientModel):
     def _convert_selection(self, employee_model, field_name, value):
         field = employee_model._fields[field_name]
         value_str = str(value).strip()
-        selection_values = field.selection
-        if callable(selection_values):
-            selection_values = selection_values(employee_model)
-        elif isinstance(selection_values, str):
-            selection_values = getattr(employee_model, selection_values)()
-
         normalized_input = value_str.lower()
-        for key, label in selection_values or []:
-            if normalized_input == str(key).strip().lower():
-                return key
-            label_candidates = label.values() if isinstance(label, dict) else [label]
-            if any(normalized_input == str(candidate).strip().lower() for candidate in label_candidates):
-                return key
+
+        # field.selection is untranslated for code-defined fields (e.g. gender), so
+        # resolve labels per installed language via the proper Odoo translation API
+        # instead, which works for both static and Studio-added selection fields.
+        lang_codes = [code for code, _name in self.env['res.lang'].get_installed()] or [self.env.lang]
+        for lang_code in lang_codes:
+            selection = field._description_selection(self.env(context=dict(self.env.context, lang=lang_code)))
+            for key, label in selection:
+                if normalized_input == str(key).strip().lower():
+                    return key
+                if normalized_input == str(label).strip().lower():
+                    return key
         raise UserError(_('Invalid selection value: %s') % value_str)
 
     def _convert_many2one(self, employee_model, field_name, value):
