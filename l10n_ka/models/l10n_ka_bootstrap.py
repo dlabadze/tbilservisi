@@ -15,6 +15,7 @@ class L10nKaBootstrap(models.AbstractModel):
         env = api.Environment(self._cr, SUPERUSER_ID, {})
 
         self._rename_server_actions(env)
+        self._translate_module_names(env)
         self._force_field_labels_and_selections(env)
         self._translate_existing_onboarding_messages(env)
 
@@ -69,6 +70,59 @@ class L10nKaBootstrap(models.AbstractModel):
                 new_label = selection_map.get(selection.value)
                 if new_label and selection.name != new_label:
                     selection.name = new_label
+
+    @staticmethod
+    def _translate_module_names(env):
+        module_names = {
+            "account": "ბუღალტერია",
+            "approvals": "დამტკიცებები",
+            "base_import": "მონაცემთა იმპორტი",
+            "calendar": "კალენდარი",
+            "contacts": "კონტაქტები",
+            "documents": "დოკუმენტები",
+            "documents_spreadsheet": "დოკუმენტები - ცხრილები",
+            "hr_attendance": "დასწრება",
+            "hr_contract": "კონტრაქტები",
+            "hr_contract_sign": "კონტრაქტის ხელმოწერა",
+            "hr_holidays": "შვებულებები",
+            "hr_maintenance": "თანამშრომელთა აღჭურვილობა",
+            "hr_payroll": "ხელფასები",
+            "hr_payroll_holidays": "სახელფასო შვებულებები",
+            "hr_recruitment": "რეკრუტმენტი",
+            "hr_skills": "უნარები",
+            "hr_work_entry": "სამუშაო ჩანაწერები",
+            "hr_work_entry_contract": "კონტრაქტებიდან სამუშაო ჩანაწერები",
+            "hr_work_entry_contract_enterprise": "კონტრაქტებიდან სამუშაო ჩანაწერები (Enterprise)",
+            "l10n_ka": "საქართველო - თარგმანები",
+            "mail": "დისკუსია",
+            "sign": "ხელმოწერა",
+            "spreadsheet_edition": "ცხრილები",
+            "web": "ვებ კლიენტი",
+            "web_gantt": "განტის ხედი",
+        }
+
+        modules = env["ir.module.module"].sudo().search([
+            ("name", "in", list(module_names.keys())),
+        ])
+
+        updated = 0
+        for module in modules:
+            ge_name = module_names.get(module.name)
+            if not ge_name:
+                continue
+
+            values = {}
+            if module.shortdesc != ge_name:
+                values["shortdesc"] = ge_name
+            if module.summary and module.summary != ge_name:
+                values["summary"] = ge_name
+
+            if values:
+                module.write(values)
+                updated += 1
+
+        if updated:
+            _logger.info("l10n_ka: translated %s module names", updated)
 
     @staticmethod
     def _translate_existing_onboarding_messages(env):
