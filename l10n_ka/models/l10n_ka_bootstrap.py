@@ -135,37 +135,53 @@ class L10nKaBootstrap(models.AbstractModel):
             "Barcode": "შტრიხკოდი",
             "Calendar": "კალენდარი",
             "Contacts": "კონტაქტები",
+            "Dashboards": "დაშბორდები",
             "Discuss": "დისკუსია",
             "Documents": "დოკუმენტები",
             "Employees": "თანამშრომლები",
             "Expenses": "ხარჯები",
+            "File Editor Passwords": "ფაილ ედიტორის პაროლები",
             "Fleet": "ავტოპარკი",
             "Inventory": "მარაგები",
+            "Link Tracker": "ბმულების ტრეკერი",
             "Maintenance": "მომსახურება",
             "Manufacturing": "წარმოება",
+            "operations": "ოპერაციები",
             "Planning": "გეგმვა",
             "Project": "პროექტი",
             "Purchase": "შესყიდვები",
             "Recruitment": "რეკრუტმენტი",
             "Sales": "გაყიდვები",
+            "Salary Management": "ხელფასების მართვა",
             "Settings": "პარამეტრები",
             "Shop Floor": "საწარმოო იატაკი",
             "Sign": "ხელმოწერა",
             "Time Off": "შვებულებები",
             "Timesheets": "ტაბელი",
             "To-do": "საქმეები",
+            "Docx Report": "დოკუმენტის რეპორტი",
+        }
+
+        module_app_names = {
+            "alnas_docx": "დოკუმენტის რეპორტი",
+            "external_file_editor": "ფაილ ედიტორის პაროლები",
+            "operations": "ოპერაციები",
+            "salary_management": "ხელფასების მართვა",
         }
 
         root_menu = env.ref("base.menu_root", raise_if_not_found=False)
-        domain = [("name", "in", list(app_menu_names.keys()))]
+        domain = []
         if root_menu:
-            domain = [("parent_id", "=", root_menu.id)] + domain
+            domain.append(("parent_id", "=", root_menu.id))
 
         menus = env["ir.ui.menu"].sudo().search(domain)
 
         updated = 0
         for menu in menus:
             ge_name = app_menu_names.get(menu.name)
+            if not ge_name and menu.web_icon:
+                technical_module = menu.web_icon.split(",", 1)[0].strip()
+                ge_name = module_app_names.get(technical_module)
             if not ge_name:
                 continue
             if menu.with_context(lang="ka_GE").name == ge_name:
