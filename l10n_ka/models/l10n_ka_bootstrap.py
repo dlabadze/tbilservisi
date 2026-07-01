@@ -18,6 +18,7 @@ class L10nKaBootstrap(models.AbstractModel):
         self._translate_module_names(env)
         self._translate_app_menu_names(env)
         self._translate_attendance_field_labels(env)
+        self._translate_attendance_selection_labels(env)
         self._translate_attendance_menu_names(env)
         self._translate_attendance_view_strings(env)
         self._force_field_labels_and_selections(env)
@@ -88,6 +89,17 @@ class L10nKaBootstrap(models.AbstractModel):
             ("hr.attendance", "overtime_status"): "ზეგანაკვეთური სტატუსი",
             ("hr.attendance", "in_mode"): "შემოსვლის რეჟიმი",
             ("hr.attendance", "out_mode"): "გასვლის რეჟიმი",
+            ("hr.attendance", "in_latitude"): "შესვლის განედი",
+            ("hr.attendance", "in_longitude"): "შესვლის გრძედი",
+            ("hr.attendance", "out_latitude"): "გასვლის განედი",
+            ("hr.attendance", "out_longitude"): "გასვლის გრძედი",
+            ("hr.attendance", "in_city"): "შესვლის ქალაქი",
+            ("hr.attendance", "out_city"): "გასვლის ქალაქი",
+            ("hr.attendance", "in_country_name"): "შესვლის ქვეყანა",
+            ("hr.attendance", "out_country_name"): "გასვლის ქვეყანა",
+            ("hr.attendance", "attendance_status"): "დასწრების სტატუსი",
+            ("hr.attendance", "type"): "ტიპი",
+            ("hr.attendance", "mode"): "რეჟიმი",
             ("hr.attendance", "x_studio_identification_no"): "საიდენტიფიკაციო კოდი",
             ("hr.attendance", "x_studio_selection_field_99n_1j76jab36"): "ტიპი",
         }
@@ -104,6 +116,47 @@ class L10nKaBootstrap(models.AbstractModel):
 
         if updated:
             _logger.info("l10n_ka: translated %s attendance field labels", updated)
+
+    @staticmethod
+    def _translate_attendance_selection_labels(env):
+        fields_model = env["ir.model.fields"].sudo()
+        selection_model = env["ir.model.fields.selection"].sudo()
+
+        selection_field_names = {
+            "state",
+            "status",
+            "attendance_status",
+            "check_in_state",
+            "check_out_state",
+        }
+
+        selection_map = {
+            "approved": "დამტკიცებული",
+            "refused": "უარყოფილი",
+            "to_approve": "დასამტკიცებელი",
+            "draft": "დრაფტი",
+            "confirmed": "დადასტურებული",
+            "done": "დასრულებული",
+        }
+
+        updated = 0
+        selection_fields = fields_model.search([
+            ("model", "=", "hr.attendance"),
+            ("ttype", "=", "selection"),
+        ])
+        for field_rec in selection_fields:
+            if field_rec.name not in selection_field_names:
+                continue
+
+            selections = selection_model.search([("field_id", "=", field_rec.id)])
+            for selection in selections:
+                new_label = selection_map.get(selection.value)
+                if new_label and selection.name != new_label:
+                    selection.name = new_label
+                    updated += 1
+
+        if updated:
+            _logger.info("l10n_ka: translated %s attendance selection labels", updated)
 
     @staticmethod
     def _translate_attendance_menu_names(env):
@@ -307,13 +360,19 @@ class L10nKaBootstrap(models.AbstractModel):
             ("body", "ilike", "May I recommend you to setup an"),
         ])
         if not messages:
-            return
+            messages = env["mail.message"].sudo().search([
+                ("body", "ilike", "Attendance created"),
+            ])
+            if not messages:
+                return
 
         old_prefix = '<b>Congratulations!</b> May I recommend you to setup an <a href="'
         old_prefix_plain = 'Congratulations! May I recommend you to setup an <a href="'
         new_prefix = '<b>გილოცავთ!</b> გირჩევთ, შექმნათ <a href="'
         old_suffix = '">onboarding plan?</a>'
         new_suffix = '">ადაპტაციის გეგმა</a>'
+        attendance_old = 'Attendance created'
+        attendance_new = 'დასწრება შეიქმნა'
 
         updated = 0
         for message in messages:
@@ -323,6 +382,7 @@ class L10nKaBootstrap(models.AbstractModel):
                 .replace(old_prefix, new_prefix)
                 .replace(old_prefix_plain, new_prefix)
                 .replace(old_suffix, new_suffix)
+                .replace(attendance_old, attendance_new)
             )
             if translated != body:
                 message.body = translated
