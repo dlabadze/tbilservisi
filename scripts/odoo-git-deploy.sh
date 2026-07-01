@@ -62,6 +62,10 @@ run_deploy() {
 
   echo "Deploying commit $CURRENT_SHA (previous: ${LAST_SHA:-none})"
 
+  if sudo -n chown -R fmg:odoo "$ADDONS" 2>/dev/null; then
+    echo "Reset ownership on custom_addons to fmg:odoo"
+  fi
+
   shopt -s nullglob
   for manifest in "$REPO"/*/__manifest__.py; do
     deploy_module_dir "$(dirname "$manifest")"
