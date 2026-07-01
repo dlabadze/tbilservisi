@@ -9,6 +9,7 @@ REPO="/home/fmg/tbilservisi"
 ADDONS="/opt/odoo/odoo18/custom_addons"
 LOG="/home/fmg/logs/odoo-deploy.log"
 LOCK="/tmp/odoo-git-deploy.lock"
+LAST_SHA_FILE="/home/fmg/logs/last-deployed-sha"
 LOCAL_ONLY=0
 
 if [[ "${1:-}" == "--local" ]]; then
@@ -38,20 +39,28 @@ run_deploy() {
   if [[ "$LOCAL_ONLY" -eq 0 ]]; then
     cd "$REPO"
     git fetch origin main
+    LOCAL_SHA=$(git rev-parse HEAD)
+    REMOTE_SHA=$(git rev-parse origin/main)
+    if [[ "$LOCAL_SHA" != "$REMOTE_SHA" ]]; then
+      echo "Updating $LOCAL_SHA -> $REMOTE_SHA"
+      git pull --ff-only origin main
+    fi
   else
     cd "$REPO"
   fi
 
-  if [[ "$LOCAL_ONLY" -eq 0 ]]; then
-    LOCAL_SHA=$(git rev-parse HEAD)
-    REMOTE_SHA=$(git rev-parse origin/main)
-    if [[ "$LOCAL_SHA" == "$REMOTE_SHA" ]]; then
-      echo "Already up to date ($LOCAL_SHA)"
-      return 0
-    fi
-    echo "Updating $LOCAL_SHA -> $REMOTE_SHA"
-    git pull --ff-only origin main
+  CURRENT_SHA=$(git -C "$REPO" rev-parse HEAD)
+  LAST_SHA=""
+  if [[ -f "$LAST_SHA_FILE" ]]; then
+    LAST_SHA=$(cat "$LAST_SHA_FILE")
   fi
+
+  if [[ "$LOCAL_ONLY" -eq 0 && "$CURRENT_SHA" == "$LAST_SHA" ]]; then
+    echo "Already deployed commit $CURRENT_SHA"
+    return 0
+  fi
+
+  echo "Deploying commit $CURRENT_SHA (previous: ${LAST_SHA:-none})"
 
   shopt -s nullglob
   for manifest in "$REPO"/*/__manifest__.py; do
@@ -69,6 +78,7 @@ run_deploy() {
   fi
 
   echo "Deploy finished."
+  echo "$CURRENT_SHA" > "$LAST_SHA_FILE"
   if sudo -n systemctl restart odoo 2>/dev/null; then
     echo "Odoo restarted."
   else
