@@ -14,25 +14,15 @@ class L10nKaBootstrap(models.AbstractModel):
         result = super()._register_hook()
         env = api.Environment(self._cr, SUPERUSER_ID, {})
 
-        # Never block registry load because of a localization patch.
-        bootstrap_steps = [
-            self._rename_server_actions,
-            self._translate_module_names,
-            self._translate_app_menu_names,
-            self._translate_attendance_field_labels,
-            self._translate_attendance_selection_labels,
-            self._translate_attendance_menu_names,
-            self._translate_attendance_view_strings,
-            self._translate_accounting_menu_names,
-            self._translate_planned_activities_string,
-            self._force_field_labels_and_selections,
-            self._translate_existing_onboarding_messages,
-        ]
-        for step in bootstrap_steps:
-            try:
-                step(env)
-            except Exception:
-                _logger.exception("l10n_ka bootstrap step failed: %s", step.__name__)
+        self._rename_server_actions(env)
+        self._translate_module_names(env)
+        self._translate_app_menu_names(env)
+        self._translate_attendance_field_labels(env)
+        self._translate_attendance_selection_labels(env)
+        self._translate_attendance_menu_names(env)
+        self._translate_attendance_view_strings(env)
+        self._force_field_labels_and_selections(env)
+        self._translate_existing_onboarding_messages(env)
 
         return result
 
@@ -242,90 +232,6 @@ class L10nKaBootstrap(models.AbstractModel):
             _logger.info("l10n_ka: translated %s attendance views", updated)
 
     @staticmethod
-    def _translate_accounting_menu_names(env):
-        menu_name_map = {
-            "Purchase Plans": "შესყიდვების გეგმები",
-            "CPV Codes": "CPV კოდები",
-            "Budget CPV": "ბიუჯეტის CPV",
-            "Purchase Plan Changes": "შესყიდვების გეგმის ცვლილებები",
-            "Journal Reports": "ჟურნალის რეპორტები",
-            "Audit Reports": "აუდიტის რეპორტები",
-            "Consolidated Reports": "კონსოლიდირებული რეპორტები",
-            "Management": "მენეჯმენტი",
-            "Balance Sheet": "ბალანსი",
-            "Profit and Loss": "მოგება და ზარალი",
-            "Cash Flow Statement": "ფულადი ნაკადების ანგარიში",
-            "Executive Summary": "აღმასრულებელი შეჯამება",
-            "Tax Return": "საგადასახადო დეკლარაცია",
-            "General Ledger": "მთავარი წიგნი",
-            "Trial Balance": "საცდელი ბალანსი",
-            "Journal Audit": "ჟურნალის აუდიტი",
-            "Partner Ledger": "პარტნიორის ბრუნვის რეპორტი",
-            "Aged Receivable": "მოთხოვნების ვადაგადაცილება",
-            "Aged Payable": "ვალდებულებების ვადაგადაცილება",
-            "Unrealized Currency Gains/Losses": "არარეალიზებული საკურსო მოგება/ზარალი",
-            "Deferred Expense": "გადავადებული ხარჯი",
-            "Deferred Revenue": "გადავადებული შემოსავალი",
-            "Depreciation Schedule": "ამორტიზაციის გეგმა",
-            "Disallowed Expenses": "არაღიარებული ხარჯები",
-            "Loans Analysis": "სესხების ანალიზი",
-            "Budget Report": "ბიუჯეტის ანგარიში",
-            "Journal Item Report Wizard": "ჟურნალის ჩანაწერების რეპორტი",
-            "Partner Currency Movement Report": "პარტნიორის ვალუტური მოძრაობის რეპორტი",
-            "Invoicing": "ინვოისინგი",
-            "Follow-up Levels": "მიმდევრობის დონეები",
-            "Online Synchronization": "ონლაინ სინქრონიზაცია",
-            "Tax Units": "საგადასახადო ერთეულები",
-            "Horizontal Groups": "ჰორიზონტალური ჯგუფები",
-            "Import Country Codes": "ქვეყნის კოდების იმპორტი",
-            "Financial Budgets": "ფინანსური ბიუჯეტები",
-            "Payment Providers": "გადახდის პროვაიდერები",
-            "Payment Methods": "გადახდის მეთოდები",
-            "Payment Tokens": "გადახდის ტოკენები",
-            "Payment Transactions": "გადახდის ტრანზაქციები",
-            "Asset Models": "აქტივების მოდელები",
-            "Accounting Reports": "საბუღალტრო რეპორტები",
-            "Disallowed Expenses Categories": "არაღიარებული ხარჯების კატეგორიები",
-        }
-
-        accounting_root = env.ref("account.menu_finance", raise_if_not_found=False)
-        if not accounting_root:
-            return
-
-        menus = env["ir.ui.menu"].sudo().search([("id", "child_of", accounting_root.id)])
-        updated = 0
-        for menu in menus:
-            ge_name = menu_name_map.get(menu.name)
-            if not ge_name:
-                continue
-            if menu.with_context(lang="ka_GE").name == ge_name:
-                continue
-            menu.with_context(lang="ka_GE").write({"name": ge_name})
-            updated += 1
-
-        if updated:
-            env["ir.ui.menu"].clear_caches()
-            _logger.info("l10n_ka: translated %s accounting menu labels", updated)
-
-    @staticmethod
-    def _translate_planned_activities_string(env):
-        views = env["ir.ui.view"].sudo().search([
-            ("arch_db", "ilike", "Planned Activities"),
-        ])
-
-        updated = 0
-        for view in views:
-            arch = view.arch_db or ""
-            translated = arch.replace("Planned Activities", "დაგეგმილი აქტივობები")
-            if translated != arch:
-                view.write({"arch_db": translated})
-                updated += 1
-
-        if updated:
-            env["ir.ui.view"].clear_caches()
-            _logger.info("l10n_ka: translated Planned Activities in %s views", updated)
-
-    @staticmethod
     def _translate_module_names(env):
         module_names = {
             "account": "ბუღალტერია",
@@ -382,7 +288,7 @@ class L10nKaBootstrap(models.AbstractModel):
     def _translate_app_menu_names(env):
         app_menu_names = {
             "Accounting": "ბუღალტერია",
-            "Approvals": "ბრძანებები",
+            "Approvals": "დამტკიცებები",
             "Apps": "აპლიკაციები",
             "Attendances": "დასწრება",
             "Barcode": "შტრიხკოდი",
@@ -395,7 +301,7 @@ class L10nKaBootstrap(models.AbstractModel):
             "Expenses": "ხარჯები",
             "File Editor Passwords": "ფაილ ედიტორის პაროლები",
             "Fleet": "ავტოპარკი",
-            "Inventory": "საწყობი",
+            "Inventory": "მარაგები",
             "Link Tracker": "ბმულების ტრეკერი",
             "Maintenance": "მომსახურება",
             "Manufacturing": "წარმოება",
@@ -451,12 +357,14 @@ class L10nKaBootstrap(models.AbstractModel):
     @staticmethod
     def _translate_existing_onboarding_messages(env):
         messages = env["mail.message"].sudo().search([
-            "|",
             ("body", "ilike", "May I recommend you to setup an"),
-            ("body", "ilike", "Attendance created"),
         ])
         if not messages:
-            return
+            messages = env["mail.message"].sudo().search([
+                ("body", "ilike", "Attendance created"),
+            ])
+            if not messages:
+                return
 
         old_prefix = '<b>Congratulations!</b> May I recommend you to setup an <a href="'
         old_prefix_plain = 'Congratulations! May I recommend you to setup an <a href="'
