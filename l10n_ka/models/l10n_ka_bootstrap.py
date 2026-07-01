@@ -17,6 +17,9 @@ class L10nKaBootstrap(models.AbstractModel):
         self._rename_server_actions(env)
         self._translate_module_names(env)
         self._translate_app_menu_names(env)
+        self._translate_attendance_field_labels(env)
+        self._translate_attendance_menu_names(env)
+        self._translate_attendance_view_strings(env)
         self._force_field_labels_and_selections(env)
         self._translate_existing_onboarding_messages(env)
 
@@ -71,6 +74,109 @@ class L10nKaBootstrap(models.AbstractModel):
                 new_label = selection_map.get(selection.value)
                 if new_label and selection.name != new_label:
                     selection.name = new_label
+
+    @staticmethod
+    def _translate_attendance_field_labels(env):
+        fields_model = env["ir.model.fields"].sudo()
+        field_labels = {
+            ("hr.attendance", "employee_id"): "თანამშრომელი",
+            ("hr.attendance", "department_id"): "დეპარტამენტი",
+            ("hr.attendance", "manager_id"): "მენეჯერი",
+            ("hr.attendance", "check_in"): "შემოსვლა",
+            ("hr.attendance", "check_out"): "გასვლა",
+            ("hr.attendance", "worked_hours"): "ნამუშევარი საათები",
+            ("hr.attendance", "overtime_status"): "ზეგანაკვეთური სტატუსი",
+            ("hr.attendance", "in_mode"): "შემოსვლის რეჟიმი",
+            ("hr.attendance", "out_mode"): "გასვლის რეჟიმი",
+            ("hr.attendance", "x_studio_identification_no"): "საიდენტიფიკაციო კოდი",
+            ("hr.attendance", "x_studio_selection_field_99n_1j76jab36"): "ტიპი",
+        }
+
+        updated = 0
+        for (model_name, field_name), label in field_labels.items():
+            field_rec = fields_model.search([
+                ("model", "=", model_name),
+                ("name", "=", field_name),
+            ], limit=1)
+            if field_rec and field_rec.field_description != label:
+                field_rec.field_description = label
+                updated += 1
+
+        if updated:
+            _logger.info("l10n_ka: translated %s attendance field labels", updated)
+
+    @staticmethod
+    def _translate_attendance_menu_names(env):
+        menu_name_map = {
+            "Overview": "მიმოხილვა",
+            "Management": "მართვა",
+            "Kiosk Mode": "კიოსკის რეჟიმი",
+            "Reporting": "რეპორტინგი",
+            "Configuration": "კონფიგურაცია",
+            "Attendances Import": "დასწრების იმპორტი",
+        }
+
+        root_menu = env.ref("hr_attendance.menu_hr_attendance_root", raise_if_not_found=False)
+        if not root_menu:
+            return
+
+        menus = env["ir.ui.menu"].sudo().search([("id", "child_of", root_menu.id)])
+        updated = 0
+        for menu in menus:
+            ge_name = menu_name_map.get(menu.name)
+            if not ge_name:
+                continue
+            if menu.with_context(lang="ka_GE").name == ge_name:
+                continue
+            menu.with_context(lang="ka_GE").write({"name": ge_name})
+            updated += 1
+
+        if updated:
+            env["ir.ui.menu"].clear_caches()
+            _logger.info("l10n_ka: translated %s attendance menu labels", updated)
+
+    @staticmethod
+    def _translate_attendance_view_strings(env):
+        replace_map = {
+            "My Attendances": "ჩემი დასწრება",
+            "My Team": "ჩემი გუნდი",
+            "At Work": "სამსახურში",
+            "Errors": "შეცდომები",
+            "Automatically Checked-Out": "ავტომატურად გასული",
+            "Active Employees": "აქტიური თანამშრომლები",
+            "Archived Employees": "არქივირებული თანამშრომლები",
+            "To Approve": "დასამტკიცებელი",
+            "Approved": "დამტკიცებული",
+            "Refused": "უარყოფილი",
+            "Employee": "თანამშრომელი",
+            "Department": "დეპარტამენტი",
+            "Manager": "მენეჯერი",
+            "Method": "მეთოდი",
+            "Date": "თარიღი",
+            "Identification No": "საიდენტიფიკაციო კოდი",
+            "Type": "ტიპი",
+            "type": "ტიპი",
+        }
+
+        views = env["ir.ui.view"].sudo().search([
+            ("model", "in", ["hr.attendance", "hr.employee"]),
+            ("type", "in", ["search", "list", "tree"]),
+        ])
+
+        updated = 0
+        for view in views:
+            arch = view.arch_db or ""
+            translated = arch
+            for old, new in replace_map.items():
+                translated = translated.replace(f'string="{old}"', f'string="{new}"')
+                translated = translated.replace(f"string='{old}'", f"string='{new}'")
+            if translated != arch:
+                view.write({"arch_db": translated})
+                updated += 1
+
+        if updated:
+            env["ir.ui.view"].clear_caches()
+            _logger.info("l10n_ka: translated %s attendance views", updated)
 
     @staticmethod
     def _translate_module_names(env):
