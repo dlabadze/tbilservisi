@@ -30,7 +30,10 @@ class HrEmployeeExcelFieldUpdateWizard(models.TransientModel):
     filename = fields.Char(string='Filename')
     missed_file = fields.Binary(string='Missed Rows', readonly=True)
     missed_filename = fields.Char(string='Missed Filename', readonly=True)
-    result_message = fields.Text(string='Result', readonly=True)
+    result_message = fields.Text(
+        string='Result',
+        readonly=True,
+    )
 
     def action_import_excel(self):
         self.ensure_one()
