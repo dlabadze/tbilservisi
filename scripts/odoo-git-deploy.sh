@@ -23,7 +23,7 @@ deploy_module_dir() {
   name=$(basename "$src")
   echo "Deploying module: $name"
   mkdir -p "$ADDONS/$name"
-  rsync -a --delete \
+  rsync -a --delete --omit-dir-times \
     --exclude "__pycache__" \
     --exclude "*.pyc" \
     --exclude ".git" \
